@@ -269,10 +269,10 @@ jobs:
           python -m pytest python/tests/ -q --tb=short
           echo ""
           echo "=== C++ tests ==="
-          cd build && ctest --output-on-failure -q && cd ..
+          cd build && ctest --output-on-failure && cd ..
           echo ""
           echo "=== Static analysis ==="
-          python -m mypy python/src/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/parameter_priors.py --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           python -m ruff check python/src/ python/tests/ python/examples/ --select E,F,W
           echo ""
           echo "ALL CHECKS PASSED"

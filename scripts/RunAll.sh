@@ -1,27 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
 # RunAll.sh -- Full ProbOS build and test pipeline
-#
-# WHAT THIS SCRIPT DOES (8 steps):
-#   1. Check system requirements (Python, g++, cmake, ninja)
-#   2. Create Python virtual environment if it does not exist
-#   3. Install Python dependencies from requirements.txt
-#   4. Run all Python tests (pytest + mypy + ruff)
-#   5. Build C++ code (cmake + ninja)
-#   6. Run C++ tests (ctest)
-#   7. Run Week 1 Python examples
-#   8. Run Week 2 Python examples
-#
-# HOW TO RUN:
-#   cd /home/nison/ProbOsWeek1
-#   chmod +x scripts/RunAll.sh
-#   ./scripts/RunAll.sh
 # =============================================================================
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BUILD_DIR="$PROJECT_ROOT/build"
+VENV="$PROJECT_ROOT/.venv/bin/activate"
+
 cd "$PROJECT_ROOT"
 
 GREEN="\033[0;32m"
@@ -31,19 +19,17 @@ BOLD="\033[1m"
 
 step=0
 pass_count=0
-fail_count=0
 
 run_step() {
     step=$((step + 1))
     local label="$1"
     local cmd="$2"
     printf "Step %d: %-40s" "$step" "$label"
-    if eval "$cmd" > /tmp/probos_step_${step}.log 2>&1; then
+    if (cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/probos_step_${step}.log 2>&1; then
         echo -e "${GREEN}PASS${RESET}"
         pass_count=$((pass_count + 1))
     else
         echo -e "${RED}FAIL${RESET}"
-        fail_count=$((fail_count + 1))
         echo "--- Output ---"
         cat /tmp/probos_step_${step}.log
         echo "--- End ---"
@@ -64,31 +50,31 @@ run_step "Check system requirements" \
 
 # Step 2: Python virtual environment
 run_step "Python virtual environment" \
-    "[ -d .venv ] || python3 -m venv .venv"
+    "[ -d '$PROJECT_ROOT/.venv' ] || python3 -m venv '$PROJECT_ROOT/.venv'"
 
 # Step 3: Install dependencies
 run_step "Install Python dependencies" \
-    "source .venv/bin/activate && pip install -q -r requirements.txt"
+    "source '$VENV' && pip install -q -r '$PROJECT_ROOT/requirements.txt'"
 
 # Step 4: Python tests
 run_step "Python tests (111 tests)" \
-    "source .venv/bin/activate && python -m pytest python/tests/ -q --tb=short"
+    "source '$VENV' && python -m pytest '$PROJECT_ROOT/python/tests/' -q --tb=short"
 
 # Step 5: Build C++
 run_step "Build C++ code (cmake + ninja)" \
-    "mkdir -p build && cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -Wno-dev > /dev/null && cmake --build build"
+    "mkdir -p '$BUILD_DIR' && cmake -S '$PROJECT_ROOT' -B '$BUILD_DIR' -G Ninja -DCMAKE_BUILD_TYPE=Release -Wno-dev > /dev/null && cmake --build '$BUILD_DIR'"
 
 # Step 6: C++ tests
 run_step "C++ tests (13 tests)" \
-    "cd build && ctest --output-on-failure -q"
+    "cd '$BUILD_DIR' && ctest --output-on-failure -q"
 
 # Step 7: Week 1 examples
 run_step "Week 1 examples" \
-    "source .venv/bin/activate && python python/examples/week1_coin_flip.py && python python/examples/week1_normal_demo.py"
+    "source '$VENV' && python '$PROJECT_ROOT/python/examples/week1_coin_flip.py' && python '$PROJECT_ROOT/python/examples/week1_normal_demo.py'"
 
 # Step 8: Week 2 examples
 run_step "Week 2 examples" \
-    "source .venv/bin/activate && python python/examples/week2_battery_ode.py && python python/examples/week2_clt_demo.py"
+    "source '$VENV' && python '$PROJECT_ROOT/python/examples/week2_battery_ode.py' && python '$PROJECT_ROOT/python/examples/week2_clt_demo.py'"
 
 echo ""
 echo -e "${BOLD}============================================================${RESET}"

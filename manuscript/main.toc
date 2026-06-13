@@ -1,0 +1,28 @@
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Contributions of Week 1}{3}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Mathematical Background}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Probability distributions}{3}{subsection.2.1}%
+\contentsline {paragraph}{Sample.}{4}{section*.2}%
+\contentsline {paragraph}{PDF.}{4}{section*.3}%
+\contentsline {paragraph}{Log-PDF (analytical).}{4}{section*.4}%
+\contentsline {paragraph}{PPF (Percent-Point Function).}{4}{section*.5}%
+\contentsline {subsection}{\numberline {2.2}The five distributions}{4}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Software Architecture}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Design principles}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Repository structure}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Class hierarchy}{6}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Implementation}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Python layer}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}C++ layer}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Numerical stability demonstration}{7}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Verification}{8}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Python test suite (pytest)}{8}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}C++ test suite (Google Test)}{8}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Static analysis}{8}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Motivating Application: Battery Thermal Runaway}{8}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Physical context}{8}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Results}{9}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Law of Large Numbers Demonstration}{10}{section.7}%
+\contentsline {section}{\numberline {8}Reproducibility}{10}{section.8}%
+\contentsline {section}{\numberline {9}Week 2 Roadmap}{10}{section.9}%
+\contentsline {section}{\numberline {10}Conclusion}{11}{section.10}%

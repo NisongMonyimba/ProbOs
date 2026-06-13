@@ -11,7 +11,6 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{natbib}
-\usepackage{microtype}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{tikz}
@@ -350,23 +349,23 @@ ProbOS Week~1 follows three design principles.
 
 \begin{verbatim}
 ProbOsWeek1/
-├── python/
-│   ├── src/distributions.py          # Distribution ABC + 5 classes
-│   ├── tests/test_distributions.py   # 44 pytest tests
-│   └── examples/
-│       ├── week1_coin_flip.py         # LLN demonstration
-│       └── week1_normal_demo.py       # Battery Ea_SEI demo
-├── cpp/
-│   ├── include/distributions/normal.hpp
-│   ├── src/distributions/normal.cpp
-│   └── tests/test_normal.cpp         # 13 Google Tests
-├── scripts/
-│   ├── RunAll.sh                      # 8-step pipeline runner
-│   └── RunTests.sh                    # 4-suite test runner
-├── manuscript/
-│   ├── main.tex                       # This document
-│   └── references.bib
-└── CMakeLists.txt
++-- python/
+|   +-- src/distributions.py          # Distribution ABC + 5 classes
+|   +-- tests/test_distributions.py   # 44 pytest tests
+|   +-- examples/
+|       +-- week1_coin_flip.py         # LLN demonstration
+|       +-- week1_normal_demo.py       # Battery Ea_SEI demo
++-- cpp/
+|   +-- include/distributions/normal.hpp
+|   +-- src/distributions/normal.cpp
+|   +-- tests/test_normal.cpp         # 13 Google Tests
++-- scripts/
+|   +-- RunAll.sh                      # 8-step pipeline runner
+|   +-- RunTests.sh                    # 4-suite test runner
++-- manuscript/
+|   +-- main.tex                       # This document
+|   +-- references.bib
++-- CMakeLists.txt
 \end{verbatim}
 
 \subsection{Class hierarchy}

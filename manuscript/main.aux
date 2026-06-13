@@ -1,0 +1,94 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\zref@newlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Contributions of Week 1}{3}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Mathematical Background}{3}{section.2}\protected@file@percent }
+\newlabel{sec:math}{{2}{3}{Mathematical Background}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Probability distributions}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sample.}{4}{section*.2}\protected@file@percent }
+\newlabel{eq:mc}{{1}{4}{Sample}{equation.2.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{PDF.}{4}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Log-PDF (analytical).}{4}{section*.4}\protected@file@percent }
+\newlabel{prop:logpdf}{{1}{4}{Log-PDF stability}{theorem.1}{}}
+\newlabel{eq:logpdf}{{2}{4}{Log-PDF stability}{equation.2.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{PPF (Percent-Point Function).}{4}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}The five distributions}{4}{subsection.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Week\nobreakspace  {}1 distribution library. All parameters refer to the underlying parametrisation (e.g.\ $\mu , \sigma $ for LogNormal refer to the mean and standard deviation of $\qopname  \relax o{log}X$, not of $X$).\relax }}{5}{table.caption.6}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:distributions}{{1}{5}{Week~1 distribution library. All parameters refer to the underlying parametrisation (e.g.\ $\mu , \sigma $ for LogNormal refer to the mean and standard deviation of $\log X$, not of $X$).\relax }{table.caption.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Software Architecture}{5}{section.3}\protected@file@percent }
+\newlabel{sec:architecture}{{3}{5}{Software Architecture}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Design principles}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Repository structure}{5}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Class hierarchy}{6}{subsection.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Class hierarchy of the Week\nobreakspace  {}1 distribution library. \texttt  {Distribution} is an abstract base class enforcing the four-method interface on all subclasses. Arrows denote inheritance.\relax }}{6}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:hierarchy}{{1}{6}{Class hierarchy of the Week~1 distribution library. \texttt {Distribution} is an abstract base class enforcing the four-method interface on all subclasses. Arrows denote inheritance.\relax }{figure.caption.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Implementation}{6}{section.4}\protected@file@percent }
+\newlabel{sec:implementation}{{4}{6}{Implementation}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Python layer}{6}{subsection.4.1}\protected@file@percent }
+\newlabel{lst:normal_python}{{1}{6}{Python \texttt {Normal} class (abridged). The analytical \texttt {log\_pdf} prevents floating-point underflow at extreme values (Proposition~\ref {prop:logpdf})}{lstlisting.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}Python \texttt  {Normal} class (abridged). The analytical \texttt  {log\_pdf} prevents floating-point underflow at extreme values (Proposition\nobreakspace  {}\ref  {prop:logpdf}).}{6}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}C++ layer}{7}{subsection.4.2}\protected@file@percent }
+\newlabel{lst:normal_cpp}{{2}{7}{C++ \texttt {Normal::log\_pdf} implementation. \texttt {std::numbers::pi} (C++20) provides $\pi $ to full double precision}{lstlisting.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}C++ \texttt  {Normal::log\_pdf} implementation. \texttt  {std::numbers::pi} (C++20) provides $\pi $ to full double precision.}{7}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Numerical stability demonstration}{7}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Numerical stability of \texttt  {log\_pdf} vs.\ \texttt  {log(pdf(x))} for $x = \mu + 50\sigma $.\relax }}{7}{table.caption.8}\protected@file@percent }
+\newlabel{tab:stability}{{2}{7}{Numerical stability of \texttt {log\_pdf} vs.\^^M\texttt {log(pdf(x))} for $x = \mu + 50\sigma $.\relax }{table.caption.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Verification}{8}{section.5}\protected@file@percent }
+\newlabel{sec:verification}{{5}{8}{Verification}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Python test suite (pytest)}{8}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Python test suite summary. All 44 tests pass.\relax }}{8}{table.caption.9}\protected@file@percent }
+\newlabel{tab:pytest}{{3}{8}{Python test suite summary. All 44 tests pass.\relax }{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}C++ test suite (Google Test)}{8}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces C++ Google\nobreakspace  {}Test suite summary. All 13 tests pass.\relax }}{8}{table.caption.10}\protected@file@percent }
+\newlabel{tab:gtest}{{4}{8}{C++ Google~Test suite summary. All 13 tests pass.\relax }{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Static analysis}{8}{subsection.5.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Static analysis results. Zero issues reported.\relax }}{8}{table.caption.11}\protected@file@percent }
+\newlabel{tab:static}{{5}{8}{Static analysis results. Zero issues reported.\relax }{table.caption.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Motivating Application: Battery Thermal Runaway}{8}{section.6}\protected@file@percent }
+\newlabel{sec:battery}{{6}{8}{Motivating Application: Battery Thermal Runaway}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Physical context}{8}{subsection.6.1}\protected@file@percent }
+\newlabel{eq:arrhenius}{{3}{8}{Physical context}{equation.6.3}{}}
+\citation{kim2007}
+\newlabel{eq:ea}{{4}{9}{Physical context}{equation.6.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Results}{9}{subsection.6.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Left:} Distribution of SEI activation energy $E_{a,\mathrm  {SEI}} \sim \mathcal  {N}(135080, 5000)$\,J/mol across $N = 5{,}000$ simulated batteries. The red dashed line marks the P05 percentile (126{,}856\,J/mol); green marks the mean. \textbf  {Right:} Resulting Arrhenius decomposition rate at $T = 130$\,\textdegree {}C. The P05 battery decomposes $11.6\times $ faster than the mean. The deterministic model (green line) has no knowledge of the red-tail batteries.\relax }}{9}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:battery}{{2}{9}{\textbf {Left:} Distribution of SEI activation energy $E_{a,\mathrm {SEI}} \sim \mathcal {N}(135080, 5000)$\,J/mol across $N = 5{,}000$ simulated batteries. The red dashed line marks the P05 percentile (126{,}856\,J/mol); green marks the mean. \textbf {Right:} Resulting Arrhenius decomposition rate at $T = 130$\,\textdegree {}C. The P05 battery decomposes $11.6\times $ faster than the mean. The deterministic model (green line) has no knowledge of the red-tail batteries.\relax }{figure.caption.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Percentiles of $E_{a,\mathrm  {SEI}}$ and the corresponding Arrhenius rate ratio relative to the mean battery at $T = 130$\,\textdegree {}C.\relax }}{9}{table.caption.13}\protected@file@percent }
+\newlabel{tab:percentiles}{{6}{9}{Percentiles of $E_{a,\mathrm {SEI}}$ and the corresponding Arrhenius rate ratio relative to the mean battery at $T = 130$\,\textdegree {}C.\relax }{table.caption.13}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Law of Large Numbers Demonstration}{10}{section.7}\protected@file@percent }
+\newlabel{sec:lln}{{7}{10}{Law of Large Numbers Demonstration}{section.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces LLN convergence for the fair-coin experiment (seed $= 42$).\relax }}{10}{table.caption.14}\protected@file@percent }
+\newlabel{tab:lln}{{7}{10}{LLN convergence for the fair-coin experiment (seed $= 42$).\relax }{table.caption.14}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Reproducibility}{10}{section.8}\protected@file@percent }
+\newlabel{sec:ci}{{8}{10}{Reproducibility}{section.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Week\nobreakspace  {}1 reproducibility checklist.\relax }}{10}{table.caption.15}\protected@file@percent }
+\newlabel{tab:ci}{{8}{10}{Week~1 reproducibility checklist.\relax }{table.caption.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Week 2 Roadmap}{10}{section.9}\protected@file@percent }
+\newlabel{sec:roadmap}{{9}{10}{Week 2 Roadmap}{section.9}{}}
+\citation{kim2007}
+\citation{hatchard2001}
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{hatchard2001}{{1}{2001}{{Hatchard et~al.}}{{Hatchard, MacNeil, Basu, and Dahn}}}
+\bibcite{kim2007}{{2}{2007}{{Kim et~al.}}{{Kim, Pesaran, and Spotnitz}}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{11}{section.10}\protected@file@percent }
+\newlabel{sec:conclusion}{{10}{11}{Conclusion}{section.10}{}}
+\gdef \@abspage@last{11}

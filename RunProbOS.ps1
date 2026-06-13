@@ -13,23 +13,29 @@ $PROJECT_DIR = "/home/nison/ProbOsWeek1"
 $RUNALL      = "$PROJECT_DIR/scripts/RunAll.sh"
 $RUNTESTS    = "$PROJECT_DIR/scripts/RunTests.sh"
 
+# Script-level variable to hold exit code -- avoids PowerShell function return quirks
+$script:LastWSLCode = 0
+
 function Invoke-WSL {
     param([string]$ScriptPath, [string]$Label)
     Write-Host ""
     Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host "  Running: $Label" -ForegroundColor Cyan
-    Write-Host "  Script : $ScriptPath" -ForegroundColor Gray
     Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host ""
+
+    # Run WSL -- output streams directly to terminal
     wsl -d $WSL_DISTRO -- bash -c "cd '$PROJECT_DIR' && chmod +x '$ScriptPath' && bash '$ScriptPath'"
-    $code = $LASTEXITCODE
+
+    # Capture exit code immediately into script-level variable
+    $script:LastWSLCode = $LASTEXITCODE
+
     Write-Host ""
-    if ($code -eq 0) {
+    if ($script:LastWSLCode -eq 0) {
         Write-Host "  PASSED: $Label" -ForegroundColor Green
     } else {
-        Write-Host "  FAILED: $Label (exit code $code)" -ForegroundColor Red
+        Write-Host "  FAILED: $Label (exit code $($script:LastWSLCode))" -ForegroundColor Red
     }
-    return $code
 }
 
 function Test-WSL {
@@ -86,15 +92,15 @@ do {
     switch ($choice) {
 
         "1" {
-            $code = Invoke-WSL -ScriptPath $RUNALL -Label "RunAll.sh (Full Pipeline)"
-            if ($code -eq 0) {
+            Invoke-WSL -ScriptPath $RUNALL -Label "RunAll.sh (Full Pipeline)"
+            if ($script:LastWSLCode -eq 0) {
                 Write-Host "  All 8 steps passed." -ForegroundColor Green
             }
         }
 
         "2" {
-            $code = Invoke-WSL -ScriptPath $RUNTESTS -Label "RunTests.sh (Test Suite)"
-            if ($code -eq 0) {
+            Invoke-WSL -ScriptPath $RUNTESTS -Label "RunTests.sh (Test Suite)"
+            if ($script:LastWSLCode -eq 0) {
                 Write-Host "  All tests passed. 124 total." -ForegroundColor Green
             }
         }
@@ -104,10 +110,13 @@ do {
             Write-Host "  Running RunAll.sh first, then RunTests.sh..." -ForegroundColor Cyan
             Write-Host ""
 
-            $code1 = Invoke-WSL -ScriptPath $RUNALL -Label "RunAll.sh (Full Pipeline)"
+            Invoke-WSL -ScriptPath $RUNALL -Label "RunAll.sh (Full Pipeline)"
+            $code1 = $script:LastWSLCode
 
             if ($code1 -eq 0) {
-                $code2 = Invoke-WSL -ScriptPath $RUNTESTS -Label "RunTests.sh (Test Suite)"
+                Invoke-WSL -ScriptPath $RUNTESTS -Label "RunTests.sh (Test Suite)"
+                $code2 = $script:LastWSLCode
+
                 Write-Host ""
                 if ($code2 -eq 0) {
                     Write-Host "============================================================" -ForegroundColor Green

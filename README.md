@@ -408,7 +408,7 @@ The Week 1 implementation is documented as a full software paper:
 
 > **ProbOS: A Probabilistic Execution Runtime**
 > *Week 1 — Distribution Library: Design, Implementation, and Verification*
-> Nisong Monyimba, Reality Computing Corporation, 2025
+> Nisong Monyimba, Reality Computing Corporation, 2026
 
 | Section | Content |
 |---------|---------|
@@ -432,7 +432,7 @@ Compile: `cd manuscript && make` → `manuscript/main.pdf` (11 pages)
 |------|--------|
 | Author | Nisong Monyimba |
 | Organisation | Reality Computing Corporation |
-| Started | June 2025 |
+| Started | June 2026 |
 | License | MIT |
 | Languages | Python 3.11 + C++20 |
 | Build system | CMake 3.22 + Ninja |
@@ -451,6 +451,6 @@ MIT License. See [LICENSE](LICENSE) for full terms.
 
 *"Uncertainty is not an obstacle to computation. It is the computation."*
 
-**Reality Computing Corporation — 2025**
+**Reality Computing Corporation — 2026**
 
 </div>

@@ -1,5 +1,9 @@
-# cpp/CMakeLists.txt
-# FIX: use add_test() not gtest_discover_tests() for CMake 3.22
+cmake_minimum_required(VERSION 3.22)
+project(probos_cpp CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 add_compile_options(
@@ -26,8 +30,11 @@ target_link_libraries(probos_main PRIVATE probos_distributions)
 find_package(GTest QUIET)
 if(GTest_FOUND)
     message(STATUS "Google Test found -- building C++ tests")
+    find_package(Threads REQUIRED)
     add_executable(test_normal tests/test_normal.cpp)
-    target_link_libraries(test_normal PRIVATE probos_distributions GTest::gtest_main)
+    target_link_libraries(test_normal PRIVATE
+        probos_distributions GTest::gtest_main Threads::Threads
+    )
     enable_testing()
     add_test(NAME test_normal COMMAND test_normal)
 else()

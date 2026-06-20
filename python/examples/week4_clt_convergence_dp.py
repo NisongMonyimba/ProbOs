@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import time
 
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -32,6 +33,8 @@ import numpy as np
 from python.src.battery_model import BatteryModel2Cell
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 # -----------------------------------------------------------------------
 # Settings
@@ -108,7 +111,7 @@ theory  = sigma_true / np.sqrt(np.array(N_VALUES, dtype=float))
 
 print()
 print("=" * 72)
-print(f"  DP Subset Trick Results")
+print("  DP Subset Trick Results")
 print(f"  OLD: {len(N_VALUES)*N_TRIALS} engine runs  -> {old_time:.3f}s")
 print(f"  NEW: 1 engine run + subsamples -> {new_time:.3f}s")
 print(f"  Speedup: {speedup:.0f}x")
@@ -117,7 +120,8 @@ print(f"  {'N':>8}  {'OLD error':>12}  {'NEW error':>12}  "
       f"{'Theory':>12}  {'Match?':>8}")
 print("-" * 72)
 for i, N in enumerate(N_VALUES):
-    match = "YES" if abs(old_errors[i] - new_errors[i]) < sigma_true * 2 / N**0.5 + 1 else "NO"
+    tolerance = sigma_true * 2 / N**0.5 + 1
+    match = "YES" if abs(old_errors[i] - new_errors[i]) < tolerance else "NO"
     print(f"  {N:>8}  {old_errors[i]:>12.4f}  {new_errors[i]:>12.4f}  "
           f"{theory[i]:>12.4f}  {match:>8}")
 print("=" * 72)
@@ -163,7 +167,7 @@ for ax, errors, label, color in [
     ax.grid(True, which="both", alpha=0.3)
 
 plt.tight_layout()
-out = "week4_clt_convergence_dp.png"
+out = "outputs/figures/week4_clt_convergence_dp.png"
 plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"\nSaved: {out}")

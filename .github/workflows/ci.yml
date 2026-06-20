@@ -104,10 +104,10 @@ jobs:
         with:
           name: example-figures
           path: |
-            week2_battery_ode.png
-            week3_mc_battery.png
-            week3_clt_convergence.png
-            week3_sobol_battery.png
+            outputs/figures/week2_battery_ode.png
+            outputs/figures/week3_mc_battery.png
+            outputs/figures/week3_clt_convergence.png
+            outputs/figures/week3_sobol_battery.png
           retention-days: 30
 
   # ===========================================================================
@@ -186,10 +186,10 @@ jobs:
           python python/examples/week3_mc_battery.py || true
           python python/examples/week3_clt_convergence.py || true
           python python/examples/week3_sobol_battery.py || true
-          cp week2_battery_ode.png manuscript/ 2>/dev/null || true
-          cp week3_mc_battery.png manuscript/ 2>/dev/null || true
-          cp week3_clt_convergence.png manuscript/ 2>/dev/null || true
-          cp week3_sobol_battery.png manuscript/ 2>/dev/null || true
+          cp outputs/figures/week2_battery_ode.png manuscript/ 2>/dev/null || true
+          cp outputs/figures/week3_mc_battery.png manuscript/ 2>/dev/null || true
+          cp outputs/figures/week3_clt_convergence.png manuscript/ 2>/dev/null || true
+          cp outputs/figures/week3_sobol_battery.png manuscript/ 2>/dev/null || true
 
       - name: Compile manuscript
         run: |

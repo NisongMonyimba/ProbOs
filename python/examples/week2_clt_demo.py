@@ -41,6 +41,8 @@ import matplotlib.pyplot as plt
 
 from python.src.distributions import Normal
 
+os.makedirs("outputs/figures", exist_ok=True)
+
 
 def estimate_clt_convergence(
     dist: Normal,
@@ -214,7 +216,7 @@ if __name__ == "__main__":
 
     print_summary(n_values, mean_errors, sigma)
 
-    save_path = "week2_clt_demo.png"
+    save_path = "outputs/figures/week2_clt_demo.png"
     print("Generating figure...")
     plot_clt(n_values, mean_errors, sigma, save_path)
 

@@ -1,5 +1,6 @@
 # Explicitly track all figure outputs
 !*.png
+!outputs/figures/*.png
 !*.PNG
 
 # =============================================================================

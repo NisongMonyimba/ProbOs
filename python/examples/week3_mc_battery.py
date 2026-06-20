@@ -12,6 +12,7 @@ Saves: week3_mc_battery.png
 
 from __future__ import annotations
 
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -21,6 +22,8 @@ from scipy.stats import norm as sp_norm
 from python.src.battery_model import BatteryModel2Cell
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 # -----------------------------------------------------------------------
 # Run Monte Carlo
@@ -147,7 +150,7 @@ ax.legend(fontsize=8)
 ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-out = "week3_mc_battery.png"
+out = "outputs/figures/week3_mc_battery.png"
 plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out}")

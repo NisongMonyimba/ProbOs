@@ -19,6 +19,7 @@ Saves: week3_clt_convergence.png
 
 from __future__ import annotations
 
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -27,6 +28,8 @@ import numpy as np
 from python.src.battery_model import BatteryModel2Cell
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 # -----------------------------------------------------------------------
 # Settings
@@ -159,7 +162,7 @@ for ax, xscale, yscale, title_suffix in [
     ax.grid(True, which="both", alpha=0.3)
 
 plt.tight_layout()
-out = "week3_clt_convergence.png"
+out = "outputs/figures/week3_clt_convergence.png"
 plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"\nSaved: {out}")

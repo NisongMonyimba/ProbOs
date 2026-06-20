@@ -12,10 +12,17 @@ Saves: week4_dp_benchmark.png
 
 from __future__ import annotations
 
+import os
 import matplotlib
+from python.src.battery_model import BatteryModel2Cell
+from python.src.monte_carlo import MonteCarloEngine
+from python.src.parameter_priors import build_battery_priors
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 # -----------------------------------------------------------------------
 # Benchmark results (measured)
@@ -67,10 +74,7 @@ for bar, val in zip(bars, speedups):
 # ---- Panel 2: CLT convergence comparison ----
 ax = axes[1]
 
-# Reproduce results
-from python.src.battery_model import BatteryModel2Cell
-from python.src.monte_carlo import MonteCarloEngine
-from python.src.parameter_priors import build_battery_priors
+# Reproduce results (model/priors imported at top of file)
 
 model  = BatteryModel2Cell()
 priors = build_battery_priors()
@@ -105,17 +109,20 @@ ax.fill_between(N_arr, theory*0.5, theory*2.0,
                 alpha=0.15, color="steelblue", label=r"Theory $\pm$2x band")
 ax.loglog(N_arr, theory,     "b--",  linewidth=1.5, label=r"Theory $\sigma/\sqrt{N}$")
 ax.loglog(N_arr, old_errors, "r-o",  markersize=6,  linewidth=1.5,
-          label=f"OLD: 210 engine runs")
+          label="OLD: 210 engine runs")
 ax.loglog(N_arr, new_errors, "g-s",  markersize=6,  linewidth=1.5,
           label="NEW: 1 run + DP subsamples")
 ax.set_xlabel("N (particles)")
 ax.set_ylabel("Mean absolute error (K)")
-ax.set_title("CLT Convergence: OLD vs NEW (DP subset trick)\n45x speedup, same statistical result")
+ax.set_title(
+    "CLT Convergence: OLD vs NEW (DP subset trick)\n"
+    "45x speedup, same statistical result"
+)
 ax.legend(fontsize=9)
 ax.grid(True, which="both", alpha=0.3)
 
 plt.tight_layout()
-out = "week4_dp_benchmark.png"
+out = "outputs/figures/week4_dp_benchmark.png"
 plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"Saved: {out}")

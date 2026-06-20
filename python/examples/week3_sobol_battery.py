@@ -10,6 +10,7 @@ Saves: week3_sobol_battery.png
 
 from __future__ import annotations
 
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -18,6 +19,8 @@ import numpy as np
 from python.src.battery_model import BatteryModel2Cell
 from python.src.parameter_priors import build_battery_priors
 from python.src.sensitivity import SobolSensitivity
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 # -----------------------------------------------------------------------
 # Run Sobol analysis
@@ -115,7 +118,7 @@ for bar, val in zip(bars, st):
         )
 
 plt.tight_layout()
-out = "week3_sobol_battery.png"
+out = "outputs/figures/week3_sobol_battery.png"
 plt.savefig(out, dpi=150, bbox_inches="tight")
 plt.close()
 print(f"\nSaved: {out}")

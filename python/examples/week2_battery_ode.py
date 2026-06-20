@@ -17,10 +17,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")   # Non-interactive backend -- works without a display
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from python.src.battery_model import BatteryModel2Cell
+
+os.makedirs("outputs/figures", exist_ok=True)
 
 
 def run_simulation(
@@ -225,7 +227,7 @@ if __name__ == "__main__":
     print_summary(history, dt)
 
     # Save plot
-    save_path = "week2_battery_ode.png"
+    save_path = "outputs/figures/week2_battery_ode.png"
     print("Generating 4-panel figure...")
     plot_results(history, dt=dt, save_path=save_path)
 

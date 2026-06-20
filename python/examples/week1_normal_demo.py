@@ -155,7 +155,11 @@ def main() -> None:
     ax2.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
 
     plt.tight_layout()
-    fig.savefig("week1_battery_Ea_distribution.png", dpi=150, bbox_inches="tight")
+    os.makedirs("outputs/figures", exist_ok=True)
+    fig.savefig(
+        "outputs/figures/week1_battery_Ea_distribution.png",
+        dpi=150, bbox_inches="tight",
+    )
     print("Figure saved: week1_battery_Ea_distribution.png")
     print()
     print("=" * 65)

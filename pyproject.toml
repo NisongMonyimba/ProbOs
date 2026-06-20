@@ -67,6 +67,7 @@ dev = [
     "mypy>=1.8",
     "ruff>=0.3",
     "matplotlib>=3.8",
+    "lark>=1.1",
 ]
 sim = [
     "SALib>=1.5",

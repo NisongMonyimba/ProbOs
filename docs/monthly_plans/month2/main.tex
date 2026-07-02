@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 2 Plan}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Theme}
+Sequential inference plus bringing the C++ kernel into the Python package.
+Month 1 built a forward-simulation kernel: draw priors, propagate,
+summarise, explain. Month 2's central gap is \textbf{inference} --- given
+observed data, update beliefs about latent state and parameters online.
+That capability is the particle filter, and it is the spine around which
+every other Month 2 workstream is organised.
+
+\section*{Week 5 --- Particle Filter Core}
+\textbf{Goal:} a working sequential Monte Carlo filter, validated against
+a known analytical case before touching \texttt{BatteryModel2Cell}.
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/src/particle\_filter.py}
+  \begin{itemize}
+    \item \texttt{ParticleFilter} class: init from prior, \texttt{predict()}
+      step (reuses \texttt{Model.forward\_batch()}), \texttt{update()} step
+      (likelihood weighting), \texttt{resample()} step (systematic
+      resampling)
+    \item Effective sample size (ESS) diagnostic, resample-when-ESS-low
+      trigger
+  \end{itemize}
+  \item Validate against a linear-Gaussian model with a known Kalman
+    filter solution first, then apply to \texttt{BatteryModel2Cell} with
+    synthetic noisy temperature observations.
+  \item Study guide: Chopin \& Papaspiliopoulos (2020) Ch 8--10 on
+    resampling schemes; Naesseth et al. (2019) for the unifying SMC
+    algorithm template.
+\end{itemize}
+\textbf{Exit test:} filter posterior mean tracks true latent state within
+theoretical bounds on the linear-Gaussian case; ESS never collapses
+without triggering resampling.
+
+\section*{Week 6 --- pybind11: C++ Kernel Enters the Python Package}
+\textbf{Goal:} stop maintaining two parallel implementations. Bind
+\texttt{BatteryCell} and \texttt{MonteCarloEngineOMP} into Python via
+pybind11.
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{cpp/bindings/} --- pybind11 module definition
+  \item \texttt{setup.py} / \texttt{CMakeLists.txt} updates for building
+    the extension
+  \item Cross-validation test: C++ and Python engines must agree on
+    percentiles for the same seed within floating-point tolerance
+\end{itemize}
+\textbf{Exit test:} \texttt{import probos\_cpp} works from a plain
+\texttt{pytest} run in CI.
+
+\section*{Week 7 --- FastAPI Service Layer}
+\textbf{Goal:} expose the kernel over HTTP.
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{POST /simulate} --- run \texttt{MonteCarloEngine}, return
+    percentiles and convergence summary
+  \item \texttt{POST /sensitivity} --- run \texttt{SobolSensitivity},
+    return S1/ST indices
+  \item \texttt{POST /filter} --- run \texttt{ParticleFilter} against
+    posted observation data
+  \item Pydantic schemas mirroring the \texttt{Model}/\texttt{Distribution}
+    constructor signatures
+\end{itemize}
+\textbf{Exit test:} a \texttt{curl} POST to \texttt{/simulate} returns
+valid JSON matching a direct Python call to the same
+\texttt{MonteCarloEngine}.
+
+\section*{Week 8 --- Cross-Discipline Batch 2 + Month 2 Retrospective}
+\textbf{Goal:} show the particle filter also generalises across domains.
+
+\begin{itemize}[leftmargin=*]
+  \item Port the ED queue model to a filtering setting (infer true
+    arrival rate from observed queue-length time series)
+  \item Port the clinical trial model to sequential monitoring, using the
+    particle filter instead of batch nested-MC
+  \item \texttt{docs/retrospectives/month2\_retrospective.md} plus
+    \texttt{month3\_plan.md}
+\end{itemize}
+\textbf{Exit test:} both filtering examples pass validation against
+ground truth, with test coverage matching Month 1's standard.
+
+\section*{Standing Month 2 commitments (every week)}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{check\_ci.sh} after every push, no exceptions
+  \item Update \texttt{docs/study/study\_guide.md} same-session as any
+    new file needing external reading
+  \item mypy strict and ruff clean before any commit
+  \item No claimed speedup or result without a genuine benchmark backing
+    it
+\end{itemize}
+
+\end{document}

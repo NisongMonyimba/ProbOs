@@ -105,3 +105,9 @@ manuscript/*.toc
 manuscript/*.fls
 manuscript/*.fdb_latexmk
 manuscript/*.synctex.gz
+
+# LaTeX build artifacts in docs/monthly_plans/*
+docs/monthly_plans/*/*.aux
+docs/monthly_plans/*/*.log
+docs/monthly_plans/*/*.out
+docs/monthly_plans/*/*.toc

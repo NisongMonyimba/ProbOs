@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 1 Retrospective}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Period}
+Week 1 through Week 4. Status at close: kernel foundation complete, PDSL
+v0.1 shipped, 3 cross-discipline examples validated, CI fully green.
+
+\section*{Final numbers}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 264/264 passing
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+  \item CI jobs: 4/4 green (Python, C++, LaTeX manuscript, full
+    integration)
+\end{itemize}
+
+\section*{What shipped}
+
+\subsection*{Week 1 --- Distribution ABC}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{Distribution} ABC with \texttt{sample()}, \texttt{pdf()},
+    \texttt{log\_pdf()}, \texttt{cdf()}, \texttt{ppf()}
+  \item Concrete distributions: \texttt{Normal}, \texttt{LogNormal},
+    \texttt{Beta}, \texttt{Uniform}
+  \item 44 Python tests, 13 C++ tests
+\end{itemize}
+
+\subsection*{Week 2 --- Model ABC + Physics}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{Model} ABC defining the \texttt{forward\_batch()} contract
+  \item \texttt{BatteryModel2Cell}: 8-state Arrhenius thermal-runaway
+    ODE, validated against Kim et al. (2007)
+  \item CLT convergence demo, deterministic ODE demo
+\end{itemize}
+
+\subsection*{Week 3 --- Monte Carlo Kernel}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{MonteCarloEngine}: vectorised particle propagation,
+    percentile tracking
+  \item \texttt{SobolSensitivity}: Sobol S1/ST indices via SALib
+  \item \texttt{ProvenanceTracker}: causal audit trail for individual
+    particle trajectories
+  \item 91 new tests across MC engine, sensitivity, provenance
+\end{itemize}
+
+\subsection*{Week 4 --- Speed, Language, Cross-Discipline}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Monday:} DP profiling. Real wins: 1040x SALib cache, 45x
+    CLT subset trick. One real non-win (inv\_RT precompute $\sim$1x)
+    documented honestly.
+  \item \textbf{Tuesday:} C++ \texttt{BatteryCell} + OpenMP
+    \texttt{MonteCarloEngineOMP}. Confirmed 7x speedup over Python
+    serial via genuine benchmark.
+  \item \textbf{Wednesday:} PDSL compiler v0.1. Lark grammar to AST to
+    codegen to compiler, 28 tests.
+  \item \textbf{Literature pass:} added Feng 2018, Saltelli 2019, Chopin
+    and Papaspiliopoulos 2020, Naesseth 2019, FDA 2019.
+  \item \textbf{Repo hygiene:} moved generated PNGs into
+    \texttt{outputs/figures/}, fixed a CI break (missing \texttt{lark}
+    dependency), wrote \texttt{check\_ci.sh}.
+  \item \textbf{Saturday:} 3 cross-discipline examples proving kernel
+    domain-agnosticism (option pricer, ED queue, clinical trial).
+  \item \texttt{docs/study/study\_guide.md} created as a permanent
+    running study guide.
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item Honest profiling over claimed wins. The DP session found
+    inv\_RT precomputation gave no real speedup and said so directly.
+  \item Kernel domain-agnosticism validated, not assumed. Three Week 4
+    examples needed zero kernel changes, only new \texttt{Model}
+    subclasses.
+  \item CI treated as a first-class deliverable. The \texttt{lark}
+    dependency break was caught and fixed same-session.
+  \item Test discipline held under example-code growth. Even demo
+    scripts got real test suites (34 tests total).
+\end{enumerate}
+
+\section*{What was harder than expected}
+\begin{enumerate}[leftmargin=*]
+  \item PDSL parser debugging. Unary minus inside function calls
+    required several grammar iterations.
+  \item Repo hygiene delayed feature work. PNG reorganisation and the
+    resulting CI break took real Week 4 time.
+  \item Terminal and heredoc fragility. Shell history expansion and
+    long heredocs breaking mid-stream cost debugging cycles.
+\end{enumerate}
+
+\section*{Carry-forward risks for Month 2}
+\begin{itemize}[leftmargin=*]
+  \item No FastAPI or pybind11 yet. The kernel is pure-Python plus a
+    separate C++ binary.
+  \item Particle filter is unbuilt. \texttt{ProvenanceTracker} gives
+    causal post-hoc analysis but no online inference yet.
+  \item PDSL v0.1 has no control flow. Current grammar supports linear
+    drift/diffusion declarations only.
+\end{itemize}
+
+\end{document}

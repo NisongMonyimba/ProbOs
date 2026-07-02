@@ -193,3 +193,156 @@ class TestEDQueueModel:
         final_Q = result.trajectories[:, -1, 0]
         assert np.all(final_Q >= 0.0)
         assert np.mean(final_Q) < 50.0, "Queue length exploded -- check model"
+
+
+# ---------------------------------------------------------------------------
+# TestClinicalTrialModel
+# ---------------------------------------------------------------------------
+
+from python.examples.week4_clinical_trial import (  # noqa: E402
+    ClinicalTrialModel, build_clinical_trial_priors,
+)
+
+
+class TestClinicalTrialModel:
+
+    def test_state_dim_is_4(self) -> None:
+        model = ClinicalTrialModel()
+        assert model.state_dim == 4
+
+    def test_param_dim_is_2(self) -> None:
+        model = ClinicalTrialModel()
+        assert model.param_dim == 2
+
+    def test_param_names(self) -> None:
+        model = ClinicalTrialModel()
+        assert model.param_names() == [
+            "p_treatment_true", "p_control_true",
+        ]
+
+    def test_initial_state_all_zero(self) -> None:
+        model = ClinicalTrialModel()
+        np.testing.assert_allclose(
+            model.initial_state(), [0.0, 0.0, 0.0, 0.0]
+        )
+
+    def test_forward_batch_shape(self) -> None:
+        model  = ClinicalTrialModel()
+        N      = 50
+        state  = np.tile(model.initial_state(), (N, 1))
+        params = np.column_stack([
+            np.full(N, 0.45), np.full(N, 0.30),
+        ])
+        new_state = model.forward_batch(state, params, dt=1.0)
+        assert new_state.shape == (N, 4)
+
+    def test_forward_batch_enrolls_exactly_one_patient(self) -> None:
+        """
+        Each forward_batch call must increase total enrollment
+        (n_treatment + n_control) by exactly 1 per particle.
+        """
+        model  = ClinicalTrialModel()
+        N      = 100
+        state  = np.tile(model.initial_state(), (N, 1))
+        params = np.column_stack([
+            np.full(N, 0.45), np.full(N, 0.30),
+        ])
+        new_state = model.forward_batch(state, params, dt=1.0)
+        total_before = state[:, 0] + state[:, 2]
+        total_after  = new_state[:, 0] + new_state[:, 2]
+        np.testing.assert_allclose(total_after - total_before, 1.0)
+
+    def test_forward_batch_successes_never_exceed_enrollment(self) -> None:
+        """s_treat <= n_treat and s_ctrl <= n_ctrl must always hold."""
+        model  = ClinicalTrialModel()
+        N      = 100
+        state  = np.tile(model.initial_state(), (N, 1))
+        params = np.column_stack([
+            np.full(N, 0.45), np.full(N, 0.30),
+        ])
+        for _ in range(50):
+            state = model.forward_batch(state, params, dt=1.0)
+            assert np.all(state[:, 1] <= state[:, 0])  # s_treat <= n_treat
+            assert np.all(state[:, 3] <= state[:, 2])  # s_ctrl <= n_ctrl
+
+    def test_randomisation_ratio_roughly_balanced(self) -> None:
+        """
+        With randomisation_ratio=0.5 and many patients, n_treatment and
+        n_control should end up roughly equal (within statistical noise).
+        """
+        model  = ClinicalTrialModel(randomisation_ratio=0.5)
+        N      = 500
+        state  = np.tile(model.initial_state(), (N, 1))
+        params = np.column_stack([
+            np.full(N, 0.45), np.full(N, 0.30),
+        ])
+        for _ in range(200):
+            state = model.forward_batch(state, params, dt=1.0)
+        mean_n_treat = np.mean(state[:, 0])
+        mean_n_ctrl  = np.mean(state[:, 2])
+        # Both should be close to 100 (half of 200 patients)
+        assert 80.0 < mean_n_treat < 120.0
+        assert 80.0 < mean_n_ctrl < 120.0
+
+    def test_posterior_prob_returns_values_in_unit_interval(self) -> None:
+        s_treat = np.array([45.0, 10.0])
+        n_treat = np.array([100.0, 100.0])
+        s_ctrl  = np.array([30.0, 10.0])
+        n_ctrl  = np.array([100.0, 100.0])
+        probs = ClinicalTrialModel.posterior_prob_treatment_better(
+            s_treat, n_treat, s_ctrl, n_ctrl, n_mc_samples=500
+        )
+        assert np.all(probs >= 0.0)
+        assert np.all(probs <= 1.0)
+
+    def test_posterior_prob_high_when_treatment_clearly_better(self) -> None:
+        """
+        45/100 vs 10/100 is a large, clear effect -- posterior probability
+        treatment is better should be very close to 1.0.
+        """
+        s_treat = np.array([45.0])
+        n_treat = np.array([100.0])
+        s_ctrl  = np.array([10.0])
+        n_ctrl  = np.array([100.0])
+        probs = ClinicalTrialModel.posterior_prob_treatment_better(
+            s_treat, n_treat, s_ctrl, n_ctrl, n_mc_samples=5000
+        )
+        assert probs[0] > 0.99
+
+    def test_posterior_prob_near_half_when_arms_identical(self) -> None:
+        """Identical observed rates -> posterior prob should be near 0.5."""
+        s_treat = np.array([30.0])
+        n_treat = np.array([100.0])
+        s_ctrl  = np.array([30.0])
+        n_ctrl  = np.array([100.0])
+        probs = ClinicalTrialModel.posterior_prob_treatment_better(
+            s_treat, n_treat, s_ctrl, n_ctrl, n_mc_samples=5000
+        )
+        assert 0.3 < probs[0] < 0.7
+
+    def test_build_clinical_trial_priors_returns_two(self) -> None:
+        priors = build_clinical_trial_priors()
+        assert len(priors) == 2
+
+    def test_mc_simulation_produces_sane_trial_outcomes(self) -> None:
+        """
+        End-to-end smoke test: run a short MC simulation and check the
+        resulting trial states are internally consistent.
+        """
+        model  = ClinicalTrialModel()
+        priors = build_clinical_trial_priors()
+        engine = MonteCarloEngine(
+            model, priors, N=200, n_steps=50, dt=1.0, seed=42
+        )
+        result = engine.run()
+        final_n_treat = result.trajectories[:, -1, 0]
+        final_s_treat = result.trajectories[:, -1, 1]
+        final_n_ctrl  = result.trajectories[:, -1, 2]
+        final_s_ctrl  = result.trajectories[:, -1, 3]
+
+        assert np.all(final_s_treat <= final_n_treat)
+        assert np.all(final_s_ctrl <= final_n_ctrl)
+        # Total enrolled across both arms should equal n_steps (50)
+        np.testing.assert_allclose(
+            final_n_treat + final_n_ctrl, 50.0
+        )

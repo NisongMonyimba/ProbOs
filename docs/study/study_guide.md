@@ -60,6 +60,10 @@ reading explains.
 | `python/examples/week4_option_pricer.py` | Hull, *Options, Futures, and Other Derivatives* | Ch 13-15 | Black-Scholes, GBM, European call payoff |
 | `python/examples/week4_option_pricer.py` | Glasserman, *Monte Carlo Methods in Financial Engineering* | Ch 1-3 | MC for options, exact GBM simulation (not Euler) |
 | `python/examples/week4_option_pricer.py` | Shreve, *Stochastic Calculus for Finance II* | Ch 4 | Why GBM has a closed-form solution (Itô's lemma applied to log(S)) |
+| `python/examples/week4_ed_queue.py` | Kleinrock, *Queueing Systems Vol. 1* | Ch 2-3 | M/M/1 queue theory, steady-state formulas (rho, L, W) |
+| `python/examples/week4_clinical_trial.py` | Berry (2011), *J. Clinical Oncology* | Full paper | Adaptive Bayesian trial design fundamentals |
+| `python/examples/week4_clinical_trial.py` | FDA (2019), *Adaptive Designs for Clinical Trials of Drugs and Biologics* | Section IV-V | Current regulatory standard for simulation-based trial design evidence |
+| `python/examples/week4_clinical_trial.py` | Gelman et al., *Bayesian Data Analysis* (3rd ed.) | Ch 2-3 | Beta-Binomial conjugacy, posterior updating |
 
 ---
 

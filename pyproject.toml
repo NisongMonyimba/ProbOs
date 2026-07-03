@@ -69,6 +69,8 @@ dev = [
     "matplotlib>=3.8",
     "lark>=1.1",
     "pybind11>=2.12",
+    "bandit>=1.7",
+    "pip-audit>=2.7",
 ]
 sim = [
     "SALib>=1.5",
@@ -135,11 +137,11 @@ markers = [
 # coverage configuration — measures test coverage
 # =============================================================================
 [tool.coverage.run]
-source = ["python/src"]
+source = ["python/src", "python/pdsl"]
 branch = true     # measure branch coverage (if/else both taken?)
 
 [tool.coverage.report]
-fail_under   = 70       # fail CI if coverage drops below 70%
+fail_under   = 85       # per docs/standards/quality_standards.md Section 2
 show_missing = true     # show which lines are NOT covered
 
 [tool.setuptools.packages.find]

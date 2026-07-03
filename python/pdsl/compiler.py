@@ -75,8 +75,15 @@ def compile_pdsl(
     python_src = generate(program)
 
     # Step 4: execute generated code in a fresh namespace
+    #
+    # SECURITY BOUNDARY (verified, see docs/standards/quality_standards.md
+    # Section 8): python_src here comes EXCLUSIVELY from generate(program)
+    # at Step 3 above -- our own AST-to-Python codegen function. It is
+    # never the raw PDSL `source` string or any other unvalidated input
+    # passed through unmodified. Re-verify this boundary explicitly
+    # whenever compile_pdsl() or generate() changes.
     namespace: dict[str, object] = {}
-    exec(python_src, namespace)  # noqa: S102
+    exec(python_src, namespace)  # nosec B102 -- see security boundary note above  # noqa: S102
 
     # Step 5: extract model instance, priors, run config
     class_name    = f"PDSL_{target.name.capitalize()}Model"

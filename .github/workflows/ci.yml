@@ -5,20 +5,18 @@
 # WHAT THIS DOES:
 #   Every push or pull request to main triggers:
 #   1. Fresh Ubuntu 22.04 VM
-#   2. Python 3.11 + C++20 + CMake + Ninja + Google Test
-#   3. 202 Python tests (pytest)
-#   4. mypy strict type checking
-#   5. ruff lint
-#   6. All Week 2 + Week 3 examples
+#   2. Python 3.11 + C++20 + CMake + Ninja + Google Test + pybind11
+#   3. 322 Python tests (pytest) including property-based tests
+#   4. mypy strict type checking (full python/ tree)
+#   5. ruff lint (full python/ tree)
+#   6. All Week 2-4 examples
 #   7. 13 C++ tests
 #   8. LaTeX manuscript compilation (13 pages)
-#   9. Full integration (RunTests.sh equivalent)
+#   9. Full integration (RunTests.sh equivalent, includes pybind11 extension)
+#   10. Pre-week quality audit (coverage, hypothesis, bandit, pip-audit)
 #
 # WHERE TO SEE RESULTS:
 #   https://github.com/NisongMonyimba/ProbOs/actions
-#
-# BADGE:
-#   ![CI](https://github.com/NisongMonyimba/ProbOs/actions/workflows/ci.yml/badge.svg)
 # =============================================================================
 
 name: ProbOS CI
@@ -36,7 +34,7 @@ jobs:
   # JOB 1: Python tests + static analysis
   # ===========================================================================
   python-tests:
-    name: Python Tests (202 pytest + mypy + ruff)
+    name: Python Tests (322 pytest + mypy + ruff)
     runs-on: ubuntu-22.04
 
     steps:
@@ -62,28 +60,32 @@ jobs:
           pip install --upgrade pip
           pip install -e ".[dev]"
           pip install SALib matplotlib scipy pybind11
+
       - name: Install C++ build tools (for probos_cpp extension)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libgmock-dev
+
       - name: Build probos_cpp pybind11 extension
         run: |
           PYBIND11_CMAKE_DIR=$(python -m pybind11 --cmakedir)
           cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python) -Dpybind11_DIR="$PYBIND11_CMAKE_DIR" -Wno-dev
           cmake --build cpp/build
           ls -la cpp/build/probos_cpp*.so
-      - name: Run pytest (308 tests, including C++ bindings)
+
+      - name: Run pytest (322 tests, including C++ bindings)
         run: |
           python -m pytest python/tests/ -v --tb=short --no-header
           echo "pytest exit: $?"
+
       - name: mypy strict type check
         run: |
           python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           echo "mypy exit: $?"
+
       - name: ruff lint
         run: |
           python -m ruff check python/src/ python/pdsl/ python/tests/ python/examples/ --select E,F,W
-          echo "ruff exit: $?"
           echo "ruff exit: $?"
 
       - name: Run Week 2 examples
@@ -95,6 +97,12 @@ jobs:
           python python/examples/week3_mc_battery.py
           python python/examples/week3_clt_convergence.py
           python python/examples/week3_sobol_battery.py
+
+      - name: Run Week 4 examples
+        run: |
+          python python/examples/week4_option_pricer.py
+          python python/examples/week4_ed_queue.py
+          python python/examples/week4_clinical_trial.py
 
       - name: Upload figures
         uses: actions/upload-artifact@v4.6.0
@@ -209,7 +217,7 @@ jobs:
   # JOB 4: Full integration (RunTests.sh equivalent)
   # ===========================================================================
   integration:
-    name: Full Integration (202 Python + 13 C++)
+    name: Full Integration (322 Python + 13 C++)
     runs-on: ubuntu-22.04
     needs: [ python-tests, cpp-tests ]
 
@@ -234,13 +242,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install SALib matplotlib scipy
+          pip install SALib matplotlib scipy pybind11
 
-      - name: Build C++
-        working-directory: cpp
+      - name: Build C++ (including probos_cpp extension)
         run: |
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -Wno-dev
-          cmake --build build
+          PYBIND11_CMAKE_DIR=$(python -m pybind11 --cmakedir)
+          cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python) -Dpybind11_DIR="$PYBIND11_CMAKE_DIR" -Wno-dev
+          cmake --build cpp/build
 
       - name: Run all Python tests
         run: python -m pytest python/tests/ -q --tb=short --no-header
@@ -249,18 +257,10 @@ jobs:
         working-directory: cpp
         run: ./build/test_normal --gtest_brief=1
 
-      - name: mypy + ruff
+      - name: mypy + ruff (full tree)
         run: |
-          python -m mypy \
-            python/src/distributions.py \
-            python/src/state.py \
-            python/src/battery_model.py \
-            python/src/monte_carlo.py \
-            python/src/sensitivity.py \
-            python/src/provenance.py \
-            --strict --ignore-missing-imports \
-            --explicit-package-bases --no-error-summary
-          python -m ruff check python/src/ python/tests/ --select E,F,W
+          python -m mypy python/src/ python/pdsl/ python/examples/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m ruff check python/ --select E,F,W
 
       - name: Run all examples
         run: |
@@ -268,16 +268,57 @@ jobs:
           python python/examples/week3_mc_battery.py
           python python/examples/week3_clt_convergence.py
           python python/examples/week3_sobol_battery.py
+          python python/examples/week4_option_pricer.py
+          python python/examples/week4_ed_queue.py
+          python python/examples/week4_clinical_trial.py
 
       - name: Print summary
         run: |
           echo "============================================================"
           echo "  PROBOS CI -- ALL JOBS PASSED"
-          echo "  Week 1 : 44 Python tests (distributions)"
-          echo "  Week 2 : 67 Python tests (state + battery model)"
-          echo "  Week 3 : 91 Python tests (MC + Sobol + provenance)"
-          echo "  Total  : 202 Python + 13 C++ = 215 tests"
-          echo "  mypy   : 0 errors"
-          echo "  ruff   : 0 warnings"
-          echo "  Paper  : 13 pages"
+          echo "  Month 1 : Distribution, Model, MC, Sobol, Provenance, PDSL"
+          echo "  Month 2 : ParticleFilter, pybind11 bindings"
+          echo "  Total   : 322 Python + 13 C++ tests"
+          echo "  mypy    : 0 errors (full python/ tree)"
+          echo "  ruff    : 0 warnings (full python/ tree)"
+          echo "  Coverage: >=85% on python/src + python/pdsl"
           echo "============================================================"
+
+  # ===========================================================================
+  # JOB 5: Pre-week quality audit
+  # ===========================================================================
+  quality-audit:
+    name: Pre-Week Quality Audit (coverage, hypothesis, bandit, pip-audit)
+    runs-on: ubuntu-22.04
+    needs: [ python-tests, cpp-tests ]
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Create venv and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ".[dev]"
+          .venv/bin/pip install SALib matplotlib scipy pybind11
+
+      - name: Install C++ build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libgmock-dev
+
+      - name: Build C++ (including probos_cpp extension, for full audit coverage)
+        run: |
+          PYBIND11_CMAKE_DIR=$(.venv/bin/python -m pybind11 --cmakedir)
+          cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(pwd)/.venv/bin/python -Dpybind11_DIR="$PYBIND11_CMAKE_DIR" -Wno-dev
+          cmake --build cpp/build
+
+      - name: Run pre_week_audit.sh
+        run: bash pre_week_audit.sh

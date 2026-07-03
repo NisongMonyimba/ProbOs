@@ -219,7 +219,13 @@ def print_prior_summary() -> None:
         try:
             mean = dist.mean()
             std  = float(np.sqrt(dist.variance()))
-        except Exception:
+        except (NotImplementedError, AttributeError, ValueError):
+            # Some Distribution subclasses may not implement mean()/
+            # variance() (e.g. Empirical without enough data), or a
+            # distribution parameterisation may make variance()
+            # momentarily undefined. This only affects the printed
+            # summary table below, never any actual computation --
+            # fall back to the nominal value for display purposes.
             mean = nominal
             std  = float("nan")
         print(f"  {i:>2}  {name:<12}  {dist_type:<12}  {mean:>14.4g}  {std:>12.4g}")

@@ -116,3 +116,11 @@ reading explains.
 | `cpp/bindings/probos_bindings.cpp` | pybind11 documentation, *Basics* + *NumPy* chapters | https://pybind11.readthedocs.io/en/stable/basics.html, .../advanced/pycpp/numpy.html | `py::array_t<double>`, `py::class_`, `def_property_readonly`, capsule-based ownership for zero-copy NumPy array wrapping |
 | `cpp/CMakeLists.txt` (pybind11_add_module) | pybind11 CMake integration guide | https://pybind11.readthedocs.io/en/stable/compiling.html#building-with-cmake | `find_package(pybind11)`, `pybind11_add_module()`, linking OpenMP into a Python extension module |
 | `python/tests/test_cpp_bindings.py` (cross-validation discipline) | Month 1 Week 2 -- validating BatteryModel2Cell against Kim 2007 ARC data | -- | Same "validate against a known reference before trusting the port" discipline applied to a Python-vs-C++ port instead of a code-vs-paper comparison |
+
+### Pre-Week 7 hardening -- Quality standards + property-based testing
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/tests/test_distributions_properties.py` | Hypothesis documentation, *What is Property-Based Testing?* + *Writing Strategies* | https://hypothesis.readthedocs.io/en/latest/quickstart.html | `@given`, `st.floats/integers`, `@settings(max_examples=...)`, shrinking behaviour on failure |
+| `docs/standards/quality_standards.md` | OWASP Python Security guidance (bandit's rule basis) | B102 (exec), general SAST principles | Why `exec()` on generated-not-raw-input is an accepted, documented risk rather than a finding to silence blindly |
+| `pre_week_audit.sh` (pip-audit section) | pip-audit documentation | https://pypi.org/project/pip-audit/ | Dependency CVE scanning as a standing pre-week check, not a one-off |

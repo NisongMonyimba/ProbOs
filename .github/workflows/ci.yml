@@ -40,15 +40,15 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Cache pip packages
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
@@ -105,7 +105,7 @@ jobs:
           python python/examples/week4_clinical_trial.py
 
       - name: Upload figures
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: example-figures
@@ -126,7 +126,7 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: Install C++ dependencies
         run: |
@@ -167,7 +167,7 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: Install LaTeX
         run: |
@@ -179,7 +179,7 @@ jobs:
             texlive-fonts-recommended
 
       - name: Set up Python for figures
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -207,7 +207,7 @@ jobs:
           ls -lh main.pdf
 
       - name: Upload manuscript PDF
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v6
         with:
           name: manuscript-pdf
           path: manuscript/main.pdf
@@ -224,10 +224,10 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -295,10 +295,10 @@ jobs:
     steps:
 
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.3.0
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 

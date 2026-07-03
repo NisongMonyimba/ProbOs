@@ -126,11 +126,18 @@ there is a service) rather than running no-ops.
       boundary explicitly whenever `compiler.py` changes
 - [ ] `pip-audit` dependency CVE scan (also listed under Packaging,
       repeated here because it is a security check first)
-- [ ] Once Week 7's FastAPI service exists: no endpoint accepts
-      unbounded N/n_steps without a sane upper limit (resource
-      exhaustion), input validated via Pydantic before reaching kernel
-      code (DEFERRED until Week 7 -- listed here so it is not
-      forgotten when that week starts)
+- [x] No endpoint accepts unbounded N/n_steps without a sane upper
+      limit (resource exhaustion) -- enforced via Pydantic
+      Field(ge=..., le=...) constraints in python/server/schemas.py,
+      verified by test_server.py::test_simulate_rejects_oversized_N
+- [x] Input validated via Pydantic BEFORE reaching kernel code -- all
+      four python/server/schemas.py request models enforce bounds at
+      the HTTP boundary
+- [x] Kernel-raised ValueError (e.g. SobolSensitivity's non-power-of-2
+      N_saltelli check) surfaces as HTTP 422, not an unhandled 500 --
+      verified by test_server.py::test_sensitivity_rejects_non_power_of_2_N_saltelli
+- [x] Unknown model_name surfaces as HTTP 404, not a 500 -- verified
+      by test_server.py::test_simulate_rejects_unknown_model
 
 ## 9. CI parity
 
@@ -181,8 +188,10 @@ become relevant, not before:
 
 - Container/Docker image security scanning -- once ProbOS is
   containerised
-- API load/stress testing, rate limiting checks -- once Week 7's
-  FastAPI service exists
+- API load/stress testing, rate limiting -- FastAPI service now
+  exists (Week 7) with basic input-bound validation; load/stress
+  testing and rate limiting itself remain deferred until there is
+  real traffic to test against
 - Authentication/authorization checks -- once any endpoint requires auth
 - Cyclomatic complexity gating -- tracked informationally if useful,
   not blocking; the checks above already catch most real bugs more

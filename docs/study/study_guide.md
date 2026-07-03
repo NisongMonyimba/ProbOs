@@ -124,3 +124,11 @@ reading explains.
 | `python/tests/test_distributions_properties.py` | Hypothesis documentation, *What is Property-Based Testing?* + *Writing Strategies* | https://hypothesis.readthedocs.io/en/latest/quickstart.html | `@given`, `st.floats/integers`, `@settings(max_examples=...)`, shrinking behaviour on failure |
 | `docs/standards/quality_standards.md` | OWASP Python Security guidance (bandit's rule basis) | B102 (exec), general SAST principles | Why `exec()` on generated-not-raw-input is an accepted, documented risk rather than a finding to silence blindly |
 | `pre_week_audit.sh` (pip-audit section) | pip-audit documentation | https://pypi.org/project/pip-audit/ | Dependency CVE scanning as a standing pre-week check, not a one-off |
+
+### Week 7 -- FastAPI Service Layer
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/server/main.py` | FastAPI documentation, *Tutorial* + *Path Operations* | https://fastapi.tiangolo.com/tutorial/ | Route definitions, response_model, dependency-free endpoint design |
+| `python/server/schemas.py` | Pydantic v2 documentation, *Fields* | https://docs.pydantic.dev/latest/concepts/fields/ | `Field(ge=..., le=...)` for resource-exhaustion bounds at the HTTP boundary, per quality_standards.md Section 8 |
+| `python/tests/test_server.py` | FastAPI documentation, *Testing* | https://fastapi.tiangolo.com/tutorial/testing/ | `TestClient` in-process testing pattern; also validated live via a real uvicorn process as a stronger end-to-end check |

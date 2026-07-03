@@ -59,7 +59,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install SALib matplotlib scipy pybind11
+          pip install SALib matplotlib scipy pybind11 fastapi uvicorn httpx
 
       - name: Install C++ build tools (for probos_cpp extension)
         run: |
@@ -242,7 +242,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install SALib matplotlib scipy pybind11
+          pip install SALib matplotlib scipy pybind11 fastapi uvicorn httpx
 
       - name: Build C++ (including probos_cpp extension)
         run: |
@@ -307,7 +307,7 @@ jobs:
           python -m venv .venv
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -e ".[dev]"
-          .venv/bin/pip install SALib matplotlib scipy pybind11
+          .venv/bin/pip install SALib matplotlib scipy pybind11 fastapi uvicorn httpx
 
       - name: Install C++ build tools
         run: |

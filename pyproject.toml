@@ -68,6 +68,7 @@ dev = [
     "ruff>=0.3",
     "matplotlib>=3.8",
     "lark>=1.1",
+    "pybind11>=2.12",
 ]
 sim = [
     "SALib>=1.5",

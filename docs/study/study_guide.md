@@ -108,3 +108,11 @@ reading explains.
 | `python/src/particle_filter.py` | Chopin & Papaspiliopoulos (2020), *An Introduction to Sequential Monte Carlo* | Ch 8-10 | Systematic resampling scheme, ESS-triggered resampling threshold (0.5) |
 | `python/src/particle_filter.py` (log-space weights) | Distribution.log_pdf() rationale (Month 1 Week 1) | -- | Same underflow-avoidance discipline applied to particle weights across many timesteps |
 | `python/tests/test_particle_filter.py` | Sarkka (2013), *Bayesian Filtering and Smoothing* | Ch 4 | Closed-form 1D Kalman filter recursion, used as ground truth to validate the particle filter numerically |
+
+### Week 6 -- pybind11: C++ Kernel Enters the Python Package
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `cpp/bindings/probos_bindings.cpp` | pybind11 documentation, *Basics* + *NumPy* chapters | https://pybind11.readthedocs.io/en/stable/basics.html, .../advanced/pycpp/numpy.html | `py::array_t<double>`, `py::class_`, `def_property_readonly`, capsule-based ownership for zero-copy NumPy array wrapping |
+| `cpp/CMakeLists.txt` (pybind11_add_module) | pybind11 CMake integration guide | https://pybind11.readthedocs.io/en/stable/compiling.html#building-with-cmake | `find_package(pybind11)`, `pybind11_add_module()`, linking OpenMP into a Python extension module |
+| `python/tests/test_cpp_bindings.py` (cross-validation discipline) | Month 1 Week 2 -- validating BatteryModel2Cell against Kim 2007 ARC data | -- | Same "validate against a known reference before trusting the port" discipline applied to a Python-vs-C++ port instead of a code-vs-paper comparison |

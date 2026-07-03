@@ -71,6 +71,22 @@ if(OpenMP_CXX_FOUND)
 endif()
 
 # -----------------------------------------------------------------------
+# pybind11 bindings (Month 2 Week 6)
+# -----------------------------------------------------------------------
+find_package(pybind11 QUIET)
+if(pybind11_FOUND)
+    message(STATUS "pybind11 found -- building probos_cpp Python extension")
+    pybind11_add_module(probos_cpp bindings/probos_bindings.cpp)
+    target_link_libraries(probos_cpp PRIVATE probos_mc_omp)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(probos_cpp PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+else()
+    message(WARNING "pybind11 not found -- skipping probos_cpp extension. "
+                     "Install with: pip install pybind11")
+endif()
+
+# -----------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------
 find_package(GTest QUIET)

@@ -61,31 +61,29 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install SALib matplotlib scipy
-
-      - name: Run pytest (202 tests)
+          pip install SALib matplotlib scipy pybind11
+      - name: Install C++ build tools (for probos_cpp extension)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libgmock-dev
+      - name: Build probos_cpp pybind11 extension
+        run: |
+          PYBIND11_CMAKE_DIR=$(python -m pybind11 --cmakedir)
+          cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python) -Dpybind11_DIR="$PYBIND11_CMAKE_DIR" -Wno-dev
+          cmake --build cpp/build
+          ls -la cpp/build/probos_cpp*.so
+      - name: Run pytest (308 tests, including C++ bindings)
         run: |
           python -m pytest python/tests/ -v --tb=short --no-header
           echo "pytest exit: $?"
-
       - name: mypy strict type check
         run: |
-          python -m mypy \
-            python/src/distributions.py \
-            python/src/state.py \
-            python/src/battery_model.py \
-            python/src/monte_carlo.py \
-            python/src/sensitivity.py \
-            python/src/provenance.py \
-            --strict \
-            --ignore-missing-imports \
-            --explicit-package-bases \
-            --no-error-summary
+          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           echo "mypy exit: $?"
-
       - name: ruff lint
         run: |
-          python -m ruff check python/src/ python/tests/ --select E,F,W
+          python -m ruff check python/src/ python/pdsl/ python/tests/ python/examples/ --select E,F,W
+          echo "ruff exit: $?"
           echo "ruff exit: $?"
 
       - name: Run Week 2 examples

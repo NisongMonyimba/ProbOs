@@ -21,11 +21,6 @@ from __future__ import annotations
 
 import numpy as np
 
-# Import the Model ABC from our own project
-# sys.path is already set up correctly when running from the project root
-import os
-import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from python.src.state import FloatArray, Model
 

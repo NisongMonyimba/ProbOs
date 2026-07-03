@@ -192,10 +192,22 @@ class TestSobolPhysics:
         )
 
     def test_multiple_params_have_nonzero_S1(
-        self, small_result: SobolResult
+        self, model: BatteryModel2Cell, priors: list[Distribution]
     ) -> None:
-        """At least 2 parameters should have positive S1 for T1."""
-        positive = int(np.sum(small_result.S1[:, 0] > 0.01))
+        """
+        At least 2 parameters should have positive S1 for T1.
+
+        Uses a larger N_saltelli than the shared small_result fixture
+        (256 instead of 64) because this specific claim -- that more
+        than one parameter matters, not just the single dominant one --
+        is genuinely noisy at N_saltelli=64 with only 3 steps. At 256
+        it is stable across seeds while still running in well under a
+        second, so it is not worth loosening the assertion instead.
+        """
+        result = SobolSensitivity(
+            model, priors, N_saltelli=256, n_steps=3, seed=42
+        ).run()
+        positive = int(np.sum(result.S1[:, 0] > 0.01))
         assert positive >= 2, (
             f"Only {positive} parameters have S1 > 0.01 for T1"
         )

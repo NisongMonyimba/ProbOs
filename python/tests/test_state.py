@@ -10,12 +10,6 @@ of a trivial 2-state linear ODE:
 so we can compute the expected output analytically.
 """
 
-import os
-import sys
-
-# Add the project root to Python path so we can import python/src/
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -97,12 +91,16 @@ class TestModelABC:
             # state_dim is missing -- forgot to implement it
             @property
             def param_dim(self) -> int: return 1
-            def param_names(self): return ["p"]
-            def initial_state(self): return np.array([0.0])
-            def forward_batch(self, s, p, dt): return s
+            def param_names(self) -> list[str]: return ["p"]
+            def initial_state(self) -> FloatArray:
+                return np.array([0.0])
+            def forward_batch(
+                self, s: FloatArray, p: FloatArray, dt: float
+            ) -> FloatArray:
+                return s
 
         with pytest.raises(TypeError):
-            BrokenModel()
+            BrokenModel()  # type: ignore[abstract]
 
     def test_subclass_missing_forward_batch_is_rejected(self) -> None:
         """
@@ -113,12 +111,13 @@ class TestModelABC:
             def state_dim(self) -> int: return 1
             @property
             def param_dim(self) -> int: return 1
-            def param_names(self): return ["p"]
-            def initial_state(self): return np.array([0.0])
+            def param_names(self) -> list[str]: return ["p"]
+            def initial_state(self) -> FloatArray:
+                return np.array([0.0])
             # forward_batch is missing
 
         with pytest.raises(TypeError):
-            BrokenModel()
+            BrokenModel()  # type: ignore[abstract]
 
     def test_complete_subclass_can_be_instantiated(self) -> None:
         """

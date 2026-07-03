@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 2, Week 7\\FastAPI Service Layer}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 7 goal}
+Expose the kernel over HTTP so it is usable outside a Python REPL --
+the first step toward external/enterprise-facing usage referenced in
+\texttt{docs/monthly\_plans/overall/main.tex}.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- FastAPI scaffold}
+\begin{itemize}[leftmargin=*]
+  \item Set up \texttt{python/server/} package structure
+  \item Basic FastAPI app, health check endpoint
+  \item Pydantic schemas mirroring \texttt{Model}/\texttt{Distribution}
+    constructor signatures
+\end{itemize}
+
+\subsection*{Day 2 -- /simulate endpoint}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{POST /simulate}: accept model name, priors, $N$,
+    \texttt{n\_steps}; run \texttt{MonteCarloEngine}; return
+    percentiles + convergence summary as JSON
+  \item Input validation: sane upper bounds on $N$/\texttt{n\_steps} to
+    prevent resource exhaustion (per
+    \texttt{docs/standards/quality\_standards.md} Section 8, deferred
+    item now becoming relevant)
+\end{itemize}
+
+\subsection*{Day 3 -- /sensitivity endpoint}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{POST /sensitivity}: run \texttt{SobolSensitivity},
+    return $S_1$/$S_T$ indices as JSON
+\end{itemize}
+
+\subsection*{Day 4 -- /filter endpoint}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{POST /filter}: run \texttt{ParticleFilter} against
+    posted observation data, return posterior mean/std trajectory
+\end{itemize}
+
+\subsection*{Day 5 -- Integration tests}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_server.py}: FastAPI
+    \texttt{TestClient}-based tests for all endpoints
+  \item Confirm JSON responses match direct Python kernel calls
+    numerically
+\end{itemize}
+
+\subsection*{Day 6 -- Pre-week audit + CI integration}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{pre\_week\_audit.sh} before considering the week
+    complete
+  \item Extend CI to install and test the server layer
+  \item Extend \texttt{docs/standards/quality\_standards.md} Section 8
+    with the now-relevant API/service checks (previously listed as
+    deferred)
+\end{itemize}
+
+\subsection*{Day 7 -- Study guide + documentation}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{docs/study/study\_guide.md} entries: FastAPI
+    documentation, Pydantic validation patterns
+  \item Week 7 retrospective appended to this document
+\end{itemize}
+
+\section*{Exit criteria}
+\texttt{curl -X POST localhost:8000/simulate ...} returns valid JSON
+matching a direct Python call to the same \texttt{MonteCarloEngine},
+for all three endpoints (\texttt{/simulate}, \texttt{/sensitivity},
+\texttt{/filter}).
+
+\end{document}

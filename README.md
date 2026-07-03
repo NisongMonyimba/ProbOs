@@ -4,18 +4,18 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![C++](https://img.shields.io/badge/C++-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-202%20Python%20%2B%2013%20C%2B%2B-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-341%20Python%20%2B%2013%20C%2B%2B-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Week%203-Complete-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Month%202%20Week%207-Complete-blue?style=for-the-badge)
 
 **Uncertainty is a first-class data type.**
 
-*A probabilistic operating system kernel built one week at a time.*
+*A probabilistic execution runtime built one week at a time.*
 
 [What is ProbOS?](#what-is-probos) •
 [Quick Start](#quick-start) •
 [Architecture](#architecture) •
-[Week 3 Results](#week-3-results) •
+[Current Capabilities](#current-capabilities) •
 [How to Run](#how-to-run) •
 [Roadmap](#roadmap)
 
@@ -34,10 +34,10 @@ The analogy with a classical operating system is precise:
 |-------|--------|
 | Process | Stochastic program (distribution over trajectories) |
 | Memory address | Random variable node in the execution graph |
-| Scheduler | Inference engine (particle filter / HMC) |
+| Scheduler | `MonteCarloEngine` (forward) / `ParticleFilter` (inference) |
 | System call | `sample`, `observe`, `condition` |
 | File | Probability distribution |
-| Kernel | `StochasticSystem` C++20 concept + Monte Carlo engine |
+| Kernel | `Distribution`/`Model` ABCs + C++/OpenMP engine (pybind11-bound) |
 
 ### Why does this matter?
 
@@ -59,43 +59,45 @@ That tail risk is completely invisible to deterministic models.
 | g++ | 11 | `sudo apt-get install build-essential` |
 | CMake | 3.22 | `sudo apt-get install cmake` |
 | Ninja | any | `sudo apt-get install ninja-build` |
-| Google Test | any | `sudo apt-get install libgtest-dev` |
+| Google Test | any | `sudo apt-get install libgtest-dev libgmock-dev` |
 
 ### Clone and run (Ubuntu / WSL)
 
 ```bash
 git clone https://github.com/NisongMonyimba/ProbOs
 cd ProbOs
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]' && pip install SALib matplotlib scipy
-bash RunTests.sh   # 202 Python + 13 C++ tests
-bash RunAll.sh     # all examples end-to-end
-```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+pip install SALib matplotlib scipy pybind11 fastapi uvicorn httpx
 
-### Run from Windows (PowerShell)
+# Build the C++ kernel + pybind11 extension
+PYBIND11_CMAKE_DIR=$(python -m pybind11 --cmakedir)
+cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DPYTHON_EXECUTABLE=$(which python) -Dpybind11_DIR="$PYBIND11_CMAKE_DIR" -Wno-dev
+cmake --build cpp/build
 
-```
-1. Open File Explorer
-2. In the address bar type:
-   \\wsl.localhost\Ubuntu-22.04\home\nison\ProbOs
-3. Right-click RunProbOS.ps1
-4. Click: Run with PowerShell
-5. Choose: [1] RunAll.sh
+# Run everything
+python -m pytest python/tests/   # 341 Python tests
+./cpp/build/test_normal          # 13 C++ tests
+bash pre_week_audit.sh           # full quality audit (coverage, security, etc.)
 ```
 
 ### Expected output
 
 ```
-Step 1: Check System Requirements     PASS
-Step 2: Python Virtual Environment    PASS
-Step 3: Install Python Dependencies   PASS
-Step 4: Python Tests (44/44)          PASS
-Step 5: Build C++ Code                PASS
-Step 6: C++ Tests (13/13)             PASS
-Step 7: Python Examples               PASS
-Step 8: C++ Demo                      PASS
+341/341 Python tests passing
+13/13   C++ tests passing
+mypy strict: 0 errors (full python/ tree)
+ruff: 0 warnings
+pre_week_audit.sh: 21/21 checks passed
+```
 
-ALL 8 STEPS PASSED
+### Run the FastAPI service
+
+```bash
+uvicorn python.server.main:app --reload
+# open http://localhost:8000/docs for interactive API documentation
 ```
 
 ---
@@ -106,44 +108,37 @@ ALL 8 STEPS PASSED
 
 ```
 +-------------------------------------------------------------+
-|                        USER CODE                            |
-|   Ea = Normal(mu=135080, sigma=5000)                        |
-|   samples = Ea.sample(N=5000, rng=rng)                      |
+|              python/server/  (FastAPI, Week 7)              |
+|   GET  /health        POST /simulate                        |
+|   POST /sensitivity    POST /filter                         |
 +----------------------------+--------------------------------+
                              |
-                             v
-+-------------------------------------------------------------+
-|              PROBOS TYPE SYSTEM  (Week 1)                   |
-|                                                             |
-|   Distribution  (Abstract Base Class)                       |
-|   +-- sample(n, rng)   -> FloatArray                        |
-|   +-- pdf(x)           -> FloatArray                        |
-|   +-- log_pdf(x)       -> FloatArray  [analytical, stable]  |
-|   +-- ppf(u)           -> FloatArray  [inverse CDF]         |
-|                                                             |
-|   Normal | LogNormal | Uniform | Beta | Empirical           |
++----------------------------+--------------------------------+
+|              python/pdsl/  (PDSL compiler, Week 4)           |
+|   grammar.lark -> parser -> ast_nodes -> codegen -> compiler|
++----------------------------+--------------------------------+
+                             |
++----------------------------+--------------------------------+
+|                    python/src/  (Core kernel)                 |
+|                                                               |
+|   Distribution (ABC)       Model (ABC)                       |
+|   +-- Normal, LogNormal,   +-- BatteryModel2Cell              |
+|       Uniform, Beta            (8-state Arrhenius ODE)        |
+|                                                               |
+|   MonteCarloEngine   SobolSensitivity   ProvenanceTracker    |
+|   ParticleFilter (validated against exact Kalman filter)     |
 +----------------------------+--------------------------------+
                              |
              +---------------+---------------+
              v                               v
-+------------------+               +------------------+
-|  Python Layer    |               |   C++ Layer      |
-|  numpy + scipy   |               |  std::mt19937    |
-|  PCG64 RNG       |               |  C++20 standard  |
-|  44 pytest tests |               |  13 Google Tests |
-+------------------+               +------------------+
-```
-
-### Class Hierarchy
-
-```
-                 Distribution (ABC)
-                       |
-       +---------------+---------------+---------------+
-       |               |               |               |
-    Normal         LogNormal        Uniform           Beta       Empirical
-    N(mu,s)        LN(mu,s)         U(a,b)          B(a,b)      KDE(data)
-    All of R        (0,+inf)          [a,b]           [0,1]     [min,max]
++------------------------+       +--------------------------+
+|  Python engines        |       |  cpp/ (C++20 + pybind11) |
+|  numpy + SALib         |       |  BatteryCell             |
+|  341 pytest tests      |       |  MonteCarloEngineOMP      |
+|                        |       |  probos_cpp extension     |
+|                        |       |  7x faster (measured)     |
+|                        |       |  13 Google Tests          |
++------------------------+       +--------------------------+
 ```
 
 ### Repository Structure
@@ -151,47 +146,66 @@ ALL 8 STEPS PASSED
 ```
 ProbOs/
 |
-+-- python/                           Python implementation
-|   +-- src/
-|   |   +-- distributions.py          Distribution ABC + 5 classes (750 lines)
-|   +-- tests/
-|   |   +-- test_distributions.py     44 pytest tests
-|   +-- examples/
-|       +-- week1_coin_flip.py         Law of Large Numbers demo
-|       +-- week1_normal_demo.py       Battery Ea_SEI uncertainty demo
++-- python/
+|   +-- src/                          Core kernel
+|   |   +-- distributions.py          Distribution ABC + 4 classes
+|   |   +-- state.py                  Model ABC
+|   |   +-- battery_model.py          BatteryModel2Cell
+|   |   +-- parameter_priors.py       15 priors (Kim 2007)
+|   |   +-- monte_carlo.py            MonteCarloEngine
+|   |   +-- sensitivity.py            SobolSensitivity
+|   |   +-- provenance.py             ProvenanceTracker
+|   |   +-- particle_filter.py        ParticleFilter (SIR)
+|   +-- pdsl/                         PDSL compiler
+|   |   +-- grammar.lark, parser.py, ast_nodes.py,
+|   |       codegen.py, compiler.py
+|   +-- server/                       FastAPI service layer
+|   |   +-- main.py, schemas.py
+|   +-- examples/                     Cross-discipline demos
+|   |   +-- week2_battery_ode.py, week3_mc_battery.py,
+|   |       week3_clt_convergence.py, week3_sobol_battery.py,
+|   |       week4_option_pricer.py, week4_ed_queue.py,
+|   |       week4_clinical_trial.py
+|   +-- tests/                        341 tests total
 |
-+-- cpp/                              C++ implementation
-|   +-- include/distributions/
-|   |   +-- normal.hpp                Normal class header
-|   +-- src/
-|   |   +-- distributions/normal.cpp  Normal class implementation
-|   |   +-- main.cpp                  C++ demo
-|   +-- tests/
-|       +-- test_normal.cpp            13 Google Test cases
++-- cpp/
+|   +-- include/distributions/normal.hpp
+|   +-- include/kernel/battery_cell.hpp
+|   +-- include/kernel/monte_carlo_omp.hpp
+|   +-- src/distributions/normal.cpp
+|   +-- src/kernel/monte_carlo_omp.cpp
+|   +-- src/kernel/benchmark_omp.cpp
+|   +-- src/main.cpp
+|   +-- bindings/probos_bindings.cpp   pybind11 -> probos_cpp
+|   +-- tests/test_normal.cpp          13 Google Tests
+|   +-- CMakeLists.txt
 |
-+-- scripts/                          Automation
-|   +-- RunAll.sh                     run all examples
-|   +-- RunTests.sh                   Tests only (~30 seconds)
-|   +-- setup_and_run.sh              Interactive WSL launcher
++-- docs/
+|   +-- monthly_plans/                Day-by-day plan + retrospective
+|   |   +-- overall/                  per week, per month, PDF-compiled
+|   |   +-- month1/week1-4/
+|   |   +-- month2/week5-7/
+|   +-- standards/quality_standards.md
+|   +-- study/study_guide.md
+|   +-- audits/                       Archived pre_week_audit.sh reports
+|   +-- architecture.md               This project's architecture, in depth
+|   +-- retrospectives/
 |
-+-- manuscript/                       Research paper (LaTeX)
-|   +-- main.tex                      Full software paper
-|   +-- main.pdf                      Compiled PDF (11 pages)
-|   +-- references.bib                Bibliography
-|
-+-- CMakeLists.txt                    C++ build configuration
-+-- RunProbOS.ps1                     Windows PowerShell launcher
-+-- pyproject.toml                    Python project config
-+-- requirements.txt                  Python dependencies
++-- manuscript/                       Research paper (LaTeX, publication
+|                                      deferred to Year 2 -- see overall plan)
++-- outputs/figures/                  All generated plots
++-- CMakeLists.txt                    Root wrapper -> add_subdirectory(cpp)
++-- pyproject.toml                    Single source of truth for dependencies
++-- pre_week_audit.sh                 Standing quality audit (run before
+|                                      every new week's work)
++-- check_ci.sh                       Watch/verify CI status from the terminal
 ```
 
 ---
 
-## Week 3 Results
+## Current Capabilities
 
 ### The Core Insight: Why `log_pdf` Must Be Analytical
-
-The standard approach breaks at extreme values:
 
 ```python
 # WRONG: underflows to 0.0 then log gives -inf
@@ -201,261 +215,187 @@ log_density = np.log(distribution.pdf(x))
 log_density = distribution.log_pdf(x)
 ```
 
-Concrete example at `x = mu + 50*sigma` (50 standard deviations from mean):
-
-| Expression | Value | Status |
+| Expression | Value at `x = mu + 50*sigma` | Status |
 |-----------|-------|--------|
 | `pdf(x)` | `0.0` | Underflow to zero |
 | `np.log(pdf(x))` | `-inf` | **WRONG** |
 | `log_pdf(x)` analytical | `-1259.44` | **Correct** |
 
-> A single `-inf` in Bayesian inference collapses the entire posterior.
-> This is why `log_pdf` is an *abstract method* — every distribution
-> must implement it analytically or the system refuses to run.
+### Monte Carlo + Sensitivity (Month 1)
 
-### Week 3: Monte Carlo Engine
-
-Running N=5,000 particles through `BatteryModel2Cell` simultaneously:
+Running N=5,000 particles through `BatteryModel2Cell`:
 
 | Metric | Value |
 |--------|-------|
-| Particles | 5,000 |
-| Steps | 300 (300 min) |
-| P95 − P05 temperature spread | measured |
-| sigma/sqrt(N) for T1 at N=5000 | 7.30 K |
-| CLT log-log slope | −0.569 (theory −0.500) |
+| `sigma/sqrt(N)` for T1 at N=5000 | 7.30 K |
+| CLT log-log slope | -0.569 (theory -0.500) |
+| **Ea_SEI** Sobol $S_1$ / $S_T$ | **0.457 / 0.729** (dominates T1 variance) |
+| P05 SEI decomposition rate | **11.6x faster** than the P50 mean |
 
-### Week 3: Sobol Sensitivity (N_saltelli=1024, 17,408 evaluations)
+### Sequential Inference (Month 2 Week 5)
 
-| Parameter | S1 | ST | Interpretation |
-|-----------|----|----|----------------|
-| **Ea_SEI** | **0.457** | **0.729** | Dominates — 46% of T1 variance |
-| Ea_anode | 0.235 | 0.489 | Second — 24% direct effect |
-| All others | <0.03 | <0.09 | Negligible |
+`ParticleFilter`'s posterior mean and std are proven — not assumed — to
+converge to an exact closed-form Kalman filter solution on a
+linear-Gaussian test case, with Monte Carlo error provably shrinking as
+particle count grows from N=100 to N=2000.
 
-### Week 3: Provenance — P05 Causal Audit
+### C++/OpenMP Kernel + pybind11 (Month 1 Week 4, Month 2 Week 6)
 
-```
-P05 Ea_SEI mean : 144,354 J/mol
-Nominal Ea_SEI  : 135,080 J/mol
-Interpretation  : P05 tail has HIGHER Ea_SEI -> slower decomposition
-                  -> lower temperature at short timescales (correct physics)
-````
+`BatteryCell::forward_step()` matches the Python
+`BatteryModel2Cell.forward_batch()` to `rtol=1e-8`–`1e-10`. The bound
+`probos_cpp.MonteCarloEngineOMP` runs **~7x faster** than the pure-Python
+engine (measured, not claimed).
 
-### Battery Safety Application
+### PDSL Compiler (Month 1 Week 4)
 
-Manufacturing variability in lithium-ion battery SEI activation energy:
+Declare a stochastic model in a small DSL instead of hand-writing a
+`Model` subclass:
 
 ```
-Ea_SEI ~ Normal(mu = 135,080 J/mol,  sigma = 5,000 J/mol)
+model battery {
+    state    T1 = 298.0
+    param    Ea_SEI ~ Normal(1.35e5, 5e3)
+    drift    T1 <- arrhenius(Ea_SEI, T1)
+}
 ```
 
-| Percentile | Ea (J/mol) | Rate vs mean | Risk level |
-|-----------|-----------|-------------|-----------|
-| P01 | 123,448 | 32.1x FASTER | Extreme |
-| P05 | 126,856 | **11.6x FASTER** | High |
-| P10 | 128,672 | 6.8x faster | Elevated |
-| P50 | 135,080 | 1.0x baseline | Mean (what deterministic models use) |
-| P95 | 143,304 | 0.09x slower | Low |
-| P99 | 146,712 | 0.03x slower | Very low |
+Pipeline: `grammar.lark -> parser.py -> ast_nodes.py -> codegen.py -> compiler.py`.
 
-> The deterministic model sees only P50.
-> ProbOS simulates all 5,000 batteries and finds the dangerous P05 tail.
-
-### Test Suite
+### REST API (Month 2 Week 7)
 
 ```
-Python (pytest)                            C++ (Google Test)
-------------------------------------------  ----------------------------
-TestNormalConstruction      6/6    PASS     NormalConstructor    4/4  PASS
-TestNormalSampling          5/5    PASS     NormalSampling       3/3  PASS
-TestNormalDensity           5/5    PASS     NormalDensity        5/5  PASS
-TestNormalPPF               2/2    PASS     NormalProperties     1/1  PASS
-TestLogNormal               6/6    PASS     ----------------------------
-TestUniform                 7/7    PASS     Total:              13/13  PASS
-TestBeta                    5/5    PASS
-TestEmpirical               5/5    PASS
-TestDistributionABC         2/2    PASS
-------------------------------------------
-Total:                     44/44   PASS
-
-mypy (strict):   0 errors
-ruff:            0 warnings
+GET  /health
+POST /simulate      -> MonteCarloEngine
+POST /sensitivity     -> SobolSensitivity
+POST /filter           -> ParticleFilter
 ```
+
+Resource-exhaustion bounds enforced via Pydantic before any request
+reaches kernel code. All three POST endpoints verified to match a
+direct Python kernel call at `rtol=1e-10`.
+
+### Cross-Discipline Validation (Month 1 Week 4)
+
+The same kernel, with zero core changes, correctly models:
+
+| Domain | Model | Validated against |
+|--------|-------|-------------------|
+| Finance | `OptionPricerModel` | Black-Scholes closed form |
+| Hospital ops | `EDQueueModel` | M/M/1 queueing theory |
+| Clinical trials | `ClinicalTrialModel` | Adaptive Bayesian design theory |
 
 ---
 
 ## How to Run
 
-### Full pipeline (first time or after code changes)
+### Full quality audit (run before starting any new week's work)
 
 ```bash
-cd /home/nison/ProbOs
-bash RunAll.sh
+bash pre_week_audit.sh
 ```
 
-Runs all 8 steps: requirements check, venv setup, pip install,
-pytest, cmake + ninja build, ctest, examples, C++ demo.
+Checks: full test suite, mypy strict (full tree), ruff, coverage floor
+(85%), Hypothesis property-based tests, doctest, bandit security scan,
+pip-audit CVE scan, packaging/build verification, reproducibility, git
+hygiene. See `docs/standards/quality_standards.md` for the full checklist.
 
-### Tests only (fast iteration during development)
+### Watch CI status from the terminal
 
 ```bash
-cd /home/nison/ProbOs
-bash RunTests.sh
-# Runs: pytest + mypy + ruff + ctest in ~30 seconds
+bash check_ci.sh
 ```
 
 ### Run a specific example
 
 ```bash
-cd /home/nison/ProbOs
-
-# Week 2: deterministic ODE
-.venv/bin/python python/examples/week2_battery_ode.py
-
-# Week 3: Monte Carlo fan plot (N=5000, 300 steps)
-.venv/bin/python python/examples/week3_mc_battery.py
-
-# Week 3: CLT convergence verification
-.venv/bin/python python/examples/week3_clt_convergence.py
-
-# Week 3: Sobol sensitivity (17,408 evaluations)
-.venv/bin/python python/examples/week3_sobol_battery.py
+.venv/bin/python python/examples/week3_mc_battery.py       # MC fan plot
+.venv/bin/python python/examples/week3_sobol_battery.py    # Sobol sensitivity
+.venv/bin/python python/examples/week4_option_pricer.py    # Finance example
+.venv/bin/python python/examples/week4_ed_queue.py         # Ops example
+.venv/bin/python python/examples/week4_clinical_trial.py   # Medicine example
 ```
 
 ### Use the library in your own Python code
 
 ```python
-import sys
-sys.path.insert(0, "/path/to/ProbOs")
+from python.src.distributions import Normal
+from python.src.battery_model import BatteryModel2Cell
+from python.src.parameter_priors import build_battery_priors
+from python.src.monte_carlo import MonteCarloEngine
 
-from python.src.distributions import Normal, LogNormal, Beta, Uniform, Empirical
-import numpy as np
+model  = BatteryModel2Cell()
+priors = build_battery_priors()
+engine = MonteCarloEngine(model, priors, N=5000, n_steps=300, dt=1.0, seed=42)
+result = engine.run()
 
-# Create a distribution
-Ea = Normal(mu=1.35e5, sigma=5e3)
-
-# Sample 1000 values (reproducible with seed)
-rng = np.random.default_rng(seed=42)
-samples = Ea.sample(1000, rng=rng)
-
-# Analytical operations
-p05 = float(Ea.ppf(np.array([0.05]))[0])     # 5th percentile
-log_d = Ea.log_pdf(samples)                   # log-density (never -inf)
-
-print(f"P05: {p05:.0f} J/mol")
-print(f"Mean: {Ea.mean():.0f} J/mol")
+print(f"P05 T1 at t=300: {result.percentiles[0, -1, 0]:.1f} K")
+print(f"P50 T1 at t=300: {result.percentiles[1, -1, 0]:.1f} K")
 ```
 
-### Compile the research paper
-
-```bash
-cd /home/nison/ProbOs/manuscript
-make
-# Output: main.pdf (11 pages)
-```
-
----
-
-## The Five Distributions
-
-| Class | Support | Typical use | Parameters |
-|-------|---------|------------|-----------|
-| `Normal(mu, sigma)` | All reals | Symmetric manufacturing variation | mean, std dev |
-| `LogNormal(mu, sigma)` | (0, +inf) | Rates, lifetimes, multiplicative noise | log-mean, log-std |
-| `Uniform(low, high)` | [low, high] | Unknown parameter within known bounds | lower, upper |
-| `Beta(alpha, beta)` | [0, 1] | Proportions, probabilities, binding fractions | shape parameters |
-| `Empirical(data)` | [min, max] | Real measured data, no assumed shape | array of observations |
-
-Every distribution exposes the same four operations:
+### Use the bound C++ kernel directly
 
 ```python
-d = Normal(0, 1)          # Standard normal
+import sys
+sys.path.insert(0, "cpp/build")
+import probos_cpp
 
-d.sample(n=1000)          # Draw 1000 independent samples
-d.pdf(x)                  # Probability density at x
-d.log_pdf(x)              # Analytical log-density (never -inf)
-d.ppf(u)                  # Inverse CDF: x such that P(X <= x) = u
-d.mean()                  # Analytical mean
-d.variance()              # Analytical variance
-d.support()               # (lower, upper) bounds
+engine = probos_cpp.MonteCarloEngineOMP(N=5000, n_steps=300, dt=1.0)
+result = engine.run(seed=42)
+print(f"Wall time: {result.wall_time_ms:.1f} ms")
 ```
 
 ---
 
 ## Roadmap
 
+The full 24-month roadmap, with an honest month-by-month breakdown of
+what is DONE, PLANNED, or DIRECTIONAL, lives in
+`docs/monthly_plans/overall/main.tex` (compiled PDF alongside). Every
+individual week has its own day-by-day plan and retrospective under
+`docs/monthly_plans/<month>/<week>/`.
+
+**Status at a glance:**
+
 ```
-Year 1 Build Plan
-|
-+-- Week 1  [COMPLETE]   Distribution ABC
-|   +-- Normal, LogNormal, Uniform, Beta, Empirical
-|   +-- 44 Python + 13 C++ tests
-|   +-- mypy strict + ruff: zero issues
-|   +-- Research paper: manuscript/main.pdf
-|
-+-- Week 2  [COMPLETE]   Model ABC + BatteryModel2Cell
-|   +-- Model ABC: state_dim, param_dim, forward_batch
-|   +-- BatteryModel2Cell: 8-state Arrhenius ODE, 15 params
-|   +-- Kim 2007 ARC validation: onset temp within 5 C
-|   +-- 67 new Python tests (111 total)
-|
-+-- Week 3  [COMPLETE]   Monte Carlo Engine + Sobol + Provenance
-|   +-- MonteCarloEngine: P05/P50/P95, sigma/sqrt(N) certificate
-|   +-- SobolSensitivity: S1=0.457 for Ea_SEI (dominates T1)
-|   +-- ProvenanceTracker: causal DAG, P05 ancestor query
-|   +-- 91 new Python tests (202 total)
-|   +-- 13-page manuscript
-|
-+-- Week 4  [NEXT]       GPU/OpenMP + PDSL Compiler
-|   +-- OpenMP CPU parallelisation of forward_batch (10x target)
-|   +-- PDSL compiler v0.1 (Lark grammar -> AST -> Python codegen)
-|   +-- arXiv submission
-|   +-- Open-source release v0.1.0
-|
-+-- Month 2             FastAPI + Particle Filter
-|   +-- /simulate, /sensitivity, /provenance endpoints
-|   +-- Sequential Monte Carlo particle filter
-|   +-- Docker container
-|
-+-- Month 3             C++ Kernel + pybind11
-|   +-- StochasticSystem C++20 concept
-|   +-- BatteryCell in C++ satisfying concept
-|   +-- pybind11 bindings
-|
-+-- Month 4             PDSL Compiler + Full Release
-|   +-- Probabilistic Domain-Specific Language
-|   +-- Compile uncertain programs to Monte Carlo execution plans
-|
-+-- Year 2+             Full OS Kernel
-    +-- Superconductor parameter estimation
-    +-- Fusion plasma state tracking
-    +-- Quantum gravity uncertainty propagation
+Month 1  [COMPLETE]  Kernel foundation
+  Week 1  Distribution ABC
+  Week 2  Model ABC + BatteryModel2Cell (Kim 2007 validated)
+  Week 3  MonteCarloEngine + SobolSensitivity + ProvenanceTracker
+  Week 4  DP profiling, C++/OpenMP kernel, PDSL v0.1,
+          3 cross-discipline examples
+
+Month 2  [IN PROGRESS]  Inference + service layer
+  Week 5  ParticleFilter (validated vs exact Kalman filter)   [DONE]
+  Week 6  pybind11 bindings -- C++ kernel enters Python       [DONE]
+  Week 7  FastAPI service layer                                [DONE]
+  Week 8  Cross-discipline filtering examples + Month 2
+          retrospective                                        [NEXT]
+
+Month 3+  DIRECTIONAL -- to be planned in detail as each
+          month approaches, per the process established after
+          Month 1 (see docs/monthly_plans/overall/main.tex)
 ```
 
 ---
 
-## Research Paper
+## Quality Standards
 
-The Week 1 implementation is documented as a full software paper:
+Every layer is validated against a closed-form solution, literature
+reference, or cross-implementation comparison before being trusted --
+never just "it runs without crashing." Full standards and rationale in
+`docs/standards/quality_standards.md`.
 
-> **ProbOS: A Probabilistic Execution Runtime**
-> *Week 1 — Distribution Library: Design, Implementation, and Verification*
-> Nisong Monyimba, Reality Computing Corporation, 2026
+**Current numbers:**
 
-| Section | Content |
-|---------|---------|
-| Introduction | Linux analogy, Year 1 roadmap, 5 contributions |
-| Mathematical Background | Kolmogorov axioms, log-PDF stability proof (Proposition 1) |
-| Architecture | Design principles, TikZ class hierarchy diagram |
-| Implementation | Python + C++ listings with annotations |
-| Verification | Full pytest + Google Test + mypy + ruff tables |
-| Battery Application | Arrhenius equation, embedded figure, percentile table |
-| LLN Demonstration | Convergence rate table |
-| Reproducibility | One-command checklist |
-| Week 2 Roadmap | Model ABC, BatteryModel2Cell plan |
-
-Compile: `cd manuscript && pdflatex main.tex` → `manuscript/main.pdf` (13 pages)
+```
+341/341 Python tests passing
+13/13   C++ tests passing
+mypy strict: 0 errors (full python/ tree)
+ruff: 0 warnings
+Coverage: 90%+ (floor: 85%)
+bandit: 0 findings
+pip-audit: 0 known CVEs
+```
 
 ---
 
@@ -471,6 +411,7 @@ Compile: `cd manuscript && pdflatex main.tex` → `manuscript/main.pdf` (13 page
 | Build system | CMake 3.22 + Ninja |
 | Platform | Ubuntu 22.04 / WSL2 |
 | Repository | https://github.com/NisongMonyimba/ProbOs |
+| Publication | Deferred to Year 2 (see `docs/monthly_plans/overall/main.tex`) |
 
 ---
 

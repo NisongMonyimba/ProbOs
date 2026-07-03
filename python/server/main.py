@@ -14,10 +14,10 @@ MODEL REGISTRY
 Only "battery" (BatteryModel2Cell + build_battery_priors) is wired up
 in Week 7. This is a deliberate scope decision: the goal is proving the
 service layer works correctly end-to-end against one well-validated
-model, not registering all five existing models on day one. Extending
-_MODEL_REGISTRY to other Week 4 models (option pricer, ED queue,
-clinical trial) is a natural, low-risk follow-up once this pattern is
-proven.
+model, not registering all four existing models on day one (Battery,
+OptionPricer, EDQueue, ClinicalTrial). Extending _MODEL_REGISTRY to
+the other three Week 4 models (option pricer, ED queue, clinical
+trial) is a natural, low-risk follow-up once this pattern is proven.
 
 Run locally:
     uvicorn python.server.main:app --reload

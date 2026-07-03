@@ -123,7 +123,8 @@ uvicorn python.server.main:app --reload
 |                                                               |
 |   Distribution (ABC)       Model (ABC)                       |
 |   +-- Normal, LogNormal,   +-- BatteryModel2Cell              |
-|       Uniform, Beta            (8-state Arrhenius ODE)        |
+|       Uniform, Beta,           (8-state Arrhenius ODE)        |
+|       Empirical                                               |
 |                                                               |
 |   MonteCarloEngine   SobolSensitivity   ProvenanceTracker    |
 |   ParticleFilter (validated against exact Kalman filter)     |
@@ -148,7 +149,7 @@ ProbOs/
 |
 +-- python/
 |   +-- src/                          Core kernel
-|   |   +-- distributions.py          Distribution ABC + 4 classes
+|   |   +-- distributions.py          Distribution ABC + 5 classes
 |   |   +-- state.py                  Model ABC
 |   |   +-- battery_model.py          BatteryModel2Cell
 |   |   +-- parameter_priors.py       15 priors (Kim 2007)

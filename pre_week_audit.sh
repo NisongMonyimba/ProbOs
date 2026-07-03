@@ -140,11 +140,12 @@ check "No hardcoded secret-like strings in source" $([ "$SECRET_PATTERNS" -eq 0 
 # -----------------------------------------------------------------------
 section "3. PACKAGING & INSTALLABILITY"
 # -----------------------------------------------------------------------
+REPO_ROOT="$(pwd)"
 cd /tmp
 rm -rf /tmp/audit_import_check
 mkdir -p /tmp/audit_import_check
 cd /tmp/audit_import_check
-/home/nison/ProbOs/.venv/bin/python -c "
+"$REPO_ROOT/.venv/bin/python" -c "
 from python.src.battery_model import BatteryModel2Cell
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.particle_filter import ParticleFilter
@@ -154,7 +155,7 @@ from python.pdsl.compiler import compile_pdsl
 from python.examples.week4_option_pricer import OptionPricerModel
 " > /tmp/audit_outside_import.log 2>&1
 check "Core + example imports work from outside repo dir" $?
-cd /home/nison/ProbOs
+cd "$REPO_ROOT"
 rm -rf /tmp/audit_import_check
 
 # -----------------------------------------------------------------------

@@ -308,6 +308,8 @@ bash check_ci.sh
 ### Run a specific example
 
 ```bash
+.venv/bin/python python/examples/week1_coin_flip.py        # LLN primer
+.venv/bin/python python/examples/week1_normal_demo.py      # log_pdf stability demo
 .venv/bin/python python/examples/week3_mc_battery.py       # MC fan plot
 .venv/bin/python python/examples/week3_sobol_battery.py    # Sobol sensitivity
 .venv/bin/python python/examples/week4_option_pricer.py    # Finance example

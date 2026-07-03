@@ -23,12 +23,26 @@ The system is structured as a layered kernel:
 3. **Monte Carlo engine** — P05/P50/P95 trajectories, convergence certificates
 4. **Sobol sensitivity** — which parameters drive tail risk
 5. **Provenance tracker** — regulatory audit trail from output to cause
+6. **Particle filter** — sequential Bayesian inference, validated against
+   exact closed-form solutions
+7. **REST API** — `/simulate`, `/sensitivity`, `/filter` endpoints
+8. **C++/OpenMP kernel** — 7x faster than Python, bound via pybind11
 
-## Demonstrated Results (Month 1, Week 3)
-- 5,000-particle Monte Carlo in < 2s on CPU (vectorised NumPy)
+## Demonstrated Results (Month 2, Week 7)
+- 5,000-particle Monte Carlo in < 2s on CPU (vectorised NumPy); 7x faster
+  in the bound C++/OpenMP kernel
 - Ea_SEI explains 45.7% of battery thermal runaway variance (S1 = 0.457)
 - P95 cell heats 4,560 K faster than P50 over 300 minutes
-- 202 tests, mypy strict 0 errors, open-source on GitHub
+- Particle filter posterior mean/std converge to the exact Kalman filter
+  solution, with Monte Carlo error provably shrinking as particle count grows
+- Working REST API validated against direct kernel calls to floating-point
+  precision, plus a live smoke test over a real HTTP socket
+- Demonstrated across four domains beyond batteries: quantitative finance
+  (option pricing), hospital operations (ED queueing), and clinical trials
+  (adaptive Bayesian design) — proving the kernel is domain-agnostic, not
+  battery-specific
+- 341 tests, mypy strict 0 errors, 90%+ coverage, 0 known security
+  vulnerabilities (bandit + pip-audit clean), open-source on GitHub
 
 ## Market
 - Battery safety certification (EV, grid storage): \$2.1B
@@ -39,10 +53,12 @@ The system is structured as a layered kernel:
 
 ## SBIR Ask
 **Phase I: \$275,000 / 12 months**
-- GPU kernel (10x speedup over CPU)
-- Particle filter for real-time state estimation
+- GPU kernel (10x speedup over CPU, building on the existing C++/OpenMP path)
+- Apply the particle filter to real sensor data from a pilot partner
+  (currently validated on synthetic data only)
 - FDA Q-Sub filing for implantable battery MRI safety
-- Clinical trial adaptive design module
+- Extend the REST API's model registry beyond `BatteryModel2Cell` to the
+  finance/operations/clinical models already built
 - 3 enterprise pilot contracts
 
 ## Team

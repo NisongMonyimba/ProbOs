@@ -6,7 +6,7 @@
 #   Every push or pull request to main triggers:
 #   1. Fresh Ubuntu 22.04 VM
 #   2. Python 3.11 + C++20 + CMake + Ninja + Google Test + pybind11
-#   3. 322 Python tests (pytest) including property-based tests
+#   3. 341 Python tests (pytest) including property-based tests
 #   4. mypy strict type checking (full python/ tree)
 #   5. ruff lint (full python/ tree)
 #   6. All Week 2-4 examples
@@ -34,7 +34,7 @@ jobs:
   # JOB 1: Python tests + static analysis
   # ===========================================================================
   python-tests:
-    name: Python Tests (322 pytest + mypy + ruff)
+    name: Python Tests (341 pytest + mypy + ruff)
     runs-on: ubuntu-22.04
 
     steps:
@@ -73,19 +73,19 @@ jobs:
           cmake --build cpp/build
           ls -la cpp/build/probos_cpp*.so
 
-      - name: Run pytest (322 tests, including C++ bindings)
+      - name: Run pytest (341 tests, including C++ bindings)
         run: |
           python -m pytest python/tests/ -v --tb=short --no-header
           echo "pytest exit: $?"
 
       - name: mypy strict type check
         run: |
-          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ python/server/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           echo "mypy exit: $?"
 
       - name: ruff lint
         run: |
-          python -m ruff check python/src/ python/pdsl/ python/tests/ python/examples/ --select E,F,W
+          python -m ruff check python/src/ python/pdsl/ python/tests/ python/examples/ python/server/ --select E,F,W
           echo "ruff exit: $?"
 
       - name: Run Week 2 examples
@@ -217,7 +217,7 @@ jobs:
   # JOB 4: Full integration (RunTests.sh equivalent)
   # ===========================================================================
   integration:
-    name: Full Integration (322 Python + 13 C++)
+    name: Full Integration (341 Python + 13 C++)
     runs-on: ubuntu-22.04
     needs: [ python-tests, cpp-tests ]
 
@@ -278,7 +278,7 @@ jobs:
           echo "  PROBOS CI -- ALL JOBS PASSED"
           echo "  Month 1 : Distribution, Model, MC, Sobol, Provenance, PDSL"
           echo "  Month 2 : ParticleFilter, pybind11 bindings"
-          echo "  Total   : 322 Python + 13 C++ tests"
+          echo "  Total   : 341 Python + 13 C++ tests"
           echo "  mypy    : 0 errors (full python/ tree)"
           echo "  ruff    : 0 warnings (full python/ tree)"
           echo "  Coverage: >=85% on python/src + python/pdsl"

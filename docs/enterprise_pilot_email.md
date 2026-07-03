@@ -16,7 +16,14 @@ minutes — a risk completely invisible to deterministic simulation.
 - Vectorised Monte Carlo: 5,000 particles, P05/P50/P95 trajectories, < 2s
 - Sobol sensitivity: identifies which parameters drive tail risk (Ea_SEI: S1=0.457)
 - Causal provenance: regulatory audit trail from dangerous output to root cause
-- 202 tests, mypy strict, open-source: github.com/NisongMonyimba/ProbOs
+- Sequential Bayesian inference (particle filter): validated against exact
+  closed-form solutions, tracks a system's true hidden state from noisy
+  sensor data in real time
+- C++/OpenMP kernel: 7x faster than the Python engine, bound directly into
+  the Python package via pybind11
+- REST API: `/simulate`, `/sensitivity`, `/filter` endpoints, ready to
+  integrate into an existing validation pipeline
+- 341 tests, mypy strict, open-source: github.com/NisongMonyimba/ProbOs
 
 **Why now:**
 FDA, NRC, and ISO 14971 are moving toward mandatory uncertainty quantification
@@ -52,7 +59,8 @@ https://github.com/NisongMonyimba/ProbOs
 
 4. **Johnson & Johnson MedTech** — Clinical trial adaptive design
    Contact: Head of Biostatistics
-   Angle: Bayesian adaptive trial simulator
+   Angle: Bayesian adaptive trial simulator, now with sequential
+   (patient-by-patient) posterior updating via the particle filter
 
 5. **TerraPower** — Nuclear reactor safety analysis
    Contact: Chief Engineer

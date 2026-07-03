@@ -1,154 +1,193 @@
-# ProbOS — Architecture Document
+# ProbOS Architecture
 
-## The Vision
+**Last updated:** Month 2, Week 7 (FastAPI Service Layer)
 
-ProbOS is a **probabilistic execution runtime** — a system where uncertainty
-is a first-class type, and every real-world system can be compiled into a
-stochastic program that:
+This document describes the current, working architecture of ProbOS.
+It supersedes the original Week 1 draft, which described only the
+`Distribution` layer before the rest of the kernel existed. As with all
+ProbOS documentation, this file is updated whenever the architecture
+changes materially — the authoritative day-by-day build history lives
+in `docs/monthly_plans/<month>/<week>/main.tex`.
 
-1. **SIMULATES** futures — forward Monte Carlo
-2. **INFERS** hidden states — particle filter, HMC
-3. **CONTROLS** actions under uncertainty — stochastic MPC
+---
 
-## The Linux Analogy (Made Precise)
+## Layered design
 
-| Linux concept    | ProbOS concept                                           |
-|------------------|----------------------------------------------------------|
-| Process          | Stochastic program (distribution over trajectories)     |
-| Memory address   | Random variable node in the execution graph              |
-| Scheduler        | Inference engine (particle filter)                       |
-| System call      | Probabilistic primitive: `sample`, `observe`, `condition` |
-| Executable       | Compiled uncertain system                               |
-| File             | Probability distribution                               |
-| Kernel           | `StochasticSystem` C++20 concept + Monte Carlo engine   |
-| Driver           | Domain plugin (battery, pharma, finance)                |
-| Shell            | PDSL — the Probabilistic Domain-Specific Language       |
+ProbOS is built as a stack of layers, each depending only on the ones
+below it:
+python/server/       FastAPI HTTP service (Week 7)
+|
+python/pdsl/          PDSL compiler: grammar -> AST -> codegen (Week 4)
+|
+python/src/           Core kernel (Weeks 1-6)
+|
+cpp/                  C++20 kernel + pybind11 bindings (Weeks 4, 6)
+Nothing in `python/src/` depends on `python/server/` or `python/pdsl/`
+-- the kernel is usable standalone, over HTTP, or via a compiled PDSL
+program, without those layers depending on each other either.
 
-## The Seven Core Abstractions
+---
 
-### 1. Distribution (Week 1) ✅
-The fundamental type. Every uncertain quantity is a Distribution instance.
+## Core kernel (`python/src/`)
 
-```python
-# Python
-Ea_SEI = Normal(mu=1.35e5, sigma=5e3)  # J/mol
-samples = Ea_SEI.sample(5000)
+### `Distribution` (distributions.py) -- Week 1
 
-# C++
-probos::distributions::Normal Ea_SEI(1.35e5, 5e3);
-double x = Ea_SEI.sample(rng);
-```
+Abstract base class for probability distributions: `sample()`,
+`pdf()`, `log_pdf()`, `cdf()`, `ppf()`. Four concrete implementations
+(`Normal`, `LogNormal`, `Uniform`, `Beta`), each with fail-fast
+constructor validation and an analytically-derived `log_pdf` (not
+`log(pdf(x))`, which underflows for extreme values).
 
-Classes: `Normal`, `LogNormal`, `Uniform`, `Beta`, `Empirical`
-Methods: `sample()`, `pdf()`, `log_pdf()`, `ppf()`
+### `Model` (state.py) -- Week 2
 
-### 2. StochasticSystem (Month 2)
-C++20 concept. Any type satisfying:
-```cpp
-concept StochasticSystem = requires(S s, State x, Ctrl u) {
-    { s.drift(x, u) }      -> std::same_as<State>;
-    { s.diffusion(x, u) }  -> std::same_as<State>;
-    { s.observe(x) }       -> std::same_as<Observation>;
-};
-```
-Battery, drug, market, hospital — all satisfy this one concept.
+Abstract base class for domain models: `state_dim`, `param_dim`,
+`param_names()`, `initial_state()`, `forward_batch(state, params, dt)`.
+`forward_batch` must be vectorised over N particles via NumPy
+broadcasting -- no per-particle Python loops.
 
-### 3. ExecutionGraph (Month 3)
-A directed acyclic graph (DAG) of random variable nodes.
-Records what caused what. Enables causal attribution and regulatory audit trails.
+`BatteryModel2Cell` (battery_model.py) is the flagship concrete model:
+an 8-state Arrhenius thermal-runaway ODE with 15 uncertain parameters,
+validated against Kim et al. (2007) accelerating rate calorimetry
+data. `parameter_priors.py` builds the 15 priors from Week 1's
+`Distribution` types.
 
-### 4. MonteCarloEngine (Week 3 Python / Month 3 C++)
-Vectorised forward simulation. N particles × T time steps.
-```python
-engine = MonteCarloEngine(model=battery, param_distributions=priors, n_samples=5000)
-result = engine.run(t_max=3600, dt=0.5)
-```
+Four additional models exist in `python/examples/` demonstrating the
+kernel's domain-agnosticism (Week 4): `OptionPricerModel` (finance,
+Black-Scholes-Merton GBM), `EDQueueModel` (hospital operations, M/M/1
+queue), `ClinicalTrialModel` (medicine, adaptive Bayesian trial).
 
-### 5. ParticleFilter (Month 2)
-Sequential Bayesian inference. Observes noisy data, updates beliefs.
-```python
-pf = ParticleFilter(system=battery, n_particles=1000)
-for temp_observation in arc_test_data:
-    pf.update(observation=temp_observation)
-posterior = pf.get_state_distribution()
-```
+### `MonteCarloEngine` (monte_carlo.py) -- Week 3
 
-### 6. SensitivityEngine (Week 4 / Month 3 C++)
-Sobol' variance decomposition. Ranks inputs by their contribution to output variance.
-```
-Ea_SEI:    ST = 0.62  ← dominant (62% of propagation time variance)
-A_SEI:     ST = 0.28
-k_contact: ST = 0.08  ← negligible
-```
+Vectorised uncertainty propagation: draws N parameter sets from
+priors, propagates all particles through `forward_batch()`, tracks
+P05/P50/P95 percentile trajectories and a `sigma/sqrt(N)` convergence
+certificate.
 
-### 7. PDSL Compiler (Month 4+)
-Domain-specific language. Compiles system descriptions to ExecutionGraphs.
-```pdsl
-system BatterySafety {
-    state  T1: kelvin ~ Normal(403.15, 2.0)
-    state  c_SEI: fraction = 1.0
-    param  Ea: joules_per_mol ~ Normal(1.35e5, 5e3)
-    param  A:  per_second ~ LogNormal(34.05, 0.5)
+### `SobolSensitivity` (sensitivity.py) -- Week 3
 
-    evolve T1 with:
-        dT1/dt = heat_generation(T1, c_SEI, Ea, A) / thermal_mass
-    evolve c_SEI with:
-        dc_SEI/dt = -A * c_SEI * exp(-Ea / (R * T1))
-}
-```
+Variance-based sensitivity analysis via SALib's Saltelli sampling
+scheme. Computes first-order ($S_1$) and total-effect ($S_T$) Sobol
+indices. On `BatteryModel2Cell`, identifies `Ea_SEI` as the dominant
+thermal-runaway driver ($S_1 = 0.457$). SALib's known non-reproducibility
+at low sample sizes is documented directly in code and tests rather
+than hidden.
 
-## Repository Structure
+### `ProvenanceTracker` (provenance.py) -- Week 3
 
-```
-probos-kernel/
-├── python/      Python layer: fast iteration, examples, tests, bindings
-│   ├── src/         Core library (distributions, engine, models)
-│   ├── tests/       pytest test suite
-│   ├── examples/    Runnable demos
-│   ├── server/      FastAPI web server (Month 2)
-│   ├── dashboard/   Plotly Dash UI (Month 3)
-│   └── bindings/    pybind11 Python/C++ interface (Month 2)
-├── cpp/         C++ kernel: performance-critical computation
-│   ├── include/     Header files (the public API)
-│   ├── src/         Implementation files
-│   └── tests/       Google Test suite
-└── docs/        Architecture and design documents
-```
+Causal DAG: traces any output value back to the parameter draws and
+particle trajectory that produced it. Validated for consistency
+against `SobolSensitivity`'s results on the same model.
 
-## Build System
+### `ParticleFilter` (particle_filter.py) -- Week 5
 
-| Layer | Tool | Command |
-|-------|------|---------|
-| Python packages | pip | `pip install -r requirements.txt` |
-| Python tests | pytest | `pytest python/tests/ -v` |
-| C++ build | CMake + Ninja | `cmake -G Ninja -B build && ninja -C build` |
-| C++ tests | ctest | `ctest --output-on-failure` |
-| C++ packages (Month 2) | vcpkg | automatic via CMake toolchain |
+Bootstrap (SIR) sequential Bayesian inference: predict (reuses
+`Model.forward_batch()` unmodified) / update (log-space reweighting
+via a caller-supplied log-likelihood function) / resample (systematic,
+low-variance). Validated against an exact closed-form 1D Kalman filter
+on a linear-Gaussian test model -- not just a smoke test, a genuine
+proof that posterior mean/std converge to the analytical solution as N
+grows.
 
-## Coding Standards
+---
 
-### Python
-- All functions and methods have type annotations
-- `mypy --strict` passes with zero errors
-- `ruff check` passes with zero warnings
-- Line length: 88 characters (matches Black)
-- Test coverage: minimum 70% (rising to 80% by Month 3)
-- Commit messages: Conventional Commits (`feat(scope): description`)
+## PDSL compiler (`python/pdsl/`) -- Week 4
 
-### C++
-- Standard: C++20 (required for concepts, used from Month 2)
-- Compilers: GCC 13 or Clang 17 (both tested in CI from Month 2)
-- `-Wall -Wextra -Wpedantic` enabled
-- AddressSanitizer + UBSan in Debug builds
-- Google Test for all unit tests
-- clang-format for consistent formatting (Month 2)
-- Trailing underscore convention for private members: `mu_`, `sigma_`
+A domain-specific language for declaring stochastic models without
+writing Python `Model` subclasses by hand. Pipeline:
+grammar.lark  ->  parser.py  ->  ast_nodes.py  ->  codegen.py  ->  compiler.py
+(Lark grammar)   (parse tree)    (typed AST)      (Python source)  (exec + load)
+`compiler.py`'s `exec()` call operates exclusively on Python source
+generated by `codegen.generate()` -- never on raw, unvalidated PDSL
+source text passed through unmodified. This security boundary is
+documented and bandit-verified (see `docs/standards/quality_standards.md`
+Section 8).
 
-## Weekly Progress Log
+---
 
-| Week | Files added | Tests | Key achievement |
-|------|-------------|-------|-----------------|
-| 1    | 14 files    | 26    | Distribution ABC in Python + C++ |
-| 2    | TBD         | TBD   | Battery ODE model, CLT demo |
-| 3    | TBD         | TBD   | MonteCarloEngine, trajectory cloud |
-| 4    | TBD         | TBD   | Sobol' sensitivity, v0.1.0 release |
+## C++ kernel (`cpp/`) -- Weeks 4 and 6
+
+A from-scratch C++20 reimplementation of the performance-critical
+path, built independently of the Python kernel and cross-validated
+against it (not assumed correct because it compiles).
+
+- `include/kernel/battery_cell.hpp` -- `BatteryCell::forward_step()`,
+  a line-by-line port of `BatteryModel2Cell.forward_batch()`, proven
+  to match the Python implementation to `rtol=1e-8` to `1e-10` over
+  single and multi-step runs
+- `include/kernel/monte_carlo_omp.hpp` / `src/kernel/monte_carlo_omp.cpp`
+  -- `MonteCarloEngineOMP`, an OpenMP-parallel particle propagation
+  engine. Measured 7x speedup over the serial Python engine
+- `bindings/probos_bindings.cpp` -- pybind11 bindings exposing
+  `BatteryCell` and `MonteCarloEngineOMP` to Python as the
+  `probos_cpp` extension module, ending the "two disconnected
+  implementations" problem
+
+**Known, documented limitation:** `MonteCarloEngineOMP` currently
+draws parameters from a simplified 5% uniform perturbation, not the
+full `battery_priors` distributions the Python engine uses. This means
+P50 estimates agree between the two engines (within 10%), but the
+P05-P95 spread does not match. This gap is explicitly tested for in
+`test_cpp_bindings.py` (fails loudly if it silently changes) rather
+than silently accepted or silently "fixed" without updating the test.
+
+---
+
+## Service layer (`python/server/`) -- Week 7
+
+FastAPI HTTP interface over the kernel:
+GET  /health         liveness check
+POST /simulate        -> MonteCarloEngine
+POST /sensitivity      -> SobolSensitivity
+POST /filter            -> ParticleFilter
+Pydantic schemas (`schemas.py`) enforce resource-exhaustion bounds
+(e.g. `N` capped at 100,000) at the HTTP boundary, before any request
+reaches kernel code. Kernel-raised `ValueError` surfaces as HTTP 422;
+unknown model names surface as HTTP 404 -- neither produces an
+unhandled 500. Verified via 19 integration tests, three of which
+directly compare HTTP JSON responses against a matching direct Python
+kernel call at `rtol=1e-10`, plus a live smoke test against a real
+`uvicorn` process over an actual socket (not just FastAPI's in-process
+`TestClient`).
+
+Only `BatteryModel2Cell` is currently registered in the server's model
+registry; extending it to the other Week 4 models is a natural,
+low-risk follow-up.
+
+---
+
+## Testing and quality assurance
+
+Every layer is validated against a closed-form solution, a literature
+reference, or a cross-implementation comparison before being trusted
+-- never just "it runs without crashing":
+
+| Layer | Validated against |
+|---|---|
+| `BatteryModel2Cell` | Kim et al. (2007) ARC data |
+| `MonteCarloEngine` | Empirical CLT convergence rate |
+| `SobolSensitivity` | Consistency with `ProvenanceTracker` |
+| `ParticleFilter` | Exact closed-form Kalman filter |
+| C++ `BatteryCell` | Python `BatteryModel2Cell` at `rtol<=1e-8` |
+| Four Week 4 example models | Closed-form/literature benchmarks each |
+| FastAPI endpoints | Direct Python kernel calls at `rtol=1e-10` |
+
+Standing quality process, run before every new week's work
+(`pre_week_audit.sh`, `docs/standards/quality_standards.md`):
+correctness (full test suite, mypy strict, coverage floor), code
+hygiene, packaging/installability, build system, reproducibility,
+numerical validity, security (bandit, pip-audit), CI parity,
+documentation, and git hygiene.
+
+**Current numbers (Week 7 close):** 341 Python tests, 13 C++ tests,
+mypy strict 0 errors (full `python/` tree), ruff 0 warnings, 90%+ test
+coverage, 0 bandit findings, 0 known dependency CVEs.
+
+---
+
+## Where to find more detail
+
+- `docs/monthly_plans/overall/main.tex` -- the 24-month roadmap
+- `docs/monthly_plans/<month>/<week>/main.tex` -- day-by-day plan and
+  retrospective for every completed week
+- `docs/standards/quality_standards.md` -- the full quality checklist
+- `docs/study/study_guide.md` -- reading material mapped to each file

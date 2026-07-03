@@ -210,6 +210,13 @@ class SobolSensitivity:
             (n_total, 1),
         ).astype(np.float64)
 
+        # Validate shapes once, before the expensive n_steps loop --
+        # same discipline as MonteCarloEngine.run() and
+        # ParticleFilter.__init__(). Catches a malformed Model
+        # subclass immediately with a clear ValueError.
+        self._model.validate_params(param_matrix.astype(np.float64))
+        self._model.validate_state(state)
+
         # Step 4: run forward_batch for n_steps
         # All n_total samples advanced simultaneously -- no Python for-loops
         for _ in range(self._n_steps):

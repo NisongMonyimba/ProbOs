@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 1, Week 2\\Model ABC + BatteryModel2Cell}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 2 goal}
+Build the \texttt{Model} abstract base class defining the
+\texttt{forward\_batch()} contract every domain model must satisfy, and
+the first concrete model: \texttt{BatteryModel2Cell}, an 8-state
+Arrhenius thermal-runaway ODE validated against Kim et al. (2007).
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Model ABC design}
+\begin{itemize}[leftmargin=*]
+  \item Define the interface: \texttt{state\_dim}, \texttt{param\_dim},
+    \texttt{param\_names()}, \texttt{initial\_state()},
+    \texttt{forward\_batch(state, params, dt)}
+  \item Key constraint: \texttt{forward\_batch} must be vectorised over
+    $N$ particles via NumPy broadcasting, no per-particle Python loops
+  \item \texttt{python/src/state.py} skeleton
+\end{itemize}
+
+\subsection*{Day 2 -- BatteryModel2Cell state and parameters}
+\begin{itemize}[leftmargin=*]
+  \item Define the 8-state vector: two cells $\times$ (temperature,
+    SEI concentration, anode concentration, cathode concentration)
+  \item Define the 15-parameter vector: activation energies,
+    pre-exponential factors, heat capacities per reaction
+  \item \texttt{python/src/battery\_model.py} skeleton
+\end{itemize}
+
+\subsection*{Day 3 -- Arrhenius kinetics implementation}
+\begin{itemize}[leftmargin=*]
+  \item Implement the three parallel exothermic reactions (SEI
+    decomposition, anode reaction, cathode reaction) via the Arrhenius
+    rate law
+  \item Explicit Euler integration of the coupled ODE system
+  \item Vectorise fully across particles
+\end{itemize}
+
+\subsection*{Day 4 -- Parameter priors}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/src/parameter\_priors.py}: 15 prior distributions
+    built from the Week 1 \texttt{Distribution} types, centred on Kim
+    et al. (2007) nominal values
+  \item \texttt{build\_battery\_priors()} factory function
+\end{itemize}
+
+\subsection*{Day 5 -- Kim 2007 validation}
+\begin{itemize}[leftmargin=*]
+  \item Deterministic run at nominal parameters, adiabatic conditions
+  \item Compare onset temperature and thermal runaway timing against
+    Kim et al. (2007) accelerating rate calorimetry (ARC) data
+  \item \texttt{python/examples/week2\_battery\_ode.py} deterministic
+    demo script
+\end{itemize}
+
+\subsection*{Day 6 -- CLT convergence demo}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/examples/week2\_clt\_demo.py}: verify Monte
+    Carlo error shrinks at the theoretical $1/\sqrt{N}$ rate on a
+    simple test case, ahead of building the full engine in Week 3
+\end{itemize}
+
+\subsection*{Day 7 -- Test coverage + hardening}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_state.py} -- Model ABC contract
+    tests
+  \item \texttt{python/tests/test\_battery\_model.py} -- 8-state ODE
+    correctness, Kim 2007 validation as an automated test, physical
+    invariants (temperatures stay positive, concentrations stay in
+    $[0,1]$)
+  \item mypy strict, ruff clean, CI green
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{Model} ABC implemented exactly as planned
+  \item \texttt{BatteryModel2Cell}: 8-state Arrhenius thermal-runaway
+    ODE, fully vectorised \texttt{forward\_batch()}
+  \item 15 prior distributions in \texttt{parameter\_priors.py}, built
+    entirely from Week 1's \texttt{Distribution} types -- no new
+    distribution code needed
+  \item Kim et al. (2007) validation: onset temperature and runaway
+    behaviour match the reference ARC data
+  \item Deterministic ODE demo and CLT convergence demo scripts
+  \item 67 new Python tests (test\_state.py + test\_battery\_model.py)
+\end{itemize}
+
+\section*{Numbers at Week 2 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 111/111 passing (44 Week 1 + 67 new)
+  \item C++ tests: 13/13 passing (unchanged from Week 1)
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+\end{itemize}
+
+\section*{Carried into Week 3}
+\texttt{BatteryModel2Cell} + \texttt{build\_battery\_priors()} become
+the standard test case for every subsequent kernel layer: the Monte
+Carlo engine, Sobol sensitivity analysis, and provenance tracking in
+Week 3 are all built and validated against this exact model.
+
+\end{document}

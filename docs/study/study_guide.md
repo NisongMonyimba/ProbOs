@@ -95,3 +95,16 @@ reading explains.
 | pybind11 docs | https://pybind11.readthedocs.io |
 | Eigen docs | https://eigen.tuxfamily.org |
 | Kim et al. (2007) | DOI: 10.1016/j.jpowsour.2007.04.018 |
+
+---
+
+## Month 2
+
+### Week 5 -- Particle Filter Core
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/src/particle_filter.py` | Naesseth, Lindsten & Schon (2019), *Elements of Sequential Monte Carlo* | Full paper (free PDF) | Unifying predict/update/resample template used directly as this module's docstring structure |
+| `python/src/particle_filter.py` | Chopin & Papaspiliopoulos (2020), *An Introduction to Sequential Monte Carlo* | Ch 8-10 | Systematic resampling scheme, ESS-triggered resampling threshold (0.5) |
+| `python/src/particle_filter.py` (log-space weights) | Distribution.log_pdf() rationale (Month 1 Week 1) | -- | Same underflow-avoidance discipline applied to particle weights across many timesteps |
+| `python/tests/test_particle_filter.py` | Sarkka (2013), *Bayesian Filtering and Smoothing* | Ch 4 | Closed-form 1D Kalman filter recursion, used as ground truth to validate the particle filter numerically |

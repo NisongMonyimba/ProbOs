@@ -213,6 +213,12 @@ class ParticleFilter:
             model.initial_state(), (N, 1)
         ).astype(np.float64)
 
+        # Validate shape once at construction time, same discipline
+        # as MonteCarloEngine.run(). Catches a malformed Model
+        # subclass immediately with a clear ValueError, rather than
+        # a confusing broadcasting error deep inside predict().
+        model.validate_state(self._state)
+
         # Start with uniform weights in LOG space: log(1/N) for all particles.
         self._log_weights: FloatArray = np.full(N, -np.log(N), dtype=np.float64)
 

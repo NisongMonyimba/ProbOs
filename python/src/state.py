@@ -211,8 +211,9 @@ class Model(ABC):
         """
         Check that params has the correct shape.  Raises ValueError if not.
 
-        Called by the MonteCarloEngine before every simulation run.
-        Subclasses can call this at the start of forward_batch for safety.
+        Called once by MonteCarloEngine.run() before the simulation
+        loop begins. Subclasses can also call this at the start of
+        forward_batch() for additional per-step safety if desired.
 
         Raises
         ------

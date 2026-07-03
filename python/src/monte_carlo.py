@@ -164,6 +164,13 @@ class MonteCarloEngine:
             (self._N, 1),
         ).astype(np.float64)
 
+        # Validate shapes once, before the expensive n_steps loop.
+        # Catches a malformed Model subclass immediately with a
+        # clear ValueError, rather than a confusing broadcasting
+        # error deep inside forward_batch() on step 1.
+        self._model.validate_params(params)
+        self._model.validate_state(state)
+
         # Step 3: allocate trajectory array -- shape (N, n_steps+1, state_dim)
         trajectories = np.empty(
             (self._N, self._n_steps + 1, sd), dtype=np.float64

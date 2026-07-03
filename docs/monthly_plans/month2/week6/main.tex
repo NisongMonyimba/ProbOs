@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 2, Week 6\\pybind11: C++ Kernel Enters the Python Package}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 6 goal}
+Stop maintaining two parallel, disconnected implementations. Bind
+\texttt{BatteryCell} and \texttt{MonteCarloEngineOMP} (Week 4 C++
+kernel) into Python via pybind11, so the 7x-faster C++ path becomes
+directly callable, and cross-validate it against the Python engine.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- pybind11 setup}
+\begin{itemize}[leftmargin=*]
+  \item Install pybind11 into the project's dev environment
+  \item Locate the exact \texttt{BatteryCell} and
+    \texttt{MonteCarloEngineOMP} signatures from Week 4 before writing
+    bindings
+\end{itemize}
+
+\subsection*{Day 2 -- Bindings module}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{cpp/bindings/probos\_bindings.cpp}: expose
+    \texttt{battery\_nominal\_params()},
+    \texttt{battery\_initial\_state()}, \texttt{battery\_forward\_step()},
+    \texttt{MCResult}, \texttt{MonteCarloEngineOMP} as the
+    \texttt{probos\_cpp} module
+  \item Zero-copy NumPy array wrapping via capsule ownership
+\end{itemize}
+
+\subsection*{Day 3 -- CMake integration + build}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{pybind11\_add\_module()} target in
+    \texttt{cpp/CMakeLists.txt}, guarded by
+    \texttt{find\_package(pybind11)} so the build still succeeds
+    without it installed
+  \item Configure and build the extension; resolve Python
+    interpreter/library path mismatches between the project venv and
+    the system Python
+\end{itemize}
+
+\subsection*{Day 4 -- Cross-validation with the Python engine}
+\begin{itemize}[leftmargin=*]
+  \item Single-step exact agreement: \texttt{BatteryCell::forward\_step()}
+    vs \texttt{BatteryModel2Cell.forward\_batch()} at \texttt{rtol=1e-10}
+  \item 50-step accumulated-precision check
+  \item Full-run comparison: P50 estimates agree within 10\%; P05--P95
+    spread does NOT match, because the Week 4 C++ engine uses a
+    simplified 5\% uniform parameter perturbation, not the full
+    \texttt{battery\_priors} distributions Python draws from
+  \item Decision: document this gap explicitly with a dedicated test
+    that fails loudly if it silently closes or widens, rather than
+    quietly fixing or hiding it
+\end{itemize}
+
+\subsection*{Day 5 -- Test suite}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_cpp\_bindings.py}: module constants,
+    \texttt{BatteryCell} bindings, single/multi-step cross-validation,
+    \texttt{MonteCarloEngineOMP} bindings, cross-validation with the
+    Python engine including the documented known-gap test
+  \item Graceful skip via \texttt{pytest.importorskip} when
+    \texttt{cpp/build} has not been built -- verified on a fresh clone
+\end{itemize}
+
+\subsection*{Day 6 -- CI integration}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{python-tests} CI job to install pybind11, build
+    the extension, and run the new binding tests
+  \item Extend mypy/ruff file lists in CI to cover
+    \texttt{particle\_filter.py} and \texttt{python/pdsl/} (previously
+    missing)
+\end{itemize}
+
+\subsection*{Day 7 -- Study guide + commit}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{docs/study/study\_guide.md} entries: pybind11
+    documentation, CMake integration guide
+  \item Full verification and push
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{probos\_cpp} pybind11 extension built and importable
+  \item Single-step numerical correctness proven to \texttt{rtol=1e-8}
+    to \texttt{1e-10} against the Python reference -- not just
+    ``runs'', genuinely verified
+  \item Known P05--P95 spread discrepancy between C++ and Python
+    engines documented AND tested-for explicitly, rather than silently
+    accepted or silently fixed
+  \item 24 new tests, all passing
+  \item \texttt{pyproject.toml}: \texttt{pybind11} added to dev
+    dependencies in the same commit that introduced the dependency
+    (learned directly from the Week 4 \texttt{lark} CI-break incident)
+\end{itemize}
+
+\section*{Numbers at Week 6 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 308/308 passing (284 + 24 new)
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+\end{itemize}
+
+\section*{Carried into later weeks}
+Before continuing to Week 7 (FastAPI service layer), a full systematic
+audit was performed to find and fix latent problems while the surface
+area was still small -- see the pre-Week-7 hardening pass documented
+in \texttt{docs/monthly\_plans/month1/week4/main.tex}'s retrospective
+and \texttt{docs/standards/quality\_standards.md}. This audit found
+several real, fixable issues (missing \texttt{\_\_init\_\_.py},
+uncertain mypy coverage, a stale coverage floor, a bandit finding on
+the PDSL compiler) before they could compound under a new service
+layer.
+
+\end{document}

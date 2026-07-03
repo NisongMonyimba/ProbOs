@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 2, Week 5\\Particle Filter Core}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 5 goal}
+Build \texttt{ParticleFilter} -- ProbOS's first sequential Bayesian
+inference tool -- and validate it against an exact closed-form
+solution (the Kalman filter on a linear-Gaussian model) before ever
+touching \texttt{BatteryModel2Cell}.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Algorithm design}
+\begin{itemize}[leftmargin=*]
+  \item Bootstrap (SIR) particle filter: predict / update / resample
+  \item Log-space weights throughout, exponentiate only at the point of
+    use -- same underflow-avoidance discipline as
+    \texttt{Distribution.log\_pdf()} from Week 1
+  \item \texttt{python/src/particle\_filter.py} skeleton:
+    \texttt{ParticleFilter}, \texttt{PFResult}
+\end{itemize}
+
+\subsection*{Day 2 -- predict/update/resample implementation}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{predict()} reuses \texttt{Model.forward\_batch()}
+    unmodified -- zero changes to the Week 2 \texttt{Model} ABC
+  \item \texttt{update()}: log-space reweighting via a caller-supplied
+    log-likelihood function
+  \item \texttt{resample()}: systematic (low-variance) resampling
+  \item Effective sample size (ESS) diagnostic and resample-when-low
+    trigger
+\end{itemize}
+
+\subsection*{Day 3 -- Kalman filter ground truth}
+\begin{itemize}[leftmargin=*]
+  \item Implement the exact 1D linear-Gaussian Kalman filter recursion
+    directly (not imported from any library) as validation ground
+    truth
+  \item \texttt{RandomWalkModel}: a minimal linear-Gaussian test model
+\end{itemize}
+
+\subsection*{Day 4 -- Validation against Kalman ground truth}
+\begin{itemize}[leftmargin=*]
+  \item Posterior mean RMSE against exact Kalman filter mean
+  \item Posterior std within a sane range of exact Kalman filter std
+  \item Confirm Monte Carlo error shrinks from $N=100$ to $N=2000$
+    (convergence, not just agreement at one $N$)
+\end{itemize}
+
+\subsection*{Day 5 -- Unit tests + hardening}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_particle\_filter.py}: construction,
+    mechanics (predict/update/resample in isolation), and the full
+    Kalman ground-truth validation suite
+  \item mypy strict, ruff clean
+\end{itemize}
+
+\subsection*{Day 6-7 -- Study guide + commit}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{docs/study/study\_guide.md} entries: Naesseth et al.
+    (2019), Chopin \& Papaspiliopoulos (2020), Sarkka (2013)
+  \item Full test suite, CI verification
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{ParticleFilter} implemented exactly as planned
+  \item 20 tests: unit-level mechanics plus the critical Kalman ground
+    truth validation
+  \item Genuine mathematical proof, not a smoke test: posterior mean
+    and std converge to the exact closed-form Kalman filter solution,
+    with Monte Carlo error provably shrinking as $N$ grows
+  \item This is the same ``validate against a known analytical case
+    before touching the real model'' discipline established in Week 2
+    (Kim 2007) applied to a new class of algorithm (inference, not
+    forward simulation)
+\end{itemize}
+
+\section*{Numbers at Week 5 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 284/284 passing (264 Month 1 + 20 new)
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+\end{itemize}
+
+\section*{Carried into Week 6}
+\texttt{ParticleFilter} is validated and ready to be applied to
+\texttt{BatteryModel2Cell} with synthetic noisy observations in a
+later week. Week 6 turns to a different concern: binding the Week 4
+C++ kernel into the Python package via pybind11, so the two
+implementations stop being parallel and disconnected.
+
+\end{document}

@@ -10,10 +10,7 @@ Week 3 adds uncertainty: N=5000 particles with different parameter values.
 """
 
 import os
-import sys
 
-# Add project root to path so we can import python/src/
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import numpy as np
 import matplotlib

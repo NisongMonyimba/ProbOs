@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 1, Week 3\\Monte Carlo Engine, Sobol Sensitivity, Provenance}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 3 goal}
+Build the core inference-adjacent kernel: \texttt{MonteCarloEngine} for
+vectorised uncertainty propagation, \texttt{SobolSensitivity} for
+variance-based sensitivity analysis, and \texttt{ProvenanceTracker} for
+causal audit trails -- all validated against \texttt{BatteryModel2Cell}
+from Week 2.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- MonteCarloEngine core}
+\begin{itemize}[leftmargin=*]
+  \item Draw $N$ parameter sets from priors, propagate all particles
+    through \texttt{forward\_batch()} over \texttt{n\_steps}
+  \item Track P05/P50/P95 percentile trajectories at every timestep
+  \item \texttt{python/src/monte\_carlo.py} skeleton and core loop
+\end{itemize}
+
+\subsection*{Day 2 -- Convergence and CLT verification}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{sigma/sqrt(N)} convergence certificate
+  \item Verify empirically that MC error shrinks at the theoretical
+    $1/\sqrt{N}$ rate on \texttt{BatteryModel2Cell}
+  \item \texttt{python/examples/week3\_mc\_battery.py}
+\end{itemize}
+
+\subsection*{Day 3 -- SobolSensitivity}
+\begin{itemize}[leftmargin=*]
+  \item First-order ($S_1$) and total-effect ($S_T$) Sobol indices via
+    SALib's Saltelli sampling scheme
+  \item \texttt{python/src/sensitivity.py}
+  \item Document the known SALib reproducibility limitation (results
+    vary run-to-run at low sample sizes) rather than hiding it
+\end{itemize}
+
+\subsection*{Day 4 -- Sobol validation on BatteryModel2Cell}
+\begin{itemize}[leftmargin=*]
+  \item Run full sensitivity analysis: identify \texttt{Ea\_SEI} as the
+    dominant parameter for thermal runaway ($S_1 = 0.457$)
+  \item \texttt{python/examples/week3\_sobol\_battery.py}
+\end{itemize}
+
+\subsection*{Day 5 -- ProvenanceTracker}
+\begin{itemize}[leftmargin=*]
+  \item Causal DAG: which particles and which parameter draws produced
+    which outcomes
+  \item Query interface: trace any output value back to its causing
+    inputs
+  \item \texttt{python/src/provenance.py}
+\end{itemize}
+
+\subsection*{Day 6 -- Integration across all three components}
+\begin{itemize}[leftmargin=*]
+  \item Confirm \texttt{MonteCarloEngine}, \texttt{SobolSensitivity},
+    and \texttt{ProvenanceTracker} all operate correctly together on
+    the same \texttt{BatteryModel2Cell} + priors combination
+  \item Cross-check: does the provenance trail correctly identify
+    \texttt{Ea\_SEI} as a major driver, consistent with the Sobol
+    result?
+\end{itemize}
+
+\subsection*{Day 7 -- Test coverage + hardening}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_monte\_carlo.py},
+    \texttt{test\_sensitivity.py}, \texttt{test\_provenance.py}
+  \item mypy strict, ruff clean, CI green
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{MonteCarloEngine} implemented exactly as planned, with
+    P05/P50/P95 tracking and $\sigma/\sqrt{N}$ convergence certificate
+  \item CLT convergence verified empirically on
+    \texttt{BatteryModel2Cell}
+  \item \texttt{SobolSensitivity} implemented via SALib; \texttt{Ea\_SEI}
+    confirmed as the dominant thermal-runaway driver
+    ($S_1 = 0.457$, $S_T = 0.729$)
+  \item SALib's known reproducibility limitation documented directly in
+    code comments and tests rather than glossed over
+  \item \texttt{ProvenanceTracker} causal DAG implemented and validated
+    against the Sobol result -- consistent story across both tools
+  \item 91 new Python tests across the three new modules
+\end{itemize}
+
+\section*{Numbers at Week 3 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 202/202 passing (111 Weeks 1--2 + 91 new)
+  \item C++ tests: 13/13 passing (unchanged)
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+\end{itemize}
+
+\section*{Carried into Week 4}
+With the Python kernel complete (\texttt{Distribution}, \texttt{Model},
+\texttt{MonteCarloEngine}, \texttt{SobolSensitivity},
+\texttt{ProvenanceTracker}), Week 4 turns to performance (DP profiling,
+C++/OpenMP), language (PDSL compiler v0.1), and breadth
+(cross-discipline examples proving the kernel generalises beyond
+batteries).
+
+\end{document}

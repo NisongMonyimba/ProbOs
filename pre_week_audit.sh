@@ -43,7 +43,7 @@ section "1. CORRECTNESS"
 check "Full Python test suite passes" $?
 tail -3 /tmp/audit_pytest.log | sed 's/^/         /'
 
-.venv/bin/python -m mypy python/src/ python/pdsl/ python/examples/ \
+.venv/bin/python -m mypy python/src/ python/pdsl/ python/examples/ python/tests/ \
     --strict --ignore-missing-imports \
     --explicit-package-bases --no-error-summary > /tmp/audit_mypy.log 2>&1
 check "mypy strict on FULL python/ tree" $?

@@ -80,7 +80,7 @@ jobs:
 
       - name: mypy strict type check
         run: |
-          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ python/server/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ python/server/ python/tests/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           echo "mypy exit: $?"
 
       - name: ruff lint
@@ -259,7 +259,7 @@ jobs:
 
       - name: mypy + ruff (full tree)
         run: |
-          python -m mypy python/src/ python/pdsl/ python/examples/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m mypy python/src/ python/pdsl/ python/examples/ python/tests/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           python -m ruff check python/ --select E,F,W
 
       - name: Run all examples

@@ -80,4 +80,50 @@ matching a direct Python call to the same \texttt{MonteCarloEngine},
 for all three endpoints (\texttt{/simulate}, \texttt{/sensitivity},
 \texttt{/filter}).
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/server/schemas.py}: Pydantic request/response
+    schemas for all four endpoints, with resource-exhaustion bounds
+    enforced via \texttt{Field(ge=..., le=...)} at the HTTP boundary
+    -- exactly the previously-deferred check from
+    \texttt{quality\_standards.md} Section 8, now active
+  \item \texttt{python/server/main.py}: \texttt{GET /health},
+    \texttt{POST /simulate}, \texttt{POST /sensitivity},
+    \texttt{POST /filter} -- each a thin translation layer over an
+    existing kernel object, no new kernel logic
+  \item Kernel-raised \texttt{ValueError} surfaces as HTTP 422 (not an
+    unhandled 500); unknown \texttt{model\_name} surfaces as HTTP 404
+  \item 19 integration tests, including three that directly compare
+    HTTP JSON responses against a matching direct Python kernel call
+    at \texttt{rtol=1e-10} -- proving zero numerical discrepancy
+    introduced by the service layer, not just ``returns 200''
+  \item Additionally smoke-tested with a real \texttt{uvicorn} process
+    over an actual HTTP socket (\texttt{/health} and \texttt{/simulate}),
+    not just FastAPI's in-process \texttt{TestClient}
+  \item \texttt{quality\_standards.md} Section 8 updated: the
+    previously-deferred API/service checks are now active and checked
+    off, each pointing to the specific test that verifies it
+  \item CI extended across all three relevant jobs
+    (\texttt{python-tests}, \texttt{integration}, \texttt{quality-audit})
+    to install and test the new server layer
+\end{itemize}
+
+\section*{Numbers at Week 7 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 341/341 passing (322 + 19 new)
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors (full \texttt{python/} tree including
+    \texttt{python/server/})
+  \item ruff: 0 warnings
+  \item \texttt{pre\_week\_audit.sh}: 21/21 checks passed
+\end{itemize}
+
+\section*{Carried into later weeks}
+Only the \texttt{battery} model is currently registered in the server
+layer's model registry. Extending it to the Week 4 cross-discipline
+models (option pricer, ED queue, clinical trial) is a natural, low-risk
+follow-up once genuinely needed. The service layer itself is complete
+and satisfies its exit criteria exactly as planned.
 \end{document}

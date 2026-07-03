@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 1, Week 1\\Distribution ABC}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 1 goal}
+Build the foundational \texttt{Distribution} abstract base class and
+concrete implementations (\texttt{Normal}, \texttt{LogNormal},
+\texttt{Uniform}, \texttt{Beta}), in both Python and C++, with
+analytical \texttt{log\_pdf} to avoid numerical underflow. This is the
+type system every later layer of ProbOS builds on.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Distribution ABC design}
+\begin{itemize}[leftmargin=*]
+  \item Define the abstract interface: \texttt{sample()}, \texttt{pdf()},
+    \texttt{log\_pdf()}, \texttt{cdf()}, \texttt{ppf()}
+  \item Decide: \texttt{log\_pdf()} must be analytical, not
+    \texttt{log(pdf(x))}, to avoid underflow on extreme values
+  \item Set up \texttt{python/src/distributions.py} skeleton
+\end{itemize}
+
+\subsection*{Day 2 -- Normal distribution}
+\begin{itemize}[leftmargin=*]
+  \item Implement \texttt{Normal(mu, sigma)}: constructor validation
+    (\texttt{sigma > 0}), \texttt{sample()} via NumPy's
+    \texttt{default\_rng}, analytical \texttt{pdf}/\texttt{log\_pdf}
+  \item Domain example baked into docstrings: battery SEI activation
+    energy \texttt{Ea\_SEI \textasciitilde{} Normal(1.35e5, 5e3)}
+  \item First unit tests
+\end{itemize}
+
+\subsection*{Day 3 -- LogNormal, Uniform, Beta}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{LogNormal(mu, sigma)} -- parameters describe the
+    underlying normal, not $X$ itself
+  \item \texttt{Uniform(low, high)} -- validate \texttt{low < high}
+  \item \texttt{Beta(alpha, beta)} -- validate both shape parameters
+    positive
+  \item Constructor validation tests for all three
+\end{itemize}
+
+\subsection*{Day 4 -- C++ Normal + build system}
+\begin{itemize}[leftmargin=*]
+  \item Port \texttt{Normal} to C++20: \texttt{cpp/include/distributions/normal.hpp},
+    \texttt{cpp/src/distributions/normal.cpp}
+  \item Set up \texttt{CMakeLists.txt}, Google Test integration
+  \item First C++ unit tests
+\end{itemize}
+
+\subsection*{Day 5 -- Test coverage + CI}
+\begin{itemize}[leftmargin=*]
+  \item Fill out \texttt{python/tests/test\_distributions.py}: sampling
+    statistics, PDF/log-PDF agreement, boundary conditions
+  \item Fill out \texttt{cpp/tests/test\_normal.cpp}
+  \item First working \texttt{.github/workflows/ci.yml}
+\end{itemize}
+
+\subsection*{Day 6-7 -- Buffer / hardening}
+\begin{itemize}[leftmargin=*]
+  \item mypy strict pass, ruff clean
+  \item Documentation pass on all docstrings
+  \item Confirm CI green end to end
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{Distribution} ABC implemented exactly as planned:
+    \texttt{sample()}, \texttt{pdf()}, \texttt{log\_pdf()},
+    \texttt{cdf()}, \texttt{ppf()}
+  \item Four concrete distributions: \texttt{Normal}, \texttt{LogNormal},
+    \texttt{Uniform}, \texttt{Beta} -- all with fail-fast constructor
+    validation and analytical \texttt{log\_pdf}
+  \item C++20 port of \texttt{Normal} with Google Test coverage
+  \item 44 Python tests, 13 C++ tests -- both suites passing
+  \item \texttt{CMakeLists.txt} established with C++20 standard,
+    Google Test integration guarded by \texttt{find\_package(GTest QUIET)}
+    so the build degrades gracefully without it
+  \item First working CI pipeline (later extended across Weeks 2--6)
+\end{itemize}
+
+\section*{Numbers at Week 1 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 44/44 passing
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+\end{itemize}
+
+\section*{Carried into Week 2}
+The \texttt{Distribution} ABC is the foundation the \texttt{Model} ABC
+(Week 2) builds on directly -- every uncertain physical parameter in
+\texttt{BatteryModel2Cell} is drawn from one of these four distribution
+types.
+
+\end{document}

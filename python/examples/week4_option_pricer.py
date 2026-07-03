@@ -221,7 +221,9 @@ class OptionPricerModel(Model):
         # is intentional here: each call to forward_batch() represents
         # genuinely new randomness in the asset's future path, not a
         # re-sampling of fixed physical parameters.
-        Z: FloatArray = np.random.standard_normal(N)
+        Z: FloatArray = np.asarray(
+            np.random.standard_normal(size=N), dtype=np.float64
+        )
 
         # Exact GBM solution (NOT an Euler approximation):
         #   S_{t+dt} = S_t * exp( (mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z )

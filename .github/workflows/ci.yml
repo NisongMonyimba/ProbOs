@@ -78,7 +78,7 @@ jobs:
           echo "pytest exit: $?"
       - name: mypy strict type check
         run: |
-          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
+          python -m mypy python/src/distributions.py python/src/state.py python/src/battery_model.py python/src/monte_carlo.py python/src/sensitivity.py python/src/provenance.py python/src/particle_filter.py python/pdsl/ python/examples/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
           echo "mypy exit: $?"
       - name: ruff lint
         run: |

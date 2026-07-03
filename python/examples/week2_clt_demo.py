@@ -46,7 +46,7 @@ os.makedirs("outputs/figures", exist_ok=True)
 
 def estimate_clt_convergence(
     dist: Normal,
-    n_values: list,
+    n_values: list[int],
     n_trials: int,
     rng: np.random.Generator,
 ) -> np.ndarray:
@@ -86,7 +86,7 @@ def estimate_clt_convergence(
 
 
 def plot_clt(
-    n_values: list,
+    n_values: list[int],
     mean_errors: np.ndarray,
     sigma: float,
     save_path: str,
@@ -166,7 +166,7 @@ def plot_clt(
     print(f"  Figure saved: {save_path}")
 
 
-def print_summary(n_values: list, mean_errors: np.ndarray, sigma: float) -> None:
+def print_summary(n_values: list[int], mean_errors: np.ndarray, sigma: float) -> None:
     """Print a table comparing measured error to theoretical CLT bound."""
     print()
     print("=" * 65)

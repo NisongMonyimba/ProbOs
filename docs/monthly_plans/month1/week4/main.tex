@@ -1,0 +1,145 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 1, Week 4\\DP Profiling, C++/OpenMP, PDSL v0.1, Cross-Discipline Examples}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 4 goal}
+Three parallel threads: performance (honest DP profiling, C++/OpenMP
+kernel), language (PDSL compiler v0.1), and breadth (three
+cross-discipline examples proving the kernel generalises beyond
+batteries). Close the month with a retrospective and Month 2 plan.
+
+\section*{Day-by-day plan}
+
+\subsection*{Monday -- DP optimisation profiling}
+\begin{itemize}[leftmargin=*]
+  \item Profile candidate optimisations honestly: cache SALib's
+    \texttt{\_build\_problem()} at \texttt{\_\_init\_\_} (measured:
+    1040x), CLT convergence subset trick (measured: 45x)
+  \item Also test \texttt{inv\_RT} precompute -- measure it, and report
+    the true result (\textasciitilde{}1x, no real speedup) rather than
+    assuming or claiming a win
+\end{itemize}
+
+\subsection*{Tuesday -- C++ BatteryCell + OpenMP}
+\begin{itemize}[leftmargin=*]
+  \item Port \texttt{BatteryModel2Cell} to C++20:
+    \texttt{cpp/include/kernel/battery\_cell.hpp}
+  \item \texttt{MonteCarloEngineOMP}: OpenMP-parallel particle
+    propagation
+  \item Benchmark against Python: measured 7x speedup (serial C++ vs
+    Python, not yet parallel-vs-Python)
+\end{itemize}
+
+\subsection*{Wednesday -- PDSL compiler v0.1}
+\begin{itemize}[leftmargin=*]
+  \item Grammar (Lark) $\to$ AST $\to$ codegen $\to$ compiler pipeline
+  \item \texttt{python/pdsl/}: \texttt{grammar.lark},
+    \texttt{ast\_nodes.py}, \texttt{parser.py}, \texttt{codegen.py},
+    \texttt{compiler.py}
+  \item Literature update: added modern citations (Feng 2018, Saltelli
+    2019, Chopin \& Papaspiliopoulos 2020, Naesseth 2019, FDA 2019) to
+    the manuscript
+\end{itemize}
+
+\subsection*{Thursday -- v0.1.0 checkpoint decision}
+\begin{itemize}[leftmargin=*]
+  \item Decision: defer formal publication/Zenodo DOI/GitHub Release
+    to Year 2 -- a git tag is version-control hygiene, a Zenodo DOI is
+    publication infrastructure with zero value before there is a paper
+    citing it
+  \item Repo hygiene: moved all generated PNGs into
+    \texttt{outputs/figures/}, fixed resulting CI break (missing
+    \texttt{lark} dependency)
+  \item \texttt{check\_ci.sh}: permanent CI-watching script
+\end{itemize}
+
+\subsection*{Friday/Saturday -- Three cross-discipline examples}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{week4\_option\_pricer.py} -- European call option
+    (Black-Scholes-Merton GBM), validated against the closed-form price
+  \item \texttt{week4\_ed\_queue.py} -- M/M/1 emergency department
+    queue, validated against closed-form queueing theory ($\rho$, $L$,
+    $W$)
+  \item \texttt{week4\_clinical\_trial.py} -- adaptive Bayesian trial
+    (Beta-Binomial), informed by FDA (2019) adaptive design guidance
+  \item Each needed zero kernel changes -- only a new \texttt{Model}
+    subclass, proving domain-agnosticism rather than assuming it
+\end{itemize}
+
+\subsection*{Sunday -- Month 1 retrospective + Month 2 plan}
+\begin{itemize}[leftmargin=*]
+  \item Wrote \texttt{docs/retrospectives/month1\_retrospective.md} and
+    \texttt{month2\_plan.md}
+  \item Compiled both to PDF under
+    \texttt{docs/monthly\_plans/month1/} and
+    \texttt{docs/monthly\_plans/month2/}
+  \item Created \texttt{docs/monthly\_plans/overall/main.tex}: replaced
+    the earlier inconsistent ``Year 1/2/3'' labelling (which did not
+    align with actual calendar months) with an honest Month 1--24
+    numbering, most of it explicitly DIRECTIONAL rather than
+    over-specified
+\end{itemize}
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item DP profiling: two genuine wins (1040x, 45x) and one honest
+    non-win (\texttt{inv\_RT} \textasciitilde{}1x) -- documented
+    rather than glossed over
+  \item C++ \texttt{BatteryCell} + \texttt{MonteCarloEngineOMP}: 7x
+    serial speedup over Python confirmed by measurement
+  \item PDSL compiler v0.1: full grammar $\to$ AST $\to$ codegen $\to$
+    compiler pipeline, 28 tests, including the tricky unary-minus-in-
+    function-call parser case
+  \item Three cross-discipline examples, each validated against a
+    closed-form or literature benchmark, not just ``runs without
+    crashing''
+  \item \texttt{check\_ci.sh} established as a permanent, repeatable
+    CI verification step
+  \item Month 1 retrospective and Month 2 plan written and compiled to
+    PDF, plus the overall 24-month roadmap correcting earlier
+    inconsistent year labelling
+  \item \emph{Later, before Week 7:} a full pre-week quality audit
+    system was added retroactively --
+    \texttt{docs/standards/quality\_standards.md} and
+    \texttt{pre\_week\_audit.sh} -- covering coverage, property-based
+    testing (Hypothesis), security scanning (bandit, pip-audit), and
+    packaging/build verification. This audit caught and fixed real
+    latent bugs from Week 4's own work: \texttt{python/examples/}
+    missing \texttt{\_\_init\_\_.py}, 4 mypy errors that had never been
+    checked by CI, a stale coverage threshold, and a bandit finding on
+    the PDSL compiler's \texttt{exec()} call (verified as a sound,
+    documented security boundary rather than a real vulnerability)
+\end{itemize}
+
+\section*{Numbers at Week 4 close (updated through the pre-Week-7 audit)}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 322/322 passing
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors (full \texttt{python/} tree)
+  \item ruff: 0 warnings (full \texttt{python/} tree)
+  \item Coverage: 90.79\% (floor: 85\%)
+  \item bandit: 0 unresolved findings
+  \item pip-audit: 0 known CVEs
+  \item \texttt{pre\_week\_audit.sh}: 21/21 checks passed
+\end{itemize}
+
+\section*{Carried into Month 2}
+Month 1 closes with a validated forward-simulation kernel across four
+domains (battery physics, finance, hospital operations, clinical
+medicine), a working compiler front-end, and -- critically -- a
+standing quality-audit protocol now running automatically in CI before
+every future week's work begins. Month 2 turns to sequential inference
+(\texttt{ParticleFilter}), binding the C++ kernel into the Python
+package (pybind11), and eventually a FastAPI service layer.
+
+\end{document}

@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3, Week 9\\Extend REST API Model Registry}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 9 goal}
+Extend \texttt{python/server/main.py}'s model registry beyond
+\texttt{BatteryModel2Cell} to the three Week 4 cross-discipline models
+(\texttt{OptionPricerModel}, \texttt{EDQueueModel},
+\texttt{ClinicalTrialModel}) -- closing one of the open SBIR Phase I
+asks (\texttt{docs/sbir\_phase1\_onepager.md}: ``Extend the REST API's
+model registry beyond \texttt{BatteryModel2Cell} to the
+finance/operations/clinical models already built''). This is
+deliberately low-risk: the endpoint pattern is already proven for one
+model, and the three target models are unchanged, already-validated
+Week 4 code.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Registry design + schema audit}
+\begin{itemize}[leftmargin=*]
+  \item Review each of the three models' constructors and
+    prior-builder functions to determine what request-schema fields
+    each needs (e.g. \texttt{OptionPricerModel} needs S0/K/T/r;
+    \texttt{EDQueueModel} needs Q0; \texttt{ClinicalTrialModel} needs
+    randomisation ratio)
+  \item Decide whether \texttt{SimulateRequest} gets model-specific
+    optional fields, or whether each model gets its own request
+    schema class -- lean toward the latter for type safety, following
+    the existing \texttt{schemas.py} pattern
+  \item Update \texttt{\_build\_model\_and\_priors()}'s registry dict
+    to include all four models
+\end{itemize}
+
+\subsection*{Day 2 -- /simulate for the three new models}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{POST /simulate} to accept
+    \texttt{model\_name} values \texttt{"option\_pricer"},
+    \texttt{"ed\_queue"}, \texttt{"clinical\_trial"}
+  \item Verify each returns percentiles/convergence matching a direct
+    Python \texttt{MonteCarloEngine} call, at the same
+    \texttt{rtol=1e-10} standard already established for
+    \texttt{BatteryModel2Cell}
+\end{itemize}
+
+\subsection*{Day 3 -- /sensitivity for the three new models}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{POST /sensitivity} similarly
+  \item Confirm \texttt{SobolSensitivity} runs correctly against each
+    model's own \texttt{param\_dim}/\texttt{state\_dim} (these differ
+    across the four models -- e.g. \texttt{ClinicalTrialModel} has
+    \texttt{state\_dim=4}, not 8 like \texttt{BatteryModel2Cell})
+\end{itemize}
+
+\subsection*{Day 4 -- /filter for the three new models}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{POST /filter} to accept the three new models
+  \item Confirm the existing Gaussian-observation-noise likelihood
+    pattern is appropriate for each, or document where it is not
+    (e.g. \texttt{ClinicalTrialModel}'s Week 8 filtering needed a
+    fundamentally different, deterministic-state design -- the
+    \texttt{/filter} endpoint may need to expose that pattern too, or
+    explicitly scope it out for this model with a clear error message
+    rather than silently returning a nonsensical result)
+\end{itemize}
+
+\subsection*{Day 5 -- Integration tests}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{python/tests/test\_server.py} with the same
+    numerical-match discipline already used for
+    \texttt{BatteryModel2Cell} (HTTP response vs direct kernel call at
+    \texttt{rtol=1e-10}), for all three new models across all three
+    endpoints where applicable
+\end{itemize}
+
+\subsection*{Day 6 -- pre\_week\_audit.sh + CI}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{pre\_week\_audit.sh} before considering the week
+    complete
+  \item No new CI steps expected (existing \texttt{test\_server.py}
+    execution already covers this), but verify explicitly
+\end{itemize}
+
+\subsection*{Day 7 -- Documentation + retrospective}
+\begin{itemize}[leftmargin=*]
+  \item Update \texttt{docs/sbir\_phase1\_onepager.md}: move this item
+    from the SBIR Ask section to a demonstrated-results bullet, since
+    it will now be complete
+  \item Update \texttt{README.md}'s REST API section to reflect all
+    four registered models
+  \item Retrospective appended to this document once complete
+\end{itemize}
+
+\section*{Exit criteria}
+All three POST endpoints (\texttt{/simulate}, \texttt{/sensitivity},
+\texttt{/filter}, where applicable) work correctly for
+\texttt{OptionPricerModel}, \texttt{EDQueueModel}, and
+\texttt{ClinicalTrialModel}, each verified against a direct Python
+kernel call at \texttt{rtol=1e-10} -- the same standard already
+established for \texttt{BatteryModel2Cell} in Week 7.
+
+\end{document}

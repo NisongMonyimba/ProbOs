@@ -107,4 +107,122 @@ All three POST endpoints (\texttt{/simulate}, \texttt{/sensitivity},
 kernel call at \texttt{rtol=1e-10} -- the same standard already
 established for \texttt{BatteryModel2Cell} in Week 7.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/server/main.py}'s model registry extended from
+    one model to all four: \texttt{BatteryModel2Cell},
+    \texttt{OptionPricerModel}, \texttt{EDQueueModel},
+    \texttt{ClinicalTrialModel}. \texttt{/simulate} and
+    \texttt{/sensitivity} verified correct for all four; no new
+    request-schema fields were needed, since all three added models
+    already had sensible constructor defaults.
+  \item \texttt{/filter} was deliberately NOT extended to
+    \texttt{clinical\_trial}: direct investigation confirmed the
+    endpoint's generic Gaussian-observation-noise likelihood applied
+    to that model's count-based state (an integer enrollment count,
+    not a continuous noisily-observed quantity) produces a
+    mechanically valid but MEANINGLESS \texttt{200 OK} result. Fixed
+    by explicitly rejecting this combination with a clear
+    \texttt{422} error pointing to Week 8's correct, purpose-built
+    design for this model -- honest about the limitation rather than
+    silently returning a nonsensical answer.
+  \item A genuine, previously-undiscovered architectural bug was
+    found while writing Day 5's integration tests: three of the four
+    registered models (\texttt{OptionPricerModel},
+    \texttt{EDQueueModel}, \texttt{ClinicalTrialModel}) drew
+    randomness from the GLOBAL, uncontrolled \texttt{np.random} state
+    inside \texttt{forward\_batch()}, meaning \texttt{MonteCarloEngine}'s
+    \texttt{seed} parameter (which only seeds prior sampling) did NOT
+    actually guarantee bit-exact reproducibility for them, unlike
+    \texttt{BatteryModel2Cell}.
+
+    The initial response was to document this as a known limitation
+    and weaken the affected tests to structural-only assertions. Per
+    explicit user feedback that this was insufficiently thorough, the
+    ROOT CAUSE was fixed instead: all three models now own a private,
+    per-instance \texttt{np.random.default\_rng(seed)}, the same
+    correctly-seeded-Generator pattern already used by
+    \texttt{MonteCarloEngine}/\texttt{ParticleFilter}/
+    \texttt{SobolSensitivity} themselves. This let three further
+    things happen for real, not just in theory:
+    \begin{itemize}
+      \item The REST API's \texttt{seed} field now genuinely
+        reproduces results for ALL four models, verified directly
+        (two identical API calls, same seed, identical JSON).
+      \item The Week 9 integration tests were restored to the SAME
+        \texttt{rtol=1e-10} exact-match standard already used for
+        \texttt{BatteryModel2Cell}, rather than a weaker fallback.
+      \item Week 8's explicit \texttt{np.random.seed()} doctrine
+        exception (added specifically because
+        \texttt{EDQueueModel} had no other way to be made
+        reproducible, with manual global-state save/restore via
+        \texttt{try/finally}) was REMOVED entirely -- no longer
+        needed, since the model now handles its own reproducibility
+        correctly.
+    \end{itemize}
+  \item A second, explicit, exhaustive sweep was then run across the
+    entire codebase (per further user directive: ``comprehensively
+    fix all problems and do not do any workaround'') searching for
+    every remaining workaround, documented limitation, TODO/FIXME/HACK
+    marker, and scope restriction. This found one more genuine
+    workaround: \texttt{/simulate} was returning a hardcoded
+    \texttt{wall\_time\_ms=0.0} placeholder, with a comment explaining
+    the Python engine simply never measured its own wall-clock time
+    (unlike the C++ \texttt{probos\_cpp.MCResult}, which does). Fixed
+    at the root: \texttt{MonteCarloEngine.run()} now genuinely
+    measures its own wall-clock time via \texttt{time.perf\_counter()}.
+    The same sweep also correctly distinguished genuine workarounds
+    from legitimate, honestly-documented scope boundaries (e.g. the
+    \texttt{/filter} restriction above, and the already-documented
+    C++/Python \texttt{MonteCarloEngineOMP} parameter-spread
+    discrepancy from Week 6) -- these were left unchanged, since
+    ``fixing'' them would mean building new features, not closing a
+    workaround.
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item The registry extension itself was genuinely low-risk, exactly
+    as planned: all three added models worked correctly for
+    \texttt{/simulate} and \texttt{/sensitivity} on the first
+    successful pass, with zero code changes needed beyond the
+    registry dict itself.
+  \item Two real, substantive bugs were found through disciplined
+    testing at a genuinely strict standard (\texttt{rtol=1e-10}), not
+    through inspection alone -- neither would have surfaced under a
+    weaker testing standard, and both were fixed at the root rather
+    than documented around, once pushed to do so.
+\end{enumerate}
+
+\section*{What was harder than expected}
+\begin{enumerate}[leftmargin=*]
+  \item The initial instinct when a genuinely hard architectural
+    limitation surfaced (Day 5's reproducibility bug) was to document
+    it honestly rather than fix it -- itself a defensible instinct in
+    isolation (the bug was real, the documentation was accurate), but
+    insufficient given the actual fix was well within reach and
+    meaningfully improved the codebase. The lesson: an honestly
+    documented workaround is still a workaround, and finding a bug
+    is not the same as fixing it.
+\end{enumerate}
+
+\section*{Numbers at Week 9 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 379/379 passing
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors (full \texttt{python/} tree)
+  \item ruff: 0 warnings (full declared config)
+  \item Coverage: 90.92\%
+  \item \texttt{pre\_week\_audit.sh}: 16/16 checks passed
+\end{itemize}
+
+\section*{Carried into future weeks}
+The REST API's \texttt{/filter} endpoint still has no generic design
+for count-based, fully-observed models like
+\texttt{clinical\_trial} -- Week 8's purpose-built sequential
+filtering approach for this model remains example-only, not exposed
+over HTTP. This is a legitimate, larger feature addition for a future
+week, not a bug to close now.
 \end{document}

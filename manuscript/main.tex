@@ -579,9 +579,21 @@ git clone https://github.com/NisongMonyimba/ProbOs
 cd ProbOs
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]" && pip install SALib matplotlib scipy
-bash RunTests.sh   # 202 Python + 13 C++ tests, mypy, ruff
-bash RunAll.sh     # all examples end-to-end
+python -m pytest python/tests/   # full test suite, mypy, ruff
+bash pre_week_audit.sh           # full quality audit
 \end{lstlisting}
+
+\begin{remark}
+The reproduction commands above reflect the current repository
+layout (Month 2 Week 7 onward). At the time Weeks 1--3 were
+written, reproduction used \texttt{RunTests.sh} and
+\texttt{RunAll.sh}; those scripts were later retired in favour
+of \texttt{pre\_week\_audit.sh}, which supersedes them with a
+more comprehensive check (coverage, security scanning, and
+packaging verification in addition to tests and lint). The
+test/tool counts elsewhere in this paper reflect the Weeks 1--3
+state at time of writing and are not updated here.
+\end{remark}
 
 % ============================================================
 \section{Week 4 Plan}

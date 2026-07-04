@@ -139,3 +139,10 @@ reading explains.
 |------|----------|----------|-----|
 | `python/examples/week8_ed_queue_filter.py` | Chopin & Papaspiliopoulos (2020) | Ch 2, 8-10 | Same SMC framework as Week 5's ParticleFilter, here applied to parameter estimation rather than state estimation |
 | `python/src/particle_filter.py` (new `params` property) | -- | -- | Genuine kernel addition: exposes per-particle parameter values so any consumer can recover a posterior over PARAMETERS, not just over state |
+
+### Week 8 Days 3-4 -- Clinical Trial Sequential Filtering
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/examples/week8_clinical_trial_filter.py` | Gelman et al., *Bayesian Data Analysis* | Ch 2-3 | Beta-Binomial conjugacy, used here as the exact ground-truth check on ParticleFilter's SMC approximation |
+| `python/examples/week8_clinical_trial_filter.py` (static parameter estimation via SMC) | Naesseth, Lindsten & Schon (2019) | Sec 4 | Treating time-invariant parameters as particle-carried quantities scored via likelihood, with deterministic state transitions -- a standard SMC pattern for static parameter estimation with fully-observed data |

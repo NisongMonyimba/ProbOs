@@ -107,6 +107,7 @@ jobs:
       - name: Run Week 8 examples
         run: |
           python python/examples/week8_ed_queue_filter.py
+          python python/examples/week8_clinical_trial_filter.py
 
       - name: Upload figures
         uses: actions/upload-artifact@v6
@@ -276,6 +277,7 @@ jobs:
           python python/examples/week4_ed_queue.py
           python python/examples/week4_clinical_trial.py
           python python/examples/week8_ed_queue_filter.py
+          python python/examples/week8_clinical_trial_filter.py
 
       - name: Print summary
         run: |

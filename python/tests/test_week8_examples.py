@@ -197,3 +197,185 @@ class TestEDQueueParticleFilter:
         assert result.n_steps == 200
         assert result.means.shape == (200, 1)
         assert result.stds.shape == (200, 1)
+
+
+
+# ---------------------------------------------------------------------------
+# TestClinicalTrialFilterHelpers
+# ---------------------------------------------------------------------------
+
+from python.examples.week4_clinical_trial import (  # noqa: E402
+    build_clinical_trial_priors,
+)
+from python.examples.week8_clinical_trial_filter import (  # noqa: E402
+    ClinicalTrialFilterModel,
+    build_trial_filter_log_likelihood,
+    generate_synthetic_trial_data,
+)
+
+
+class TestClinicalTrialFilterHelpers:
+
+    def test_generate_synthetic_trial_data_shapes(self) -> None:
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=50, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=1,
+        )
+        assert arm.shape == (50,)
+        assert outcome.shape == (50,)
+
+    def test_generate_synthetic_trial_data_reproducible(self) -> None:
+        arm1, outcome1 = generate_synthetic_trial_data(
+            n_patients=50, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=7,
+        )
+        arm2, outcome2 = generate_synthetic_trial_data(
+            n_patients=50, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=7,
+        )
+        np.testing.assert_array_equal(arm1, arm2)
+        np.testing.assert_array_equal(outcome1, outcome2)
+
+    def test_generate_synthetic_trial_data_values_are_binary(self) -> None:
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=100, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=1,
+        )
+        assert set(np.unique(arm)).issubset({0.0, 1.0})
+        assert set(np.unique(outcome)).issubset({0.0, 1.0})
+
+    def test_clinical_trial_filter_model_state_dim(self) -> None:
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=10, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=1,
+        )
+        model = ClinicalTrialFilterModel(arm, outcome)
+        assert model.state_dim == 4
+        assert model.param_dim == 2
+
+    def test_clinical_trial_filter_model_forward_batch_deterministic(
+        self,
+    ) -> None:
+        """
+        Unlike Week 4's ClinicalTrialModel (stochastic per particle),
+        this model's forward_batch() must be fully DETERMINISTIC --
+        all particles advance identically since real trial data is
+        fully observed, not simulated.
+        """
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=10, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=1,
+        )
+        model = ClinicalTrialFilterModel(arm, outcome)
+        N = 50
+        state = np.tile(model.initial_state(), (N, 1))
+        params = np.zeros((N, 2))  # unused by this model's forward_batch
+        new_state = model.forward_batch(state, params, dt=1.0)
+        # Every particle's row should be identical.
+        assert np.all(new_state == new_state[0])
+
+    def test_clinical_trial_filter_model_counts_increment_by_one(
+        self,
+    ) -> None:
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=10, true_p_treatment=0.45, true_p_control=0.30,
+            randomisation_ratio=0.5, seed=1,
+        )
+        model = ClinicalTrialFilterModel(arm, outcome)
+        state = np.tile(model.initial_state(), (5, 1))
+        params = np.zeros((5, 2))
+        new_state = model.forward_batch(state, params, dt=1.0)
+        total_before = state[0, 0] + state[0, 2]
+        total_after = new_state[0, 0] + new_state[0, 2]
+        assert total_after - total_before == 1.0
+
+
+class TestClinicalTrialParticleFilter:
+
+    @classmethod
+    @pytest.fixture(scope="class")
+    def trial_filter_result(cls) -> dict[str, float]:
+        """
+        Runs the full clinical trial filtering pipeline once, shared
+        across tests in this class.
+        """
+        n_patients = 200
+        true_p_treatment = 0.45
+        true_p_control = 0.30
+
+        arm, outcome = generate_synthetic_trial_data(
+            n_patients=n_patients, true_p_treatment=true_p_treatment,
+            true_p_control=true_p_control, randomisation_ratio=0.5,
+            seed=42,
+        )
+
+        model = ClinicalTrialFilterModel(arm, outcome)
+        priors = build_clinical_trial_priors(
+            p_treatment_guess=0.45, p_control_guess=0.30,
+        )
+        pf = ParticleFilter(model, priors, N=2000, dt=1.0, seed=42)
+        loglik = build_trial_filter_log_likelihood(pf, arm, outcome)
+
+        observations = np.arange(n_patients, dtype=np.float64).reshape(-1, 1)
+        result = pf.run(observations, loglik)
+
+        final_p_treatment = pf.params[:, 0]
+        final_p_control = pf.params[:, 1]
+        final_weights = result.final_weights
+
+        pf_prob = float(
+            np.average(
+                final_p_treatment > final_p_control, weights=final_weights
+            )
+        )
+
+        final_state = result.final_state[0]
+        final_n_treat, final_s_treat, final_n_ctrl, final_s_ctrl = final_state
+
+        treat_alpha0, treat_beta0 = 0.45 * 20.0, (1.0 - 0.45) * 20.0
+        ctrl_alpha0, ctrl_beta0 = 0.30 * 20.0, (1.0 - 0.30) * 20.0
+        exact_rng = np.random.default_rng(123)
+        n_mc = 20_000
+        treat_samples = exact_rng.beta(
+            treat_alpha0 + final_s_treat,
+            treat_beta0 + (final_n_treat - final_s_treat),
+            n_mc,
+        )
+        ctrl_samples = exact_rng.beta(
+            ctrl_alpha0 + final_s_ctrl,
+            ctrl_beta0 + (final_n_ctrl - final_s_ctrl),
+            n_mc,
+        )
+        exact_prob = float(np.mean(treat_samples > ctrl_samples))
+
+        return {
+            "pf_prob": pf_prob,
+            "exact_prob": exact_prob,
+            "n_patients": float(n_patients),
+        }
+
+    def test_pf_matches_exact_batch_calculation(
+        self, trial_filter_result: dict[str, float]
+    ) -> None:
+        """
+        THE key validation: ParticleFilter's sequential posterior at
+        the final patient should closely agree with the EXACT
+        Beta-Binomial batch calculation on the same trial data, using
+        the SAME informative per-arm priors (a common bug is
+        comparing against mismatched priors, which was caught and
+        fixed during this script's own development -- see the
+        detailed comment in week8_clinical_trial_filter.py).
+        """
+        pf_prob = trial_filter_result["pf_prob"]
+        exact_prob = trial_filter_result["exact_prob"]
+        diff = abs(pf_prob - exact_prob)
+        assert diff < 0.05, (
+            f"PF prob {pf_prob:.4f} and exact prob {exact_prob:.4f} "
+            f"differ by {diff:.4f} -- expected < 0.05"
+        )
+
+    def test_probabilities_are_valid(
+        self, trial_filter_result: dict[str, float]
+    ) -> None:
+        assert 0.0 <= trial_filter_result["pf_prob"] <= 1.0
+        assert 0.0 <= trial_filter_result["exact_prob"] <= 1.0

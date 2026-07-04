@@ -100,4 +100,132 @@ ground truth, with test coverage matching Month 1's standard.
     it
 \end{itemize}
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Week 5 -- ParticleFilter Core}: bootstrap SIR particle
+    filter, validated against an exact closed-form 1D Kalman filter
+    (implemented directly, not imported) on a linear-Gaussian test
+    case. Genuine mathematical proof, not a smoke test: posterior
+    mean/std converge to the exact solution, with Monte Carlo error
+    provably shrinking as $N$ grows from 100 to 2000.
+  \item \textbf{Week 6 -- pybind11 bindings}: the Week 4 C++ kernel
+    (\texttt{BatteryCell}, \texttt{MonteCarloEngineOMP}) bound into
+    the Python package as the \texttt{probos\_cpp} extension, ending
+    the two-disconnected-implementations problem. Single-step
+    numerical correctness proven to \texttt{rtol}$\le$1e-8 against the
+    Python reference. A known P05--P95 spread discrepancy between the
+    two engines (simplified C++ parameter sampling vs full Python
+    priors) was documented and explicitly tested-for, not silently
+    accepted.
+  \item \textbf{Week 7 -- FastAPI Service Layer}: \texttt{/simulate},
+    \texttt{/sensitivity}, \texttt{/filter} endpoints, each verified
+    to match a direct Python kernel call at \texttt{rtol}=1e-10.
+    Resource-exhaustion bounds enforced via Pydantic before any
+    request reaches kernel code.
+  \item \textbf{Week 8 -- Cross-Discipline Batch 2}: \texttt{ParticleFilter}
+    demonstrated across two more domains (hospital operations,
+    clinical trials), each validated against an independently
+    computable ground truth. See
+    \texttt{docs/monthly\_plans/month2/week8/main.tex} for full detail.
+  \item \textbf{Comprehensive mid-month hardening pass} (between Weeks
+    7 and 8, prompted by explicit user request to leave ``no stone
+    unturned'' before continuing): a systematic, file-by-file audit
+    of the entire repository found and fixed a substantial number of
+    real issues that had accumulated silently, including:
+    \begin{itemize}
+      \item \texttt{mypy --strict} had never actually been run against
+        \texttt{python/tests/} in this project's history -- running it
+        surfaced $\sim$150 findings across 3 files (all fixture-typing
+        or deliberate-negative-test patterns, zero real bugs), fixed
+        properly and the CI/audit scope permanently extended to cover
+        it going forward.
+      \item The full ruff configuration declared in
+        \texttt{pyproject.toml} (\texttt{I}, \texttt{UP}, \texttt{B},
+        \texttt{SIM} rule sets) had never actually been enforced --
+        every invocation throughout the project used a narrower
+        \texttt{--select E,F,W} override. Running the full config
+        surfaced 46 findings, including a genuinely tautological test
+        assertion that was rewritten to test its own stated intent
+        rather than papered over.
+      \item A genuine license mismatch: \texttt{README.md} said MIT
+        throughout while the actual \texttt{LICENSE} file is
+        Apache-2.0 -- a real, standalone factual/legal error, fixed
+        outright.
+      \item Eight vestigial \texttt{sys.path.insert()} hacks removed
+        across \texttt{python/src/} and \texttt{python/examples/},
+        predating the project's editable install and verified
+        genuinely unnecessary via real subprocess import tests (not
+        just AST parsing), both from the repo root and from outside
+        the repo directory.
+      \item \texttt{Model.validate\_params()}/\texttt{validate\_state()}
+        had docstrings falsely claiming to be called automatically by
+        \texttt{MonteCarloEngine} -- genuinely wired into
+        \texttt{MonteCarloEngine}, \texttt{ParticleFilter}, and
+        \texttt{SobolSensitivity} for real, adding a genuine
+        early-failure safety check across all three engines.
+      \item Several smaller off-by-one documentation errors (the
+        \texttt{Distribution} ABC has 5 concrete classes, not 4 as
+        README claimed; the server registers 4 example models, not 5
+        as its own docstring claimed) and 3 stale manuscript figure
+        duplicates causing the compiled PDF to embed outdated plots.
+    \end{itemize}
+    This pass is documented in detail across the individual commits
+    from that period; it is summarised here because it materially
+    affected Month 2's overall quality, not just Week 8's.
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item Every new capability (particle filter, pybind11 bindings,
+    FastAPI endpoints, Week 8's cross-discipline filters) was
+    validated against an independently computable ground truth before
+    being trusted -- the same discipline established in Month 1,
+    consistently maintained.
+  \item Real bugs were found and fixed rather than hidden or
+    rationalised at every stage this month: the prior-mismatch bug in
+    Week 8's clinical trial validation, the reproducibility bug in the
+    ED queue ground-truth generator, the false claims in
+    \texttt{validate\_params}'s docstring, and the license mismatch
+    are all documented honestly in their respective commits.
+  \item The mid-month comprehensive audit demonstrates the project's
+    own quality-assurance tooling (\texttt{pre\_week\_audit.sh},
+    \texttt{docs/standards/quality\_standards.md}) is not just
+    aspirational -- when genuinely applied comprehensively (not just
+    the narrower subset previously enforced), it found real,
+    substantive issues, and those enforcement gaps were then
+    permanently closed rather than re-opening next week.
+\end{enumerate}
+
+\section*{What was harder than expected}
+\begin{enumerate}[leftmargin=*]
+  \item Designing Week 8's clinical trial filter required real
+    domain reasoning, not mechanical reuse: the naive approach
+    (directly reusing \texttt{ClinicalTrialModel.forward\_batch()}'s
+    own stochastic simulation inside the standard predict/update loop)
+    would have caused severe weight degeneracy from comparing
+    independently-simulated discrete outcomes against real data. The
+    correct design (deterministic state transitions against known
+    real data, informative likelihood scoring via particle
+    parameters) took real first-principles thinking to arrive at.
+  \item The mid-month audit revealed that several ``we already
+    checked this'' assumptions were false -- notably, that the full
+    declared ruff/mypy configuration was actually being enforced
+    anywhere. This is a useful, humbling lesson: a checklist that is
+    declared but not actually run provides zero real assurance,
+    regardless of how thorough it looks on paper.
+\end{enumerate}
+
+\section*{Numbers at Month 2 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 368/368 passing
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors (entire \texttt{python/} tree, including
+    \texttt{python/tests/} -- a scope extension made this month)
+  \item ruff: 0 warnings (full declared configuration, not a narrowed
+    subset -- a scope extension made this month)
+  \item Coverage: 90.80\%
+  \item 0 bandit findings, 0 known dependency CVEs
+\end{itemize}
 \end{document}

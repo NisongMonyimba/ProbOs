@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3 Plan}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Status}
+Per \texttt{docs/monthly\_plans/overall/main.tex}, Month 3 was always
+DIRECTIONAL rather than pre-specified in detail -- Month 1's
+retrospective explicitly flagged over-specifying future months as a
+mistake, corrected by deferring detailed week-by-week planning until
+the month is actually about to begin. This document intentionally
+states THEMES, not a committed day-by-day schedule; the latter will
+be written (following the same plan-then-retrospective process used
+for every week so far) once Month 3's actual work begins.
+
+\section*{Candidate themes, in rough priority order}
+
+\subsection*{GPU kernel path}
+Referenced as a genuine open item in
+\texttt{docs/sbir\_phase1\_onepager.md}'s SBIR Ask (``GPU kernel, 10x
+speedup over CPU, building on the existing C++/OpenMP path''). The
+Month 1 Week 4 C++/OpenMP kernel achieved a measured 7x speedup over
+the Python engine; a GPU path would need its own honest profiling
+discipline (the same ``measure, don't assume'' standard that found
+DP's real 1040x/45x wins alongside one genuine non-win in Month 1
+Week 4) before any speedup number is claimed.
+
+\subsection*{Extend the REST API's model registry}
+Also an open SBIR ask: \texttt{python/server/main.py} currently only
+registers \texttt{BatteryModel2Cell}. Extending it to the three Week 4
+cross-discipline models (option pricer, ED queue, clinical trial) is
+low-risk, since the pattern is already proven for one model and the
+models themselves are unchanged.
+
+\subsection*{PDSL v0.2 -- control flow}
+Month 1 Week 4's PDSL compiler v0.1 supports only flat drift/diffusion
+declarations, no loops or conditionals. Genuinely useful, but not
+urgent -- no current model has needed it yet.
+
+\subsection*{Apply the particle filter to real (non-synthetic) data}
+The most consequential open SBIR ask (``apply the particle filter to
+real sensor data from a pilot partner''), and the one most dependent
+on external factors (an actual pilot partnership) rather than purely
+technical work. Cannot be scheduled with certainty; flagged here so it
+is not forgotten.
+
+\subsection*{Continued quality-standard maintenance}
+Per the mid-Month-2 hardening pass: \texttt{pre\_week\_audit.sh} and
+\texttt{docs/standards/quality\_standards.md} are living documents.
+Any new gap discovered (declared-but-unenforced checks, stale
+documentation, vestigial code patterns) should be closed in the same
+session it is found, not deferred -- the standing practice established
+this month, to be continued.
+
+\section*{Process}
+As with every prior month, Month 3's actual week-by-week plan will be
+written and compiled to PDF (\texttt{docs/monthly\_plans/month3/weekN/main.tex})
+before that week's work begins, with a retrospective appended once it
+completes. This document will be revisited and made more concrete once
+Month 3 actually starts.
+
+\end{document}

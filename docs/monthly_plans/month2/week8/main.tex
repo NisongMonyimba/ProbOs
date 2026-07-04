@@ -4,6 +4,7 @@
 \usepackage{enumitem}
 \usepackage{booktabs}
 \usepackage{xcolor}
+\usepackage{amsmath}
 \title{ProbOS --- Month 2, Week 8\\Cross-Discipline Batch 2 + Month 2 Retrospective}
 \author{Nisong Monyimba}
 \date{\today}
@@ -95,4 +96,68 @@ Month 1's standard -- shape contracts, physical invariants, and
 validation against a closed-form or independently-computed benchmark,
 not just ``runs without crashing''.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{ParticleFilter.params}: a new public property exposing
+    each particle's fixed parameter values -- genuine reusable kernel
+    functionality (not a one-off workaround), needed to recover the
+    posterior over PARAMETERS rather than only the posterior over
+    state that \texttt{PFResult.means/stds} already provided.
+  \item \texttt{week8\_ed\_queue\_filter.py}: infers the true (unknown)
+    patient arrival rate $\lambda$ from a noisy, observed queue-length
+    time series. Starting from a deliberately WIDE
+    Uniform(5, 15) prior, the filter's posterior mean landed within
+    0.1--0.2 standard deviations of the true $\lambda=10.0$ across
+    multiple runs.
+  \item \texttt{week8\_clinical\_trial\_filter.py}: replaces Week 4's
+    batch nested-Monte-Carlo posterior calculation with sequential,
+    patient-by-patient updating. The filter's final posterior
+    ($P(\text{treatment better}) = 0.6786$) agreed closely with Week
+    4's exact Beta-Binomial batch calculation (0.6582) on the
+    identical trial data.
+  \item Both examples required introducing a purpose-built,
+    domain-appropriate state-transition design rather than
+    mechanically reusing Week 4's forward-simulation models unchanged
+    -- the ED queue case needed a documented, narrowly-scoped
+    exception to project doctrine around \texttt{np.random.seed()}
+    (justified and defensively scoped with state save/restore); the
+    clinical trial case needed a new
+    \texttt{ClinicalTrialFilterModel} reflecting that real trial data
+    is fully observed (deterministic state transitions), unlike the
+    ED queue's genuinely noisy observations.
+  \item Two real bugs were found and fixed during development, not
+    glossed over: a genuine reproducibility bug in the ED queue
+    ground-truth generator (not actually seeding the global state
+    \texttt{EDQueueModel} depends on internally), and an
+    apples-to-oranges prior mismatch in the clinical trial validation
+    (comparing results computed under two different priors, which
+    produced a misleading 0.18 ``disagreement'' that was actually two
+    different, individually-correct answers to two different
+    problems).
+  \item A real CI gap was found and closed: neither new example
+    script was actually being run in CI despite this plan's own Day 6
+    commitment -- both are now genuinely executed in the
+    \texttt{python-tests} and \texttt{integration} jobs.
+\end{itemize}
+
+\section*{Numbers at Week 8 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 368/368 passing (350 + 18 new)
+  \item C++ tests: 13/13 passing
+  \item mypy strict: 0 errors (full \texttt{python/} tree)
+  \item ruff: 0 warnings (full declared config)
+  \item \texttt{pre\_week\_audit.sh}: 16/16 checks passed
+\end{itemize}
+
+\section*{Carried into Month 3}
+\texttt{ParticleFilter} is now validated across three genuinely
+different domains (an exact Kalman filter comparison in Week 5, a
+known-arrival-rate recovery in hospital operations, and an exact
+Beta-Binomial consistency check in clinical trials) -- a stronger
+domain-agnosticism claim than Month 1's forward-simulation-only
+demonstration. See \texttt{docs/monthly\_plans/month2/main.tex} for
+the full Month 2 retrospective and
+\texttt{docs/monthly\_plans/month3/main.tex} for what comes next.
 \end{document}

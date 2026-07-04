@@ -104,6 +104,10 @@ jobs:
           python python/examples/week4_ed_queue.py
           python python/examples/week4_clinical_trial.py
 
+      - name: Run Week 8 examples
+        run: |
+          python python/examples/week8_ed_queue_filter.py
+
       - name: Upload figures
         uses: actions/upload-artifact@v6
         if: always()
@@ -271,6 +275,7 @@ jobs:
           python python/examples/week4_option_pricer.py
           python python/examples/week4_ed_queue.py
           python python/examples/week4_clinical_trial.py
+          python python/examples/week8_ed_queue_filter.py
 
       - name: Print summary
         run: |

@@ -138,30 +138,44 @@ def generate_synthetic_observations(
     FloatArray of shape (n_steps,) -- noisy queue-length observations,
     one per timestep.
     """
-    # EDQueueModel.forward_batch() draws from the GLOBAL
-    # np.random state internally (a documented, intentional
-    # Week 4 design choice -- genuine stochastic process, fresh
-    # randomness every step, not a per-instance Generator). To
-    # make this function GENUINELY reproducible (same seed ->
-    # same output), we must seed that global state explicitly,
-    # not just create an unrelated local Generator.
-    np.random.seed(seed)
-    model = EDQueueModel(Q0=0.0)
+    # DELIBERATE, NARROWLY-SCOPED EXCEPTION to project doctrine
+    # (see week1_coin_flip.py: "NEVER use np.random.seed()
+    # (global state, not thread-safe, legacy API)"). This
+    # exception is unavoidable, not an oversight: EDQueueModel.
+    # forward_batch() itself uses the legacy global
+    # np.random.poisson() internally, by deliberate Week 4
+    # design (genuine stochastic process, fresh randomness
+    # every step -- the same pattern used in OptionPricerModel
+    # and ClinicalTrialModel). Given that, seeding the GLOBAL
+    # state is the ONLY way to get a genuinely reproducible
+    # fixed ground-truth realization out of this specific
+    # model. The prior global state is saved and restored
+    # afterward via try/finally so this cannot leak into
+    # anything run later in the same Python process.
+    prior_state = np.random.get_state()
+    try:
+        np.random.seed(seed)
+        model = EDQueueModel(Q0=0.0)
 
-    # A separate, locally-seeded Generator for the OBSERVATION
-    # noise specifically (distinct from the model's own
-    # internal randomness), derived from the same seed so the
-    # whole function remains deterministic end-to-end.
-    obs_rng = np.random.default_rng(seed + 1)
+        # A separate, locally-seeded Generator for the
+        # OBSERVATION noise specifically (distinct from the
+        # model's own internal randomness), derived from the
+        # same seed so the whole function remains
+        # deterministic end-to-end.
+        obs_rng = np.random.default_rng(seed + 1)
 
-    state = model.initial_state().reshape(1, 1)
-    params = np.array([[true_lambda, true_mu]])
+        state = model.initial_state().reshape(1, 1)
+        params = np.array([[true_lambda, true_mu]])
 
-    observations = np.empty(n_steps, dtype=np.float64)
-    for t in range(n_steps):
-        state = model.forward_batch(state, params, dt)
-        true_Q = state[0, 0]
-        observations[t] = true_Q + obs_rng.normal(0.0, sigma_obs)
+        observations = np.empty(n_steps, dtype=np.float64)
+        for t in range(n_steps):
+            state = model.forward_batch(state, params, dt)
+            true_Q = state[0, 0]
+            observations[t] = (
+                true_Q + obs_rng.normal(0.0, sigma_obs)
+            )
+    finally:
+        np.random.set_state(prior_state)
 
     return observations
 

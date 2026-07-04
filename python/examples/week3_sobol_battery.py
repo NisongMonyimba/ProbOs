@@ -11,7 +11,9 @@ Saves: week3_sobol_battery.png
 from __future__ import annotations
 
 import os
+
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -83,7 +85,7 @@ ax.legend(fontsize=9)
 ax.set_ylim(bottom=0)
 ax.grid(True, alpha=0.3, axis="y")
 
-for bar, val in zip(bars, s1):
+for bar, val in zip(bars, s1, strict=True):
     if val > 0.02:
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -109,7 +111,7 @@ ax.legend(fontsize=9)
 ax.set_ylim(bottom=0)
 ax.grid(True, alpha=0.3, axis="y")
 
-for bar, val in zip(bars, st):
+for bar, val in zip(bars, st, strict=True):
     if val > 0.02:
         ax.text(
             bar.get_x() + bar.get_width() / 2,

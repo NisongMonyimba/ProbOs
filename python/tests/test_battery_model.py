@@ -17,7 +17,6 @@ from numpy.testing import assert_allclose
 from python.src.battery_model import BatteryModel2Cell
 from python.src.state import Model
 
-
 # =============================================================================
 # FIXTURE
 # A pytest fixture is a function that creates a reusable object for tests.

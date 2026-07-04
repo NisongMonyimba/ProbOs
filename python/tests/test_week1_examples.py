@@ -21,8 +21,8 @@ import subprocess
 import sys
 
 from python.examples.week1_coin_flip import (
-    run_coin_flip_experiment,
     demonstrate_convergence_rate,
+    run_coin_flip_experiment,
 )
 
 
@@ -38,11 +38,17 @@ class TestCoinFlipExperiment:
         assert freq1 == freq2
 
     def test_different_seeds_can_differ(self) -> None:
+        """
+        Not strictly guaranteed, but overwhelmingly likely: with
+        N=50 flips, two different seeds producing the exact same
+        empirical frequency would be a genuine coincidence, not
+        something the algorithm should reliably produce. If this
+        test ever fails, it more likely indicates a bug (e.g. the
+        seed not actually being used) than bad luck.
+        """
         freq1 = run_coin_flip_experiment(50, seed=1, verbose=False)
         freq2 = run_coin_flip_experiment(50, seed=2, verbose=False)
-        # Not strictly guaranteed, but overwhelmingly likely at N=50
-        # with different seeds. Documented as a non-strict check.
-        assert freq1 != freq2 or True
+        assert freq1 != freq2
 
     def test_converges_toward_half_at_large_N(self) -> None:
         freq = run_coin_flip_experiment(1_000_000, seed=42, verbose=False)

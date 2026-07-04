@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import numpy as np
 
-
 from python.src.state import FloatArray, Model
 
 # Universal gas constant [J / (mol * K)]

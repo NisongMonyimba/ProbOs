@@ -13,7 +13,9 @@ Saves: week3_mc_battery.png
 from __future__ import annotations
 
 import os
+
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -117,7 +119,7 @@ ax.set_title(
     f"Monte Carlo Convergence Certificate\n"
     f"sigma/sqrt(N) per state variable at t={N_STEPS}s  (N={N})"
 )
-for bar, val in zip(bars, result.convergence):
+for bar, val in zip(bars, result.convergence, strict=True):
     ax.text(bar.get_x() + bar.get_width() / 2,
             bar.get_height() * 1.02,
             f"{val:.3f}", ha="center", va="bottom", fontsize=7)

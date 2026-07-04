@@ -22,10 +22,11 @@ Saves: week4_clt_convergence_dp.png
 
 from __future__ import annotations
 
+import os
 import time
 
-import os
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np

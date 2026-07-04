@@ -26,7 +26,7 @@ Run locally:
 
 from __future__ import annotations
 
-
+import numpy as np
 from fastapi import FastAPI, HTTPException
 
 from python.server.schemas import (
@@ -39,13 +39,12 @@ from python.server.schemas import (
     SimulateResponse,
 )
 from python.src.battery_model import BatteryModel2Cell
+from python.src.distributions import Distribution
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
 from python.src.particle_filter import ParticleFilter
-from python.src.distributions import Distribution
 from python.src.sensitivity import SobolSensitivity
 from python.src.state import FloatArray, Model
-import numpy as np
 
 __version__ = "0.2.0"
 

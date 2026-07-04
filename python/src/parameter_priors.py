@@ -73,8 +73,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from python.src.distributions import Distribution, Normal, LogNormal, Uniform
 from python.src.battery_model import BatteryModel2Cell
+from python.src.distributions import Distribution, LogNormal, Normal, Uniform
 
 
 def build_battery_priors() -> list[Distribution]:
@@ -209,7 +209,7 @@ def print_prior_summary() -> None:
     print(f"  {'#':>2}  {'Name':<12}  {'Type':<12}  {'Mean':>14}  {'Std':>12}")
     print("-" * 72)
 
-    for i, (name, dist, nominal) in enumerate(zip(names, priors, nom)):
+    for i, (name, dist, nominal) in enumerate(zip(names, priors, nom, strict=True)):
         dist_type = type(dist).__name__
         try:
             mean = dist.mean()

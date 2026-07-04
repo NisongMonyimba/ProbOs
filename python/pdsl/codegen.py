@@ -15,9 +15,16 @@ Supported math functions in PDSL expressions:
 from __future__ import annotations
 
 from python.pdsl.ast_nodes import (
-    BinOp, DistributionNode, Expr, FuncCall,
-    ModelNode, NumberLit, Pow, Program,
-    UnaryOp, Var,
+    BinOp,
+    DistributionNode,
+    Expr,
+    FuncCall,
+    ModelNode,
+    NumberLit,
+    Pow,
+    Program,
+    UnaryOp,
+    Var,
 )
 
 # Math functions available in PDSL and their NumPy equivalents

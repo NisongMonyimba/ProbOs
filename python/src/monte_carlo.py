@@ -25,8 +25,8 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from python.src.state import Model
 from python.src.distributions import Distribution
+from python.src.state import Model
 
 FloatArray = NDArray[np.float64]
 

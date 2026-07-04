@@ -16,6 +16,7 @@ Computational cost note (IMPORTANT for contributors):
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -23,7 +24,6 @@ from numpy.typing import NDArray
 from SALib.analyze import sobol as sobol_analyze
 from SALib.sample import sobol as saltelli
 
-from collections.abc import Sequence
 from python.src.distributions import Distribution
 from python.src.state import Model
 

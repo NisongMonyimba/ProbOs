@@ -20,7 +20,6 @@ from python.src.monte_carlo import MCResult, MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
 from python.src.provenance import ProvenanceTracker
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

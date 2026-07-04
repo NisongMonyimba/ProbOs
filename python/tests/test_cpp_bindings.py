@@ -34,8 +34,8 @@ single-step numerical agreement, which IS achieved and IS tested below.
 
 from __future__ import annotations
 
-import sys
 import pathlib
+import sys
 
 import numpy as np
 import pytest
@@ -56,7 +56,6 @@ from python.src.battery_model import BatteryModel2Cell  # noqa: E402
 from python.src.monte_carlo import MonteCarloEngine  # noqa: E402
 from python.src.parameter_priors import build_battery_priors  # noqa: E402
 
-
 # ---------------------------------------------------------------------------
 # TestModuleConstants
 # ---------------------------------------------------------------------------
@@ -64,10 +63,10 @@ from python.src.parameter_priors import build_battery_priors  # noqa: E402
 class TestModuleConstants:
 
     def test_state_dim_matches_python(self) -> None:
-        assert probos_cpp.STATE_DIM == BatteryModel2Cell().state_dim
+        assert BatteryModel2Cell().state_dim == probos_cpp.STATE_DIM
 
     def test_param_dim_matches_python(self) -> None:
-        assert probos_cpp.PARAM_DIM == BatteryModel2Cell().param_dim
+        assert BatteryModel2Cell().param_dim == probos_cpp.PARAM_DIM
 
 
 # ---------------------------------------------------------------------------

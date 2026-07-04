@@ -31,9 +31,9 @@ HOW TO RUN:
 
 import os
 
-
-import numpy as np
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

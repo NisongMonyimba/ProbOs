@@ -16,10 +16,10 @@ Usage
 
 from __future__ import annotations
 
-from python.pdsl.parser  import parse
 from python.pdsl.codegen import generate
-from python.src.state    import Model
+from python.pdsl.parser import parse
 from python.src.distributions import Distribution
+from python.src.state import Model
 
 
 def compile_pdsl(

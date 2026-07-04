@@ -21,7 +21,6 @@ from python.src.distributions import Distribution
 from python.src.parameter_priors import build_battery_priors
 from python.src.sensitivity import SobolResult, SobolSensitivity
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

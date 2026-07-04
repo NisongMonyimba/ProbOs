@@ -16,7 +16,6 @@ from numpy.testing import assert_allclose
 
 from python.src.state import FloatArray, Model
 
-
 # =============================================================================
 # MINIMAL CONCRETE SUBCLASS FOR TESTING
 # =============================================================================

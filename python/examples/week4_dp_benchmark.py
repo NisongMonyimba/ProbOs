@@ -13,7 +13,9 @@ Saves: week4_dp_benchmark.png
 from __future__ import annotations
 
 import os
+
 import matplotlib
+
 from python.src.battery_model import BatteryModel2Cell
 from python.src.monte_carlo import MonteCarloEngine
 from python.src.parameter_priors import build_battery_priors
@@ -65,7 +67,7 @@ ax.set_ylabel("Speedup (log scale)")
 ax.set_title("Speedup by optimisation technique")
 ax.legend(fontsize=9)
 ax.grid(True, alpha=0.3, axis="y")
-for bar, val in zip(bars, speedups):
+for bar, val in zip(bars, speedups, strict=True):
     label = f"{val:.0f}x" if val >= 2 else f"{val:.2f}x"
     ax.text(bar.get_x() + bar.get_width()/2,
             bar.get_height() * 1.1,
@@ -135,9 +137,9 @@ print("=" * 60)
 rows = zip(
     ["inv_RT precompute", "nominal_params cache",
      "SALib problem cache", "CLT subset trick"],
-    speedups, notes
+    speedups, notes, strict=True,
 )
-for name, sp, note in rows:
+for name, sp, _note in rows:
     flag = "REAL WIN" if sp >= 10 else ("marginal" if sp >= 1 else "SLOWER")
     print(f"  {name:<22} {sp:>8.0f}x  {flag}")
 print("=" * 60)

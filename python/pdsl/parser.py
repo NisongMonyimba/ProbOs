@@ -11,9 +11,20 @@ from typing import Any, cast
 from lark import Lark, Token, Transformer
 
 from python.pdsl.ast_nodes import (
-    BinOp, DistributionNode, DriftDecl, Expr, FuncCall,
-    ModelNode, NumberLit, ParamDecl, Pow, Program,
-    RunConfig, StateDecl, UnaryOp, Var,
+    BinOp,
+    DistributionNode,
+    DriftDecl,
+    Expr,
+    FuncCall,
+    ModelNode,
+    NumberLit,
+    ParamDecl,
+    Pow,
+    Program,
+    RunConfig,
+    StateDecl,
+    UnaryOp,
+    Var,
 )
 
 _GRAMMAR_PATH = pathlib.Path(__file__).parent / "grammar.lark"

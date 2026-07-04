@@ -3,7 +3,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 from python.src.distributions import Normal
 
 R_GAS: float = 8.314462

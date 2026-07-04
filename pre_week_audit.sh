@@ -59,7 +59,7 @@ fi
 # -----------------------------------------------------------------------
 section "2. CODE HYGIENE"
 # -----------------------------------------------------------------------
-.venv/bin/python -m ruff check python/ --select E,F,W > /tmp/audit_ruff.log 2>&1
+.venv/bin/python -m ruff check python/ > /tmp/audit_ruff.log 2>&1
 check "ruff clean on FULL python/ tree" $?
 if [ -s /tmp/audit_ruff.log ]; then cat /tmp/audit_ruff.log | sed 's/^/         /'; fi
 

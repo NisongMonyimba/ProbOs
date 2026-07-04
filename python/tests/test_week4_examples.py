@@ -17,14 +17,15 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from python.examples.week4_option_pricer import (
-    OptionPricerModel, build_option_priors,
-)
 from python.examples.week4_ed_queue import (
-    EDQueueModel, build_ed_queue_priors,
+    EDQueueModel,
+    build_ed_queue_priors,
+)
+from python.examples.week4_option_pricer import (
+    OptionPricerModel,
+    build_option_priors,
 )
 from python.src.monte_carlo import MonteCarloEngine
-
 
 # ---------------------------------------------------------------------------
 # TestOptionPricerModel
@@ -150,8 +151,8 @@ class TestEDQueueModel:
         """rho=0.5 -> L=1.0 (textbook M/M/1 result)."""
         rho, L, W = EDQueueModel.steady_state_theory(lam=5.0, mu=10.0)
         assert rho == pytest.approx(0.5)
-        assert L == pytest.approx(1.0)
-        assert W == pytest.approx(0.2)  # L/lambda = 1.0/5.0
+        assert pytest.approx(1.0) == L
+        assert pytest.approx(0.2) == W  # L/lambda = 1.0/5.0
 
     def test_steady_state_theory_raises_if_unstable(self) -> None:
         with pytest.raises(ValueError, match="Unstable queue"):
@@ -200,7 +201,8 @@ class TestEDQueueModel:
 # ---------------------------------------------------------------------------
 
 from python.examples.week4_clinical_trial import (  # noqa: E402
-    ClinicalTrialModel, build_clinical_trial_priors,
+    ClinicalTrialModel,
+    build_clinical_trial_priors,
 )
 
 

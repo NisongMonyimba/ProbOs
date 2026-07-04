@@ -14,13 +14,14 @@ import numpy as np
 import pytest
 
 from python.pdsl.ast_nodes import (
-    BinOp, Program, UnaryOp,
+    BinOp,
+    Program,
+    UnaryOp,
 )
-from python.pdsl.parser import parse
 from python.pdsl.codegen import generate
 from python.pdsl.compiler import compile_pdsl
+from python.pdsl.parser import parse
 from python.src.distributions import Normal
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

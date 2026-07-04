@@ -15,11 +15,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from python.src.monte_carlo import MCResult, MonteCarloEngine
 from python.src.battery_model import BatteryModel2Cell
-from python.src.parameter_priors import build_battery_priors
 from python.src.distributions import Distribution
-
+from python.src.monte_carlo import MCResult, MonteCarloEngine
+from python.src.parameter_priors import build_battery_priors
 
 # ---------------------------------------------------------------------------
 # Fixtures

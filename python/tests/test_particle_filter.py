@@ -30,15 +30,15 @@ not imported from any library -- implemented directly and minimally:
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TypedDict
+
 import numpy as np
 import pytest
-
-from typing import Callable, TypedDict
 
 from python.src.distributions import Normal
 from python.src.particle_filter import ParticleFilter
 from python.src.state import FloatArray, Model
-
 
 # ---------------------------------------------------------------------------
 # A minimal linear-Gaussian random walk Model, used ONLY for validation.

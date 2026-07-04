@@ -7,8 +7,8 @@ The AST is the bridge between the Lark parse tree and the code generator.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
 
+from dataclasses import dataclass, field
 
 # ---------------------------------------------------------------------------
 # Expressions

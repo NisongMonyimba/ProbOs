@@ -11,9 +11,9 @@ Week 3 adds uncertainty: N=5000 particles with different parameter values.
 
 import os
 
-
-import numpy as np
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

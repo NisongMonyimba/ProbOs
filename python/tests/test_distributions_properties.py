@@ -28,13 +28,13 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
-from python.src.distributions import Beta, LogNormal, Normal, Uniform
-from python.src.particle_filter import ParticleFilter
 from python.src.battery_model import BatteryModel2Cell
+from python.src.distributions import Beta, LogNormal, Normal, Uniform
 from python.src.parameter_priors import build_battery_priors
-
+from python.src.particle_filter import ParticleFilter
 
 # ---------------------------------------------------------------------------
 # Hypothesis strategies for valid distribution parameters.

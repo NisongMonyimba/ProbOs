@@ -85,7 +85,7 @@ jobs:
 
       - name: ruff lint
         run: |
-          python -m ruff check python/src/ python/pdsl/ python/tests/ python/examples/ python/server/ --select E,F,W
+          python -m ruff check python/
           echo "ruff exit: $?"
 
       - name: Run Week 2 examples
@@ -260,7 +260,7 @@ jobs:
       - name: mypy + ruff (full tree)
         run: |
           python -m mypy python/src/ python/pdsl/ python/examples/ python/tests/ --strict --ignore-missing-imports --explicit-package-bases --no-error-summary
-          python -m ruff check python/ --select E,F,W
+          python -m ruff check python/
 
       - name: Run all examples
         run: |

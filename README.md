@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![C++](https://img.shields.io/badge/C++-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-341%20Python%20%2B%2013%20C%2B%2B-brightgreen?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Month%202%20Week%207-Complete-blue?style=for-the-badge)
 
 **Uncertainty is a first-class data type.**
@@ -409,7 +409,7 @@ pip-audit: 0 known CVEs
 | Author | [AUTHOR NAME] |
 | Organisation | Reality Computing Corporation |
 | Started | June 2026 |
-| License | MIT |
+| License | Apache-2.0 |
 | Languages | Python 3.11 + C++20 |
 | Build system | CMake 3.22 + Ninja |
 | Platform | Ubuntu 22.04 / WSL2 |
@@ -420,7 +420,7 @@ pip-audit: 0 known CVEs
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for full terms.
+Apache License 2.0. See [LICENSE](LICENSE) for full terms.
 
 ---
 

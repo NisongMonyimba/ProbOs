@@ -11,13 +11,15 @@ Exposes the kernel over HTTP:
 
 MODEL REGISTRY
 ----------------
-Only "battery" (BatteryModel2Cell + build_battery_priors) is wired up
-in Week 7. This is a deliberate scope decision: the goal is proving the
-service layer works correctly end-to-end against one well-validated
-model, not registering all four existing models on day one (Battery,
-OptionPricer, EDQueue, ClinicalTrial). Extending _MODEL_REGISTRY to
-the other three Week 4 models (option pricer, ED queue, clinical
-trial) is a natural, low-risk follow-up once this pattern is proven.
+All four existing models are registered: "battery"
+(BatteryModel2Cell), "option_pricer" (OptionPricerModel),
+"ed_queue" (EDQueueModel), "clinical_trial" (ClinicalTrialModel).
+Week 7 deliberately started with just "battery" to prove the
+service layer worked end-to-end against one well-validated model
+before extending; Week 9 completes that extension. All three
+additional models use their own constructor defaults (each has
+sensible defaults -- confirmed by direct inspection before this
+change), so no new request-schema fields were needed.
 
 Run locally:
     uvicorn python.server.main:app --reload
@@ -29,6 +31,18 @@ from __future__ import annotations
 import numpy as np
 from fastapi import FastAPI, HTTPException
 
+from python.examples.week4_clinical_trial import (
+    ClinicalTrialModel,
+    build_clinical_trial_priors,
+)
+from python.examples.week4_ed_queue import (
+    EDQueueModel,
+    build_ed_queue_priors,
+)
+from python.examples.week4_option_pricer import (
+    OptionPricerModel,
+    build_option_priors,
+)
 from python.server.schemas import (
     FilterRequest,
     FilterResponse,
@@ -56,11 +70,27 @@ app = FastAPI(
 )
 
 
+_REGISTERED_MODEL_NAMES = [
+    "battery", "option_pricer", "ed_queue", "clinical_trial",
+]
+
+
 def _build_model_and_priors(
     model_name: str,
+    seed: int = 42,
 ) -> tuple[Model, list[Distribution]]:
     """
     Resolve a model_name string to a (Model instance, priors list) pair.
+
+    seed is passed through to the three genuinely stochastic
+    models (OptionPricerModel, EDQueueModel, ClinicalTrialModel),
+    which each carry their own per-instance seeded Generator
+    (Month 3 Week 9 fix) -- this makes them genuinely
+    reproducible via the API, matching BatteryModel2Cell's
+    existing reproducibility (which comes from
+    MonteCarloEngine/ParticleFilter/SobolSensitivity seeding
+    prior sampling, since BatteryModel2Cell.forward_batch()
+    itself has no internal randomness).
 
     Raises
     ------
@@ -69,10 +99,16 @@ def _build_model_and_priors(
     """
     if model_name == "battery":
         return BatteryModel2Cell(), build_battery_priors()
+    if model_name == "option_pricer":
+        return OptionPricerModel(seed=seed), build_option_priors()
+    if model_name == "ed_queue":
+        return EDQueueModel(seed=seed), build_ed_queue_priors()
+    if model_name == "clinical_trial":
+        return ClinicalTrialModel(seed=seed), build_clinical_trial_priors()
     raise HTTPException(
         status_code=404,
         detail=f"Unknown model_name '{model_name}'. "
-               f"Registered models: ['battery']",
+               f"Registered models: {_REGISTERED_MODEL_NAMES}",
     )
 
 
@@ -93,7 +129,7 @@ async def simulate(req: SimulateRequest) -> SimulateResponse:
                                    seed=req.seed)
         result = engine.run()
     """
-    model, priors = _build_model_and_priors(req.model_name)
+    model, priors = _build_model_and_priors(req.model_name, req.seed)
 
     engine = MonteCarloEngine(
         model, priors,
@@ -126,7 +162,7 @@ async def sensitivity(req: SensitivityRequest) -> SensitivityResponse:
                               n_steps=req.n_steps, seed=req.seed)
         result = s.run()
     """
-    model, priors = _build_model_and_priors(req.model_name)
+    model, priors = _build_model_and_priors(req.model_name, req.seed)
 
     try:
         s = SobolSensitivity(
@@ -160,8 +196,36 @@ async def filter_endpoint(req: FilterRequest) -> FilterResponse:
     established in python/tests/test_particle_filter.py and
     python/tests/test_distributions_properties.py: noise on the
     model's FIRST state variable only (e.g. T1 for BatteryModel2Cell).
+
+    NOT SUPPORTED for model_name='clinical_trial': that model's
+    first state variable (n_treatment) is an integer enrollment
+    count, not a continuous quantity with genuine observation
+    noise -- applying this endpoint's generic Gaussian-noise
+    likelihood to it produces a mechanically valid but
+    MEANINGLESS result (confirmed by direct investigation during
+    Month 3 Week 9). Week 8's week8_clinical_trial_filter.py
+    demonstrates the CORRECT design for this model: deterministic
+    state transitions against known real trial data, with an
+    informative Bernoulli likelihood scored via particle
+    parameters -- a fundamentally different approach from what
+    this generic endpoint offers, not yet exposed over HTTP.
     """
-    model, priors = _build_model_and_priors(req.model_name)
+    if req.model_name == "clinical_trial":
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "model_name='clinical_trial' is not supported by "
+                "/filter: this endpoint's generic Gaussian-"
+                "observation-noise likelihood does not apply meaningfully "
+                "to this model's count-based state (see "
+                "python/examples/week8_clinical_trial_filter.py "
+                "for the correct, purpose-built sequential "
+                "filtering design for clinical trials, not yet "
+                "exposed over HTTP)."
+            ),
+        )
+
+    model, priors = _build_model_and_priors(req.model_name, req.seed)
 
     pf = ParticleFilter(
         model, priors, N=req.N, dt=req.dt, seed=req.seed,

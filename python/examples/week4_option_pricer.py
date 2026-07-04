@@ -131,11 +131,19 @@ class OptionPricerModel(Model):
     """
 
     def __init__(self, S0: float = 100.0, K: float = 100.0,
-                 T: float = 1.0, r: float = 0.05) -> None:
+                 T: float = 1.0, r: float = 0.05,
+                 seed: int = 42) -> None:
         self._S0 = S0
         self._K  = K
         self._T  = T
         self._r  = r
+        # Per-instance seeded Generator (Month 3 Week 9 fix --
+        # previously drew from the GLOBAL np.random state, which
+        # made 'same seed' not actually reproducible when this
+        # model was used from MonteCarloEngine/ParticleFilter/
+        # SobolSensitivity, none of which control that global
+        # state). See docs/study/study_guide.md Week 9 entry.
+        self._rng = np.random.default_rng(seed)
 
     # ------------------------------------------------------------------
     # Model ABC required properties
@@ -222,7 +230,7 @@ class OptionPricerModel(Model):
         # genuinely new randomness in the asset's future path, not a
         # re-sampling of fixed physical parameters.
         Z: FloatArray = np.asarray(
-            np.random.standard_normal(size=N), dtype=np.float64
+            self._rng.standard_normal(size=N), dtype=np.float64
         )
 
         # Exact GBM solution (NOT an Euler approximation):

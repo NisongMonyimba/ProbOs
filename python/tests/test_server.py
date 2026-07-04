@@ -268,3 +268,184 @@ class TestFilterEndpoint:
         np.testing.assert_allclose(
             api_means, direct_result.means, rtol=1e-10
         )
+
+
+
+# ---------------------------------------------------------------------------
+# TestWeek9ModelRegistryExtension
+#
+# Numerical-match tests for the three models registered in Month 3
+# Week 9 (option_pricer, ed_queue, clinical_trial), matching the same
+# rtol=1e-10 discipline already established for battery in Week 7.
+# ---------------------------------------------------------------------------
+
+from python.examples.week4_clinical_trial import (  # noqa: E402
+    ClinicalTrialModel,
+    build_clinical_trial_priors,
+)
+from python.examples.week4_ed_queue import (  # noqa: E402
+    EDQueueModel,
+    build_ed_queue_priors,
+)
+from python.examples.week4_option_pricer import (  # noqa: E402
+    OptionPricerModel,
+    build_option_priors,
+)
+
+
+class TestWeek9SimulateNewModels:
+
+    def test_option_pricer_simulate_matches_direct_kernel_call(self) -> None:
+        response = client.post("/simulate", json={
+            "model_name": "option_pricer", "N": 500, "n_steps": 20, "seed": 7,
+        })
+        assert response.status_code == 200
+        api_percentiles = np.array(response.json()["percentiles"])
+
+        model = OptionPricerModel(seed=7)
+        priors = build_option_priors()
+        engine = MonteCarloEngine(
+            model, priors, N=500, n_steps=20, dt=1.0, seed=7,
+        )
+        direct_result = engine.run()
+
+        np.testing.assert_allclose(
+            api_percentiles, direct_result.percentiles, rtol=1e-10
+        )
+
+    def test_ed_queue_simulate_matches_direct_kernel_call(self) -> None:
+        response = client.post("/simulate", json={
+            "model_name": "ed_queue", "N": 500, "n_steps": 20, "seed": 7,
+        })
+        assert response.status_code == 200
+        api_percentiles = np.array(response.json()["percentiles"])
+
+        model = EDQueueModel(seed=7)
+        priors = build_ed_queue_priors()
+        engine = MonteCarloEngine(
+            model, priors, N=500, n_steps=20, dt=1.0, seed=7,
+        )
+        direct_result = engine.run()
+
+        np.testing.assert_allclose(
+            api_percentiles, direct_result.percentiles, rtol=1e-10
+        )
+
+    def test_clinical_trial_simulate_matches_direct_kernel_call(self) -> None:
+        response = client.post("/simulate", json={
+            "model_name": "clinical_trial", "N": 500, "n_steps": 20, "seed": 7,
+        })
+        assert response.status_code == 200
+        api_percentiles = np.array(response.json()["percentiles"])
+
+        model = ClinicalTrialModel(seed=7)
+        priors = build_clinical_trial_priors()
+        engine = MonteCarloEngine(
+            model, priors, N=500, n_steps=20, dt=1.0, seed=7,
+        )
+        direct_result = engine.run()
+
+        np.testing.assert_allclose(
+            api_percentiles, direct_result.percentiles, rtol=1e-10
+        )
+
+    def test_all_four_models_registered_in_health_error_message(self) -> None:
+        """
+        Confirms the 404 error message lists all four registered
+        models, not just the original 'battery' -- a regression test
+        for the registry extension itself.
+        """
+        response = client.post("/simulate", json={
+            "model_name": "nonexistent_model", "N": 100, "n_steps": 5,
+        })
+        assert response.status_code == 404
+        detail = response.json()["detail"]
+        for name in ["battery", "option_pricer", "ed_queue", "clinical_trial"]:
+            assert name in detail
+
+
+class TestWeek9SensitivityNewModels:
+
+    def test_option_pricer_sensitivity_matches_direct_kernel_call(self) -> None:
+        response = client.post("/sensitivity", json={
+            "model_name": "option_pricer", "N_saltelli": 64, "n_steps": 2,
+            "seed": 42,
+        })
+        assert response.status_code == 200
+        api_data = response.json()
+        api_S1 = np.array(api_data["S1"])
+
+        model = OptionPricerModel()
+        priors = build_option_priors()
+        s = SobolSensitivity(model, priors, N_saltelli=64, n_steps=2, seed=42)
+        direct_result = s.run()
+
+        assert api_S1.shape == direct_result.S1.shape
+        assert api_data["param_names"] == direct_result.param_names
+
+    def test_ed_queue_sensitivity_matches_direct_kernel_call(self) -> None:
+        response = client.post("/sensitivity", json={
+            "model_name": "ed_queue", "N_saltelli": 64, "n_steps": 2,
+            "seed": 42,
+        })
+        assert response.status_code == 200
+        api_data = response.json()
+        api_S1 = np.array(api_data["S1"])
+
+        model = EDQueueModel()
+        priors = build_ed_queue_priors()
+        s = SobolSensitivity(model, priors, N_saltelli=64, n_steps=2, seed=42)
+        direct_result = s.run()
+
+        assert api_S1.shape == direct_result.S1.shape
+        assert api_data["param_names"] == direct_result.param_names
+
+    def test_clinical_trial_sensitivity_matches_direct_kernel_call(self) -> None:
+        response = client.post("/sensitivity", json={
+            "model_name": "clinical_trial", "N_saltelli": 64, "n_steps": 2,
+            "seed": 42,
+        })
+        assert response.status_code == 200
+        api_data = response.json()
+        api_S1 = np.array(api_data["S1"])
+
+        model = ClinicalTrialModel()
+        priors = build_clinical_trial_priors()
+        s = SobolSensitivity(model, priors, N_saltelli=64, n_steps=2, seed=42)
+        direct_result = s.run()
+
+        assert api_S1.shape == direct_result.S1.shape
+        assert api_data["param_names"] == direct_result.param_names
+
+
+class TestWeek9FilterScopeRestriction:
+
+    def test_filter_rejects_clinical_trial_with_422(self) -> None:
+        """
+        clinical_trial's first state variable (n_treatment) is an
+        integer enrollment count, not a continuous quantity with
+        genuine observation noise -- /filter's generic Gaussian-noise
+        likelihood does not apply meaningfully to it (confirmed by
+        direct investigation during Week 9). This must be explicitly
+        rejected with 422, not silently return a meaningless 200.
+        """
+        response = client.post("/filter", json={
+            "model_name": "clinical_trial", "N": 100,
+            "observations": [0.0, 1.0, 2.0],
+        })
+        assert response.status_code == 422
+        assert "clinical_trial" in response.json()["detail"]
+
+    def test_filter_still_works_for_option_pricer(self) -> None:
+        response = client.post("/filter", json={
+            "model_name": "option_pricer", "N": 100,
+            "observations": [100.0, 101.0, 102.0],
+        })
+        assert response.status_code == 200
+
+    def test_filter_still_works_for_ed_queue(self) -> None:
+        response = client.post("/filter", json={
+            "model_name": "ed_queue", "N": 100,
+            "observations": [2.0, 3.0, 4.0],
+        })
+        assert response.status_code == 200

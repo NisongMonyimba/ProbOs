@@ -272,8 +272,17 @@ POST /filter           -> ParticleFilter
 ```
 
 Resource-exhaustion bounds enforced via Pydantic before any request
-reaches kernel code. All three POST endpoints verified to match a
-direct Python kernel call at `rtol=1e-10`.
+reaches kernel code. All four registered models (battery, option
+pricer, ED queue, clinical trial) work with `/simulate` and
+`/sensitivity`; `BatteryModel2Cell` (the only fully-deterministic
+model) is verified against a direct kernel call at `rtol=1e-10`, while
+the three genuinely stochastic models are verified structurally
+(matching shapes, correct percentile ordering) -- their
+`forward_batch()` implementations draw fresh randomness from the
+global random state on every call by design, so bit-exact
+reproducibility from a seed alone is not guaranteed for them.
+`/filter` correctly rejects `clinical_trial` with a clear error rather
+than a meaningless result.
 
 ### Cross-Discipline Validation (Month 1 Week 4)
 

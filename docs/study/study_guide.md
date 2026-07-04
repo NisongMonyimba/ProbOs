@@ -146,3 +146,9 @@ reading explains.
 |------|----------|----------|-----|
 | `python/examples/week8_clinical_trial_filter.py` | Gelman et al., *Bayesian Data Analysis* | Ch 2-3 | Beta-Binomial conjugacy, used here as the exact ground-truth check on ParticleFilter's SMC approximation |
 | `python/examples/week8_clinical_trial_filter.py` (static parameter estimation via SMC) | Naesseth, Lindsten & Schon (2019) | Sec 4 | Treating time-invariant parameters as particle-carried quantities scored via likelihood, with deterministic state transitions -- a standard SMC pattern for static parameter estimation with fully-observed data |
+
+### Month 3 Week 9 -- Proper per-instance RNGs for stochastic models
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/examples/week4_option_pricer.py`, `week4_ed_queue.py`, `week4_clinical_trial.py` (per-instance `self._rng`) | NumPy Random Generator docs | "Random sampling" quickstart | Root-cause fix for a real reproducibility bug: models drawing from the GLOBAL `np.random` state cannot be made reproducible by an external `seed` parameter alone -- each stochastic model now owns a private `np.random.default_rng(seed)`, the same pattern `MonteCarloEngine`/`ParticleFilter`/`SobolSensitivity` already used correctly for their own seeding |

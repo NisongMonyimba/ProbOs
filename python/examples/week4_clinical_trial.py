@@ -137,8 +137,14 @@ class ClinicalTrialModel(Model):
         randomisation, the most common design in Phase III trials.
     """
 
-    def __init__(self, randomisation_ratio: float = 0.5) -> None:
+    def __init__(
+        self, randomisation_ratio: float = 0.5, seed: int = 42
+    ) -> None:
         self._rand_ratio = randomisation_ratio
+        # Per-instance seeded Generator (Month 3 Week 9 fix --
+        # see OptionPricerModel's __init__ for the full
+        # rationale).
+        self._rng = np.random.default_rng(seed)
 
     # ------------------------------------------------------------------
     # Model ABC required properties
@@ -226,7 +232,7 @@ class ClinicalTrialModel(Model):
         # Step 1: randomise each new patient to treatment or control.
         # goes_to_treatment[i] = True means particle i's new patient
         # was assigned to the treatment arm this step.
-        goes_to_treatment = np.random.uniform(0.0, 1.0, N) < self._rand_ratio
+        goes_to_treatment = self._rng.uniform(0.0, 1.0, N) < self._rand_ratio
 
         # Step 2: simulate whether the new patient responds, using the
         # TRUE response rate of whichever arm they were assigned to.
@@ -234,7 +240,7 @@ class ClinicalTrialModel(Model):
         # based on their arm assignment, then a single vectorised
         # uniform draw determines "success" for all N particles at once.
         effective_p = np.where(goes_to_treatment, p_treat_true, p_ctrl_true)
-        responded   = np.random.uniform(0.0, 1.0, N) < effective_p
+        responded   = self._rng.uniform(0.0, 1.0, N) < effective_p
 
         # Step 3: update counts. Only the arm the patient was assigned
         # to gets its n incremented; only responders get s incremented.

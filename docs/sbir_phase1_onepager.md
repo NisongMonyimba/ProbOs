@@ -41,6 +41,14 @@ The system is structured as a layered kernel:
   (option pricing), hospital operations (ED queueing), and clinical trials
   (adaptive Bayesian design) — proving the kernel is domain-agnostic, not
   battery-specific
+- REST API model registry extended to all four models (battery, option
+  pricer, ED queue, clinical trial); /simulate and /sensitivity verified
+  against direct kernel calls for each, with an honest, documented
+  exception: /filter correctly rejects clinical_trial with a clear error
+  rather than returning a meaningless result, since that model's
+  count-based state does not fit the endpoint's generic observation-noise
+  likelihood design (Week 8's purpose-built filtering approach is the
+  correct one for this model, not yet exposed over HTTP)
 - 341 tests, mypy strict 0 errors, 90%+ coverage, 0 known security
   vulnerabilities (bandit + pip-audit clean), open-source on GitHub
 
@@ -57,8 +65,6 @@ The system is structured as a layered kernel:
 - Apply the particle filter to real sensor data from a pilot partner
   (currently validated on synthetic data only)
 - FDA Q-Sub filing for implantable battery MRI safety
-- Extend the REST API's model registry beyond `BatteryModel2Cell` to the
-  finance/operations/clinical models already built
 - 3 enterprise pilot contracts
 
 ## Team

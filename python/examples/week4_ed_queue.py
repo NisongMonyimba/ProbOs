@@ -105,8 +105,14 @@ class EDQueueModel(Model):
         at simulation start).
     """
 
-    def __init__(self, Q0: float = 0.0) -> None:
+    def __init__(self, Q0: float = 0.0, seed: int = 42) -> None:
         self._Q0 = Q0
+        # Per-instance seeded Generator (Month 3 Week 9 fix --
+        # see OptionPricerModel's __init__ for the full
+        # rationale). This also lets Week 8's
+        # week8_ed_queue_filter.py drop its earlier explicit
+        # np.random.seed() doctrine exception entirely.
+        self._rng = np.random.default_rng(seed)
 
     # ------------------------------------------------------------------
     # Model ABC required properties
@@ -184,13 +190,13 @@ class EDQueueModel(Model):
         # Arrivals: Poisson(lambda * dt) -- always possible regardless
         # of current queue length (patients keep arriving even when the
         # ED is busy; they just wait longer).
-        arrivals = np.random.poisson(lam * dt).astype(np.float64)
+        arrivals = self._rng.poisson(lam * dt).astype(np.float64)
 
         # Departures: Poisson(mu * dt), but ONLY where Q > 0. If the
         # queue is empty, the server is idle and no departure can occur
         # this step -- we zero out the departure draw in that case using
         # np.where, the vectorised equivalent of an if/else per particle.
-        raw_departures = np.random.poisson(mu * dt).astype(np.float64)
+        raw_departures = self._rng.poisson(mu * dt).astype(np.float64)
         departures = np.where(Q > 0, raw_departures, 0.0)
 
         # Update and clip at zero: the queue can never go negative.

@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 2, Week 8\\Cross-Discipline Batch 2 + Month 2 Retrospective}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 8 goal}
+Show that \texttt{ParticleFilter} (Week 5) generalises across domains
+the same way \texttt{MonteCarloEngine} was shown to in Month 1 Week 4:
+port the ED queue and clinical trial models to a sequential filtering
+setting. Close Month 2 with a retrospective and Month 3 plan.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- ED queue filtering setup}
+\begin{itemize}[leftmargin=*]
+  \item Reuse \texttt{EDQueueModel} from
+    \texttt{python/examples/week4\_ed\_queue.py} unmodified
+  \item Design the inference problem: infer the TRUE (unknown) arrival
+    rate $\lambda$ from an observed queue-length time series, using
+    \texttt{ParticleFilter}
+  \item Construct a Gaussian observation log-likelihood on queue
+    length, following the same pattern already established in
+    \texttt{test\_particle\_filter.py} and the \texttt{/filter}
+    endpoint
+\end{itemize}
+
+\subsection*{Day 2 -- ED queue filtering validation}
+\begin{itemize}[leftmargin=*]
+  \item Generate synthetic queue-length observations from a KNOWN true
+    $\lambda$
+  \item Confirm the particle filter's posterior mean for $\lambda$
+    converges toward the true value as more observations arrive
+  \item \texttt{python/examples/week8\_ed\_queue\_filter.py}
+\end{itemize}
+
+\subsection*{Day 3 -- Clinical trial sequential monitoring setup}
+\begin{itemize}[leftmargin=*]
+  \item Reuse \texttt{ClinicalTrialModel} from
+    \texttt{python/examples/week4\_clinical\_trial.py} unmodified
+  \item Replace Week 4's batch nested-Monte-Carlo posterior-probability
+    calculation with \texttt{ParticleFilter}, updating the posterior
+    belief about treatment effect after EACH patient enrols, rather
+    than only at trial's end
+\end{itemize}
+
+\subsection*{Day 4 -- Clinical trial filtering validation}
+\begin{itemize}[leftmargin=*]
+  \item Confirm the sequentially-updated posterior at the FINAL patient
+    matches (or closely agrees with) Week 4's batch calculation on the
+    same trial data -- a consistency check between the two inference
+    approaches on the same model
+  \item \texttt{python/examples/week8\_clinical\_trial\_filter.py}
+\end{itemize}
+
+\subsection*{Day 5 -- Test coverage}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_week8\_examples.py}: shape
+    contracts, physical/statistical invariants, and validation against
+    the respective ground truth for both new filtering examples --
+    matching the standard already set for Week 4's cross-discipline
+    examples
+\end{itemize}
+
+\subsection*{Day 6 -- pre\_week\_audit.sh + CI}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{pre\_week\_audit.sh} before considering the week
+    complete
+  \item Extend CI's example-running steps to include the two new
+    filtering scripts
+\end{itemize}
+
+\subsection*{Day 7 -- Month 2 retrospective + Month 3 plan}
+\begin{itemize}[leftmargin=*]
+  \item Write the Month 2 retrospective directly into
+    \texttt{docs/monthly\_plans/month2/main.tex}, alongside a Month 3
+    plan in \texttt{docs/monthly\_plans/month3/main.tex}
+  \item Retrospective for THIS week appended to this same document
+    once the week's work is actually complete, per the established
+    plan-then-retrospective process
+\end{itemize}
+
+\section*{Exit criteria}
+Both filtering examples pass validation against their respective
+ground truth (known true $\lambda$ for the ED queue; batch-calculation
+consistency for the clinical trial), with test coverage matching
+Month 1's standard -- shape contracts, physical invariants, and
+validation against a closed-form or independently-computed benchmark,
+not just ``runs without crashing''.
+
+\end{document}

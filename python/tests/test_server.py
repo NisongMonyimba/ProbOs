@@ -449,3 +449,19 @@ class TestWeek9FilterScopeRestriction:
             "observations": [2.0, 3.0, 4.0],
         })
         assert response.status_code == 200
+
+
+class TestWallTimeMs:
+
+    def test_simulate_returns_genuine_wall_time(self) -> None:
+        """
+        Found via the comprehensive workaround scan: /simulate used to
+        return a hardcoded wall_time_ms=0.0 placeholder. Confirms it
+        now returns a genuinely measured, positive value.
+        """
+        response = client.post("/simulate", json={
+            "model_name": "battery", "N": 100, "n_steps": 10,
+        })
+        assert response.status_code == 200
+        wall_time_ms = response.json()["wall_time_ms"]
+        assert wall_time_ms > 0.0

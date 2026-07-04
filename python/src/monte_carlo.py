@@ -20,6 +20,7 @@ Saltelli note (for SobolSensitivity in sensitivity.py):
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -55,6 +56,11 @@ class MCResult:
         Number of forward steps taken.
     dt : float
         Time step in seconds.
+    wall_time_ms : float
+        Measured wall-clock execution time of run(), in
+        milliseconds. Matches probos_cpp.MCResult's own
+        wall_time_ms field, enabling honest, like-for-like
+        Python vs C++ performance comparisons.
     """
 
     trajectories: FloatArray
@@ -64,6 +70,7 @@ class MCResult:
     n_particles:  int
     n_steps:      int
     dt:           float
+    wall_time_ms: float
 
 
 class MonteCarloEngine:
@@ -149,6 +156,8 @@ class MonteCarloEngine:
         5. Compute P05/P50/P95 along the particle axis (axis=0).
         6. Compute convergence = std(final_state, axis=0) / sqrt(N).
         """
+        start_time = time.perf_counter()
+
         rng = np.random.default_rng(self._seed)
         sd  = self._model.state_dim
         pd  = self._model.param_dim
@@ -191,6 +200,8 @@ class MonteCarloEngine:
         final_state = trajectories[:, -1, :]
         convergence = np.std(final_state, axis=0, ddof=1) / np.sqrt(self._N)
 
+        wall_time_ms = (time.perf_counter() - start_time) * 1000.0
+
         return MCResult(
             trajectories=trajectories,
             params_used=params,
@@ -199,6 +210,7 @@ class MonteCarloEngine:
             n_particles=self._N,
             n_steps=self._n_steps,
             dt=self._dt,
+            wall_time_ms=wall_time_ms,
         )
 
     def convergence_certificate(self) -> str:

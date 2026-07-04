@@ -132,3 +132,10 @@ reading explains.
 | `python/server/main.py` | FastAPI documentation, *Tutorial* + *Path Operations* | https://fastapi.tiangolo.com/tutorial/ | Route definitions, response_model, dependency-free endpoint design |
 | `python/server/schemas.py` | Pydantic v2 documentation, *Fields* | https://docs.pydantic.dev/latest/concepts/fields/ | `Field(ge=..., le=...)` for resource-exhaustion bounds at the HTTP boundary, per quality_standards.md Section 8 |
 | `python/tests/test_server.py` | FastAPI documentation, *Testing* | https://fastapi.tiangolo.com/tutorial/testing/ | `TestClient` in-process testing pattern; also validated live via a real uvicorn process as a stronger end-to-end check |
+
+### Week 8 -- ED Queue Sequential Filtering
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/examples/week8_ed_queue_filter.py` | Chopin & Papaspiliopoulos (2020) | Ch 2, 8-10 | Same SMC framework as Week 5's ParticleFilter, here applied to parameter estimation rather than state estimation |
+| `python/src/particle_filter.py` (new `params` property) | -- | -- | Genuine kernel addition: exposes per-particle parameter values so any consumer can recover a posterior over PARAMETERS, not just over state |

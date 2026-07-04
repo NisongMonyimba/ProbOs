@@ -237,6 +237,22 @@ class ParticleFilter:
         return self._state
 
     @property
+    def params(self) -> FloatArray:
+        """
+        Current particle parameter values, shape (N, param_dim).
+
+        Each particle's parameters are drawn ONCE at construction
+        (see __init__) and held fixed for the life of the filter --
+        only the STATE evolves per-particle via predict(). This
+        means the posterior over any parameter can be recovered by
+        weighting these fixed per-particle values by the filter's
+        current importance weights (see the `weights` property),
+        exactly as the posterior over state is recovered via
+        posterior_mean()/posterior_std().
+        """
+        return self._params
+
+    @property
     def weights(self) -> FloatArray:
         """
         Current NORMALISED weights in probability space, shape (N,).

@@ -53,11 +53,32 @@ The system is structured as a layered kernel:
   vulnerabilities (bandit + pip-audit clean), open-source on GitHub
 
 ## Market
-- Battery safety certification (EV, grid storage): \$2.1B
-- Medical device simulation (FDA 510k): \$1.4B
-- Nuclear safety analysis (NRC): \$800M
-- Surgical robotics validation: \$600M
-- Total addressable: \$4.9B
+Focused on the safety-critical uncertainty-quantification niche:
+industries where (1) a formal regulator requires documented
+failure-mode analysis, (2) the system is modelable as an ODE/SDE
+with genuine parameter uncertainty, (3) failure consequences are
+rare but catastrophic, and (4) existing deterministic tools are
+documented to miss these tail risks. See docs/vision/main.tex for
+the full reasoning and an honest Validated / Structurally ready /
+Aspirational breakdown per industry.
+
+- Battery safety certification (EV, grid storage): \$2.1B --
+  **Validated** (Kim 2007 ARC data, Sobol S1=0.457 result)
+- Pharmaceutical stability / shelf-life (FDA CMC, ICH Q1A): \$1.8B --
+  **Structurally ready** (reuses ~80% of the validated battery
+  model's Arrhenius architecture)
+- Automotive functional safety / EV battery management (ISO 26262):
+  \$1.6B -- **Structurally ready** (same validated battery model,
+  different regulator)
+- Medical device simulation (FDA 510k): \$1.4B -- **Aspirational**
+- Nuclear safety analysis (NRC): \$800M -- **Aspirational**
+- Total addressable (focused): \$7.6B
+
+Note: quantitative finance and surgical robotics, mentioned in
+earlier drafts of this document, were removed after honest
+reassessment (Month 3) concluded neither is currently a good fit
+for ProbOS's specific safety-critical UQ thesis -- see
+docs/vision/main.tex for the reasoning.
 
 ## SBIR Ask
 **Phase I: \$275,000 / 12 months**

@@ -33,12 +33,34 @@ discipline (the same ``measure, don't assume'' standard that found
 DP's real 1040x/45x wins alongside one genuine non-win in Month 1
 Week 4) before any speedup number is claimed.
 
-\subsection*{Extend the REST API's model registry}
-Also an open SBIR ask: \texttt{python/server/main.py} currently only
-registers \texttt{BatteryModel2Cell}. Extending it to the three Week 4
-cross-discipline models (option pricer, ED queue, clinical trial) is
-low-risk, since the pattern is already proven for one model and the
-models themselves are unchanged.
+\subsection*{Extend the REST API's model registry -- DONE (Week 9)}
+Completed: \texttt{python/server/main.py} now registers all four
+models (battery, option pricer, ED queue, clinical trial), with
+\texttt{/filter} correctly and honestly rejecting \texttt{clinical\_trial}
+rather than returning a meaningless result. See
+\texttt{docs/monthly\_plans/month3/week9/main.tex} for the full
+retrospective.
+
+\subsection*{Pharmaceutical stability model -- NEW, near-term priority}
+Per the strategic reassessment documented in
+\texttt{docs/vision/main.tex}: drug degradation kinetics are
+Arrhenius reaction kinetics -- the exact same mathematical
+structure as \texttt{BatteryModel2Cell}'s SEI decomposition, with
+drug potency as the depleting quantity in place of battery
+capacity. An estimated 80\% of the existing model architecture
+transfers directly; remaining work is domain-appropriate parameter
+priors and validation against a real stability-study dataset,
+matching the same discipline used for Kim (2007). This directly
+serves FDA CMC / ICH Q1A requirements, the same regulatory pattern
+already validated for battery safety.
+
+\subsection*{Automotive / EV safety positioning -- NEW, near-term priority}
+Not new engineering -- the existing, already-validated battery
+model, reframed for ISO 26262's hazard-analysis and documented-
+failure-mode requirements, which are structurally analogous to
+what FDA/NRC already require. The primary remaining work is
+outreach and positioning specific to automotive/EV safety
+engineers, not new model development.
 
 \subsection*{PDSL v0.2 -- control flow}
 Month 1 Week 4's PDSL compiler v0.1 supports only flat drift/diffusion

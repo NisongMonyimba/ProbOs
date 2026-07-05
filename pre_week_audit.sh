@@ -71,7 +71,15 @@ else
     grep -rn "TODO\|FIXME\|HACK\|XXX" python/src/ python/pdsl/ cpp/include/ cpp/src/ cpp/bindings/ 2>/dev/null | sed 's/^/         /'
 fi
 
-BARE_EXCEPT=$(grep -rn "except:" python/src/ python/pdsl/ 2>/dev/null | wc -l)
+# Anchored regex: matches ONLY a line consisting solely of
+# (optional whitespace) + "except" + (optional whitespace) + ":"
+# + (optional trailing whitespace) -- a genuine Python
+# bare-except statement. Deliberately does NOT match "except:"
+# appearing as a substring within prose/docstrings/comments
+# (found as a real false positive against
+# python/src/gpu_monte_carlo.py's own docstring during Week 10),
+# nor "except Exception:" or similar legitimate non-bare clauses.
+BARE_EXCEPT=$(grep -rnE "^\s*except\s*:\s*$" python/src/ python/pdsl/ 2>/dev/null | wc -l)
 check "No bare 'except:' clauses" $([ "$BARE_EXCEPT" -eq 0 ] && echo 0 || echo 1)
 
 MISSING_INIT=0

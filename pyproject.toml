@@ -80,6 +80,18 @@ sim = [
     "numba>=0.59",
     "plotly>=5.18",
 ]
+# GPU acceleration (Month 3 Week 10). Requires an NVIDIA GPU
+# with CUDA 12.x-compatible drivers (confirmed working with
+# CUDA 13.3 drivers via forward compatibility). The [ctk] extra
+# is REQUIRED, not optional -- plain "cupy-cuda12x" installs but
+# fails at runtime with "RuntimeError: Failed to find CUDA
+# headers" the first time an actual GPU kernel is compiled,
+# since it needs CUDA toolkit headers, not just the runtime
+# libraries (confirmed directly during Week 10 setup on this
+# machine). See README.md "GPU Setup" for full instructions.
+gpu = [
+    "cupy-cuda12x[ctk]>=13.0",
+]
 
 
 # =============================================================================

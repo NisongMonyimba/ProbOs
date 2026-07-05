@@ -21,6 +21,12 @@ from __future__ import annotations
 
 import numpy as np
 
+try:
+    import cupy as cp
+    _CUPY_AVAILABLE = True
+except ImportError:
+    _CUPY_AVAILABLE = False
+
 from python.src.state import FloatArray, Model
 
 # Universal gas constant [J / (mol * K)]
@@ -175,6 +181,16 @@ class BatteryModel2Cell(Model):
         -------
         FloatArray of shape (N, 8)  -- updated state
         """
+        # Month 3 Week 10: dispatch to CuPy if state is a GPU
+        # array, NumPy otherwise -- cp.get_array_module() is
+        # CuPy's own official utility for exactly this pattern,
+        # letting the SAME code below run correctly on either
+        # backend with zero duplication. Falls back to plain
+        # NumPy if CuPy is not installed at all (this model
+        # continues to work with no GPU/CuPy present, unchanged
+        # from Week 2).
+        xp = cp.get_array_module(state) if _CUPY_AVAILABLE else np
+
         # ------------------------------------------------------------------
         # STEP 1: Extract state columns
         # state[:, i] extracts column i for ALL N particles at once.
@@ -213,25 +229,25 @@ class BatteryModel2Cell(Model):
         #
         # Arrhenius law:  k = A * exp(-Ea / (R * T))
         #
-        # np.clip(T1, 273.15, 5000.0) prevents exp() overflow if temperature
+        # xp.clip(T1, 273.15, 5000.0) prevents exp() overflow if temperature
         # goes negative (which should not happen physically but can occur in
         # the first few time steps of a poorly-initialised simulation).
         # ------------------------------------------------------------------
-        T1_safe = np.clip(T1, 273.15, 5000.0)
-        T2_safe = np.clip(T2, 273.15, 5000.0)
+        T1_safe = xp.clip(T1, 273.15, 5000.0)
+        T2_safe = xp.clip(T2, 273.15, 5000.0)
 
         # Arrhenius exponent: -Ea / (R * T)  for each reaction, Cell 1
         # Note (Week 4 profiling): NumPy exp() is SIMD-vectorised per call.
         # Batching exp calls or precomputing inv_RT showed no speedup in
         # Python (exp dominates; division cost is negligible).
         # Real parallelism gain deferred to C++ OpenMP kernel (Week 4 Tue).
-        k_sei1 = A_SEI * np.exp(-Ea_SEI / (R_GAS * T1_safe))
-        k_an1  = A_an  * np.exp(-Ea_an  / (R_GAS * T1_safe))
-        k_ca1  = A_ca  * np.exp(-Ea_ca  / (R_GAS * T1_safe))
+        k_sei1 = A_SEI * xp.exp(-Ea_SEI / (R_GAS * T1_safe))
+        k_an1  = A_an  * xp.exp(-Ea_an  / (R_GAS * T1_safe))
+        k_ca1  = A_ca  * xp.exp(-Ea_ca  / (R_GAS * T1_safe))
 
-        k_sei2 = A_SEI * np.exp(-Ea_SEI / (R_GAS * T2_safe))
-        k_an2  = A_an  * np.exp(-Ea_an  / (R_GAS * T2_safe))
-        k_ca2  = A_ca  * np.exp(-Ea_ca  / (R_GAS * T2_safe))
+        k_sei2 = A_SEI * xp.exp(-Ea_SEI / (R_GAS * T2_safe))
+        k_an2  = A_an  * xp.exp(-Ea_an  / (R_GAS * T2_safe))
+        k_ca2  = A_ca  * xp.exp(-Ea_ca  / (R_GAS * T2_safe))
 
         # ------------------------------------------------------------------
         # STEP 4: Reactant depletion rates
@@ -239,15 +255,15 @@ class BatteryModel2Cell(Model):
         # dc/dt = -k * c
         # The reaction rate is proportional to the remaining reactant.
         # When c = 0, the reaction has stopped (no more fuel).
-        # np.clip(c, 0.0, 1.0) prevents c from going below 0 due to
+        # xp.clip(c, 0.0, 1.0) prevents c from going below 0 due to
         # numerical error in large time steps.
         # ------------------------------------------------------------------
-        dc_sei1 = -k_sei1 * np.clip(c_sei1, 0.0, 1.0)
-        dc_sei2 = -k_sei2 * np.clip(c_sei2, 0.0, 1.0)
-        dc_an1  = -k_an1  * np.clip(c_an1,  0.0, 1.0)
-        dc_an2  = -k_an2  * np.clip(c_an2,  0.0, 1.0)
-        dc_ca1  = -k_ca1  * np.clip(c_ca1,  0.0, 1.0)
-        dc_ca2  = -k_ca2  * np.clip(c_ca2,  0.0, 1.0)
+        dc_sei1 = -k_sei1 * xp.clip(c_sei1, 0.0, 1.0)
+        dc_sei2 = -k_sei2 * xp.clip(c_sei2, 0.0, 1.0)
+        dc_an1  = -k_an1  * xp.clip(c_an1,  0.0, 1.0)
+        dc_an2  = -k_an2  * xp.clip(c_an2,  0.0, 1.0)
+        dc_ca1  = -k_ca1  * xp.clip(c_ca1,  0.0, 1.0)
+        dc_ca2  = -k_ca2  * xp.clip(c_ca2,  0.0, 1.0)
 
         # ------------------------------------------------------------------
         # STEP 5: Heat generation rates [W]
@@ -315,22 +331,22 @@ class BatteryModel2Cell(Model):
         # Concentrations must stay in [0, 1] -- cannot go negative
         # or above the initial value.
         # ------------------------------------------------------------------
-        new_T1    = np.clip(new_T1,     273.15, 5000.0)
-        new_T2    = np.clip(new_T2,     273.15, 5000.0)
-        new_c_sei1 = np.clip(new_c_sei1, 0.0, 1.0)
-        new_c_sei2 = np.clip(new_c_sei2, 0.0, 1.0)
-        new_c_an1  = np.clip(new_c_an1,  0.0, 1.0)
-        new_c_an2  = np.clip(new_c_an2,  0.0, 1.0)
-        new_c_ca1  = np.clip(new_c_ca1,  0.0, 1.0)
-        new_c_ca2  = np.clip(new_c_ca2,  0.0, 1.0)
+        new_T1    = xp.clip(new_T1,     273.15, 5000.0)
+        new_T2    = xp.clip(new_T2,     273.15, 5000.0)
+        new_c_sei1 = xp.clip(new_c_sei1, 0.0, 1.0)
+        new_c_sei2 = xp.clip(new_c_sei2, 0.0, 1.0)
+        new_c_an1  = xp.clip(new_c_an1,  0.0, 1.0)
+        new_c_an2  = xp.clip(new_c_an2,  0.0, 1.0)
+        new_c_ca1  = xp.clip(new_c_ca1,  0.0, 1.0)
+        new_c_ca2  = xp.clip(new_c_ca2,  0.0, 1.0)
 
         # ------------------------------------------------------------------
         # STEP 10: Pack the 8 updated state variables back into one array
         #
-        # np.column_stack([a, b, c, ...]) takes N-length 1-D arrays and
+        # xp.column_stack([a, b, c, ...]) takes N-length 1-D arrays and
         # stacks them as columns to produce an (N, 8) array.
         # ------------------------------------------------------------------
-        new_state: FloatArray = np.column_stack([
+        new_state: FloatArray = xp.column_stack([
             new_T1,
             new_T2,
             new_c_sei1,

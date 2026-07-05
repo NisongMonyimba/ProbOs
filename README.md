@@ -309,6 +309,19 @@ Checks: full test suite, mypy strict (full tree), ruff, coverage floor
 pip-audit CVE scan, packaging/build verification, reproducibility, git
 hygiene. See `docs/standards/quality_standards.md` for the full checklist.
 
+### Check system requirements before setting up
+
+```bash
+bash check_system_requirements.sh
+```
+
+Run this on any machine (does not need to be inside a clone --
+just download and run) to see what's present, what's missing, and
+what's optional. Separates REQUIRED items (Python 3.11+, g++,
+cmake, ninja, Google Test, pdflatex) from OPTIONAL, GPU-only items
+(NVIDIA GPU, CuPy -- needed only for `python/src/gpu_monte_carlo.py`,
+Month 3 Week 10; everything else works fully without a GPU).
+
 ### Watch CI status from the terminal
 
 ```bash

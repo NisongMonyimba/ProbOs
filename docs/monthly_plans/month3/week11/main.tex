@@ -1,0 +1,118 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3, Week 11\\Pharmaceutical Stability Model}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 11 goal}
+Build \texttt{PharmaStabilityModel}, reusing
+\texttt{BatteryModel2Cell}'s Arrhenius reaction-kinetics architecture
+with drug potency as the depleting quantity, per the near-term
+priority established in \texttt{docs/monthly\_plans/month3/main.tex}
+and the strategic reasoning in \texttt{docs/vision/main.tex}.
+
+\textbf{Critical constraint, stated up front:} this model's
+credibility rests entirely on being validated against a REAL,
+genuine published stability-study dataset -- the same standard
+Kim et al. (2007) set for \texttt{BatteryModel2Cell} in Month 1
+Week 2. Synthetic or fabricated validation data would violate this
+project's established honesty discipline
+(\texttt{docs/standards/quality\_standards.md}) and must not be used.
+If a suitable public dataset cannot be found by the end of Day 1,
+this week's scope will be explicitly narrowed (e.g. to model
+architecture and unit correctness only, with validation flagged as a
+genuinely open item) rather than proceeding with fabricated data.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Literature research (before any model code)}
+\begin{itemize}[leftmargin=*]
+  \item Search for a real, published pharmaceutical stability study
+    reporting accelerated and/or long-term degradation data (ICH
+    Q1A-style: potency vs. time at multiple temperatures), analogous
+    to how Kim (2007)'s ARC data was used for the battery model
+  \item Confirm the underlying degradation mechanism is genuinely
+    Arrhenius (most small-molecule drug degradation is, but this must
+    be confirmed for the SPECIFIC dataset chosen, not assumed)
+  \item Document the citation precisely (matching the existing
+    standard: exact source, exact reported values, no invented
+    numbers) before writing any model code
+\end{itemize}
+
+\subsection*{Day 2 -- PharmaStabilityModel implementation}
+\begin{itemize}[leftmargin=*]
+  \item Design the state vector and parameter vector based on the
+    ACTUAL structure of the dataset found on Day 1, not assumed in
+    advance -- unlike the battery model's 2-cell, 3-reaction
+    structure, a real stability study may report a single degradation
+    pathway, requiring a simpler state vector
+  \item Implement \texttt{forward\_batch()} following the exact same
+    vectorised-NumPy, CPU/GPU dispatch-ready pattern established in
+    \texttt{BatteryModel2Cell} (Week 10's \texttt{xp} dispatch and
+    \texttt{cp.fuse()} pattern should be reused directly, not
+    reinvented)
+\end{itemize}
+
+\subsection*{Day 3 -- Validation against the real dataset}
+\begin{itemize}[leftmargin=*]
+  \item Deterministic validation: run the model at the dataset's own
+    reported nominal parameters, confirm it reproduces the reported
+    potency-vs-time curve within a stated, justified tolerance --
+    matching the standard already set for Kim (2007)
+  \item If the model does NOT match the real data, this must be
+    reported honestly and investigated, not hidden or the tolerance
+    quietly loosened until it passes
+\end{itemize}
+
+\subsection*{Day 4 -- Monte Carlo + Sobol sensitivity}
+\begin{itemize}[leftmargin=*]
+  \item Build parameter priors reflecting genuine
+    manufacturing/formulation uncertainty (informed by the dataset's
+    own reported variability where available, not invented)
+  \item Run \texttt{SobolSensitivity} to identify which parameters
+    drive shelf-life uncertainty -- the direct pharma analogue of
+    \texttt{Ea\_SEI}'s dominance in the battery model
+\end{itemize}
+
+\subsection*{Day 5 -- Test coverage}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{python/tests/test\_pharma\_stability.py}: shape
+    contracts, physical invariants (potency cannot exceed 100\% or go
+    negative), and the Day 3 validation-against-real-data test as the
+    centerpiece, matching \texttt{test\_battery\_model.py}'s standard
+\end{itemize}
+
+\subsection*{Day 6 -- pre\_week\_audit.sh + CI}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{pre\_week\_audit.sh} before considering the week
+    complete
+  \item Add the new model to CI's example-running steps
+\end{itemize}
+
+\subsection*{Day 7 -- Documentation + retrospective}
+\begin{itemize}[leftmargin=*]
+  \item Update \texttt{docs/vision/main.tex}: move pharmaceutical
+    stability from ``Structurally ready'' to ``Validated'' IF Day 3's
+    validation genuinely succeeds against real data -- if it does
+    not, leave the honest status as-is and document why
+  \item Retrospective appended to this document once complete
+\end{itemize}
+
+\section*{Exit criteria}
+\texttt{PharmaStabilityModel} exists, is validated against a real,
+cited, published stability dataset (not fabricated data) at an
+honestly-justified tolerance, and its dominant uncertainty driver is
+identified via Sobol sensitivity -- matching the exact validation
+discipline already established for \texttt{BatteryModel2Cell}. If a
+suitable real dataset cannot be found, this is reported honestly as a
+genuinely open item, not worked around with synthetic data presented
+as if it were real.
+
+\end{document}

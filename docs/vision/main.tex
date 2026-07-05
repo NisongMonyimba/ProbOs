@@ -1,0 +1,226 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\title{ProbOS --- Mission, Vision, and Industry Roadmap}
+\author{Nisong Monyimba \\ Reality Computing Corporation}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{A note on how to read this document}
+This document states ProbOS's mission and long-term vision, then
+sequences which industries it will serve and in what order, honestly
+distinguishing three categories throughout:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Validated} -- backed by actual completed work
+    (a literature-validated model, a passing test, a measured
+    number), not just plausibility.
+  \item \textbf{Structurally ready} -- the underlying kernel already
+    supports this with little or no new engineering, but the
+    domain-specific model itself has not been built or validated yet.
+  \item \textbf{Aspirational} -- a real, considered target, but with
+    no work done toward it yet and no practitioner conversation
+    confirming the need.
+  \end{itemize}
+No claim in this document is marked Validated unless it corresponds
+to something that actually exists and has been tested, per
+\texttt{docs/standards/quality\_standards.md}.
+
+\section*{Mission}
+ProbOS treats uncertainty as a first-class data type in software that
+models safety-critical physical systems. Where deterministic
+simulation uses one parameter value where there should be a
+distribution, ProbOS propagates the full range of physically
+plausible values through a model and reports the tail risk that a
+single-point simulation cannot see.
+
+\section*{Vision}
+A general-purpose, open, auditable probabilistic execution runtime
+that becomes the default tool for engineers who must not only
+simulate a safety-critical system, but \emph{prove to a regulator}
+that they understand its failure modes -- with a causal record from
+every dangerous predicted outcome back to the specific parameters and
+assumptions that produced it.
+
+\section*{The core thesis: why safety-critical UQ, specifically}
+ProbOS does not attempt to be a general replacement for existing
+probabilistic programming frameworks (Stan, PyMC, NumPyro, Pyro,
+Turing.jl), which are mature, widely used, and well-suited to
+statistical inference and machine learning workflows. ProbOS's
+distinct positioning rests on four criteria, present together in a
+specific, underserved niche:
+\begin{enumerate}[leftmargin=*]
+  \item A formal regulator requires documented failure-mode analysis.
+  \item The system is modelable as an ODE/SDE with genuine,
+    quantifiable parameter uncertainty (material properties,
+    manufacturing variance, patient variability).
+  \item Failure consequences are rare but catastrophic -- exactly the
+    tail risk a deterministic point-estimate simulation is structurally
+    blind to.
+  \item Existing deterministic tools in that industry are documented
+    to miss these tail risks.
+\end{enumerate}
+This is a narrower, more specific claim than ``uncertainty
+quantification is useful'' -- it identifies exactly which industries
+have this combination of properties, and treats industries lacking
+one or more of them as a poor fit, not a target to chase for breadth.
+
+\section*{Validated today}
+
+\subsection*{Battery safety (EV, grid storage) -- Validated}
+\texttt{BatteryModel2Cell}, an 8-state Arrhenius thermal-runaway ODE
+with 15 uncertain parameters, validated against Kim et al. (2007)
+accelerating rate calorimetry data (Month 1 Week 2). Sobol sensitivity
+analysis (Month 1 Week 3) identifies \texttt{Ea\_SEI} as the dominant
+driver of thermal-runaway variance ($S_1 = 0.457$), and Monte Carlo
+propagation shows the P95 worst-case cell decomposes 11.6x faster than
+the P50 median -- a tail risk invisible to a deterministic simulation
+using literature-mean parameters. The provenance tracker (Month 1
+Week 3) traces any dangerous predicted output back to the specific
+parameter draws that produced it, directly serving the ``documented
+failure-mode analysis'' requirement regulators impose.
+
+\section*{Structurally ready -- near-zero additional engineering}
+
+\subsection*{Pharmaceutical stability / shelf-life (FDA CMC, ICH Q1A) -- Structurally ready}
+Drug degradation kinetics are Arrhenius reaction kinetics -- the exact
+same mathematical structure as \texttt{BatteryModel2Cell}'s SEI
+decomposition, with drug potency as the depleting quantity in place of
+battery capacity. An estimated 80\% of the existing model architecture
+(the Arrhenius rate law, the depletion/consumption pattern, the Sobol
+sensitivity and provenance machinery) transfers directly; the
+remaining work is domain-appropriate parameter priors and validation
+against a real stability-study dataset in place of Kim (2007).
+
+\subsection*{Automotive functional safety / EV battery management (ISO 26262) -- Structurally ready}
+This is not a new model -- it is the existing, already-validated
+battery model, reframed for a different regulator. ISO 26262's
+hazard-analysis and documented-failure-mode requirements are
+structurally analogous to what FDA/NRC already require, and
+\texttt{BatteryModel2Cell} already satisfies the underlying technical
+need. The primary remaining work is positioning and outreach specific
+to automotive/EV safety engineers, not new engineering.
+
+\section*{Aspirational -- real targets, no work done yet}
+
+\subsection*{Medical device (implantable battery safety, FDA 510k) -- Aspirational}
+Named in \texttt{docs/sbir\_phase1\_onepager.md} as an SBIR Phase I
+target (FDA Q-Sub filing for implantable battery MRI safety). No
+domain-specific model has been built or validated for this industry
+yet; the provenance tracker's audit-trail capability is directly
+relevant once a specific device model exists.
+
+\subsection*{Nuclear safety analysis (NRC) -- Aspirational}
+Named as a target market throughout project documentation since Month
+1. No nuclear-specific model exists. NRC's uncertainty quantification
+requirements match the core thesis structurally, but require a new
+physical model (reactor thermal/neutronics or similar) not yet
+attempted.
+
+\subsection*{Aerospace / aviation (FAA, DO-178C / DO-254) -- Aspirational}
+Structurally the closest sibling to the current battery/medical/
+nuclear framing: same regulatory pattern (documented, auditable
+failure analysis), same tail-risk stakes. Would require new
+domain models (structural fatigue, engine thermal, or flight-control
+parameter uncertainty) -- none built yet.
+
+\subsection*{Grid / power systems reliability (NERC) -- Aspirational, higher effort}
+A real and growing need given renewable-generation variability
+introducing genuine parameter uncertainty into grid stability models,
+and NERC's post-incident investigation requirements resembling the
+provenance/audit-trail pitch already made for medical devices. Rated
+higher-effort than the above because it requires a new class of
+stochastic model (demand/generation processes), not an ODE-based
+physical model like the others.
+
+\subsection*{Explicitly out of current scope}
+Quantitative finance and robotics are named in earlier project
+documentation as market categories, but honest reassessment
+(Month 3) concluded neither is currently a good fit: the finance
+example model (\texttt{OptionPricerModel}, Black-Scholes GBM) is a
+toy validation case rather than something serving a real quant
+research audience already well-served by mature tools, and no
+robotics-specific model exists at all. These are removed from active
+targeting, not merely deprioritized.
+
+\section*{Month-by-month roadmap}
+
+\subsection*{Completed (Months 1--3, Weeks 1--10)}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Month 1 (Weeks 1--4):} Kernel foundation --
+    \texttt{Distribution}/\texttt{Model} ABCs, \texttt{BatteryModel2Cell}
+    validated against Kim (2007), \texttt{MonteCarloEngine},
+    \texttt{SobolSensitivity}, \texttt{ProvenanceTracker}, C++/OpenMP
+    kernel (7x measured speedup), PDSL v0.1, three cross-discipline
+    forward-simulation examples.
+  \item \textbf{Month 2 (Weeks 5--8):} \texttt{ParticleFilter}
+    (validated against an exact closed-form Kalman filter), pybind11
+    bindings, FastAPI service layer, cross-discipline sequential
+    filtering (ED queue, clinical trial), plus a comprehensive
+    mid-month hardening pass closing several real, previously
+    undiscovered gaps (mypy/ruff scope, a license mismatch, vestigial
+    code).
+  \item \textbf{Month 3 (Weeks 9--10, in progress):} REST API model
+    registry extended to all four models; GPU kernel path built,
+    honestly benchmarked, and root-cause-optimized via kernel fusion
+    -- C++/OpenMP remains the fastest engine for this workload on
+    this hardware, reported truthfully rather than oversold.
+\end{itemize}
+
+\subsection*{Near-term (rest of Month 3 / Month 4) -- Structurally ready extensions}
+\begin{itemize}[leftmargin=*]
+  \item Pharmaceutical stability model, reusing
+    \texttt{BatteryModel2Cell}'s Arrhenius architecture with new
+    priors, validated against a real stability-study dataset.
+  \item Automotive/EV safety positioning and outreach, using the
+    existing validated battery model under an ISO 26262 framing.
+  \item PDSL v0.2 (control flow), continuing the priority order
+    already established in Month 3's original plan.
+\end{itemize}
+
+\subsection*{Mid-term (Months 5--6) -- Validation, not more building}
+\begin{itemize}[leftmargin=*]
+  \item At least one real conversation with a practicing battery,
+    pharmaceutical, or automotive safety engineer, confirming
+    (or correcting) the assumed pain point and whether ProbOS's
+    current capabilities actually address it.
+  \item Medical device domain model, informed by whatever is learned
+    from the above conversations rather than built speculatively in
+    advance of them.
+\end{itemize}
+
+\subsection*{Longer-term (Month 7+) -- Contingent on validated demand}
+\begin{itemize}[leftmargin=*]
+  \item Nuclear and aerospace domain models, pursued only if the
+    mid-term validation step confirms genuine practitioner interest
+    in this pattern -- not built speculatively for market-size
+    breadth.
+  \item Grid/power systems reliability, the highest-effort item on
+    this list, deferred until the lower-effort extensions have
+    actually been validated.
+\end{itemize}
+
+\section*{Honest open questions}
+This document deliberately does not claim ProbOS is close to
+displacing established tools, or that its market thesis is confirmed.
+Two open questions remain genuinely unresolved as of this writing:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Competitive differentiation.} What, specifically, does
+    ProbOS do that Stan, PyMC, or NumPyro do not, for an engineer who
+    already has access to those tools? The provenance/audit-trail
+    angle is the strongest current answer, but has not been tested
+    against a real user's actual workflow.
+  \item \textbf{Practitioner validation.} Every domain claim in this
+    document, including the Validated battery-safety work, has been
+    checked against literature data, not against a live conversation
+    with someone who would actually adopt the tool. This is the
+    single highest-priority open item ahead of further domain
+    expansion.
+\end{enumerate}
+
+\end{document}

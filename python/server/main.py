@@ -145,9 +145,6 @@ async def simulate(req: SimulateRequest) -> SimulateResponse:
         percentiles=result.percentiles.tolist(),
         convergence=result.convergence.tolist(),
         wall_time_ms=result.wall_time_ms,
-                            # Left at 0.0 here rather than faked; a
-                            # future week can add timing to the Python
-                            # engine if needed.
     )
 
 

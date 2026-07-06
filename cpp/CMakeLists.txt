@@ -115,6 +115,18 @@ if(GTest_FOUND)
     )
     enable_testing()
     add_test(NAME test_normal COMMAND test_normal)
+
+    add_executable(test_lognormal tests/test_lognormal.cpp)
+    target_link_libraries(test_lognormal PRIVATE
+        probos_distributions GTest::gtest_main Threads::Threads
+    )
+    add_test(NAME test_lognormal COMMAND test_lognormal)
+
+    add_executable(test_uniform tests/test_uniform.cpp)
+    target_link_libraries(test_uniform PRIVATE
+        probos_distributions GTest::gtest_main Threads::Threads
+    )
+    add_test(NAME test_uniform COMMAND test_uniform)
 else()
     message(WARNING "Google Test not found. Install: sudo apt-get install -y libgtest-dev")
 endif()

@@ -87,15 +87,37 @@ failure-mode analysis'' requirement regulators impose.
 
 \section*{Structurally ready -- near-zero additional engineering}
 
-\subsection*{Pharmaceutical stability / shelf-life (FDA CMC, ICH Q1A) -- Structurally ready}
-Drug degradation kinetics are Arrhenius reaction kinetics -- the exact
-same mathematical structure as \texttt{BatteryModel2Cell}'s SEI
-decomposition, with drug potency as the depleting quantity in place of
-battery capacity. An estimated 80\% of the existing model architecture
-(the Arrhenius rate law, the depletion/consumption pattern, the Sobol
-sensitivity and provenance machinery) transfers directly; the
-remaining work is domain-appropriate parameter priors and validation
-against a real stability-study dataset in place of Kim (2007).
+\subsection*{Pharmaceutical stability / shelf-life (FDA CMC, ICH Q1A) -- Validated}
+\texttt{PharmaStabilityModel} (Month 3 Week 11) uses Avrami kinetics
+(a related but distinct reaction-kinetics law from
+\texttt{BatteryModel2Cell}'s first-order depletion, since the
+real, best-validated dataset found required it), validated against
+Gonzalez-Gonzalez et al. (\emph{Molecules} 2023, 28(23), 7925), a
+real, peer-reviewed, ICH-referenced chlorhexidine stability study.
+The activation energy (Ea = 18.52 kcal/mol) is independently cited
+and cross-checked against an independent 1987 PhD thesis range
+(16.5--22.9 kcal/mol). The model reproduces the paper's 3 real
+reported 365-day degradation percentages (5C/25C/30C) to within
+1.18 percentage points.
+
+\textbf{Honest methodological caveat:} unlike Kim (2007)'s true
+forward replication for the battery model, this validation fits
+the pre-exponential factor A against the paper's own reported
+summary results, with the Avrami exponent n fixed at 1.0 as an
+explicit simplifying assumption (confirmed necessary: an
+unconstrained fit of both A and n against only 3 single-timepoint
+data points is fundamentally underdetermined, and converged to a
+physically absurd result when attempted directly). This is a real
+but weaker validation standard than Kim (2007) and should not be
+presented as equivalent rigor.
+
+Sobol sensitivity analysis (using the paper's own reported Ea
+standard error, $\pm$2.61 kcal/mol, as a genuine literature-backed
+uncertainty) identifies Ea as overwhelmingly dominant
+($S_1 = 0.993$), and Monte Carlo propagation reveals a real tail
+risk invisible to deterministic simulation: the worst-case 5\% of
+outcomes show complete potency loss within one year, versus 82.6\%
+potency remaining at the deterministic point estimate.
 
 \subsection*{Automotive functional safety / EV battery management (ISO 26262) -- Structurally ready}
 This is not a new model -- it is the existing, already-validated

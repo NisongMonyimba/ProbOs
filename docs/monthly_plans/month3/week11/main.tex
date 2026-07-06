@@ -115,4 +115,78 @@ suitable real dataset cannot be found, this is reported honestly as a
 genuinely open item, not worked around with synthetic data presented
 as if it were real.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{PharmaStabilityModel} built and validated against a
+    REAL, peer-reviewed, ICH-referenced dataset: Gonzalez-Gonzalez et
+    al. (\emph{Molecules} 2023, 28(23), 7925), chlorhexidine stability
+    data. Per the plan's own Day 1 gate, an initial candidate
+    (aspirin hydrolysis kinetics from a 2024 teaching lab module) was
+    explicitly rejected on closer scrutiny: real, peer-reviewed, and
+    numerically correct, but pedagogical rather than an actual
+    ICH Q1A-style product stability study.
+  \item A genuine architectural finding emerged: the real,
+    best-validated pharma dataset uses Avrami kinetics (a closed-form
+    $\text{potency} = \exp(-k t^n)$ relationship), not the first-order
+    depletion law used by \texttt{BatteryModel2Cell}. Code reuse
+    happened at the architecture level (\texttt{Model} ABC,
+    \texttt{xp} CPU/GPU dispatch, Sobol/provenance integration), not
+    at the equation level.
+  \item A genuine fitting failure was found and fixed: an
+    unconstrained fit of both the Avrami pre-exponential factor (A)
+    and exponent (n) against the paper's 3 real reported 365-day
+    degradation percentages converged to a mathematically passing but
+    physically absurd result ($A = 1.5 \times 10^{255}$,
+    $n = -94.6$) -- a textbook degenerate/underdetermined fit. Fixed
+    by fixing $n=1$ as a labeled simplifying assumption and fitting
+    only $A$, which achieved an IDENTICAL residual error, confirming
+    the extra degree of freedom was pure unidentifiable noise.
+  \item The probabilistic core was reconnected to this new domain:
+    using the paper's own reported Ea standard error ($\pm$2.61
+    kcal/mol, genuine literature-backed uncertainty), Sobol
+    sensitivity identified Ea as overwhelmingly dominant
+    ($S_1 = 0.993$), and Monte Carlo propagation revealed a real tail
+    risk: the worst-case 5\% of outcomes show complete potency loss
+    within one year, versus 82.6\% potency at the point estimate.
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item The Day 1 research gate worked as intended: scrutinizing the
+    first candidate dataset caught a real quality gap before any
+    model code was built around it.
+  \item A direct question about whether the probabilistic core still
+    mattered led to genuinely reconnecting the deterministic
+    groundwork to real Monte Carlo + Sobol analysis, rather than
+    treating the curve-fit as the finish line.
+\end{enumerate}
+
+\section*{What went wrong, and was fixed}
+\begin{enumerate}[leftmargin=*]
+  \item An unconstrained 2-parameter fit produced a passing residual
+    error alongside physically nonsensical parameter values. Caught
+    by inspecting the actual fitted values, not just the error
+    metric, and fixed by removing the underlying degeneracy.
+\end{enumerate}
+
+\section*{Numbers at Week 11 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 398/398 passing (12 new)
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+  \item Coverage: 89.18\%
+  \item \texttt{pre\_week\_audit.sh}: 16/16 checks passed
+  \item Validation accuracy: max 1.18 percentage points against 3
+    real reported data points
+  \item Sobol dominant parameter: Ea ($S_1 = 0.993$)
+\end{itemize}
+
+\section*{Carried into future weeks}
+The Avrami exponent $n$ remains a fixed simplifying assumption, not
+an independently recovered value. Automotive/EV safety positioning
+(also a Month 3 near-term priority) remains untouched -- it requires
+no new model, only outreach positioning around the already-validated
+battery model.
 \end{document}

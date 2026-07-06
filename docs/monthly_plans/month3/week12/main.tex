@@ -98,4 +98,53 @@ citing only real ISO 26262 concepts and real, already-computed ProbOS
 results -- with no overclaimed certification, compliance, or
 practitioner validation that has not actually occurred.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item Real ISO 26262 research conducted before drafting any
+    positioning material: HARA (Part 3, Clause 7) confirmed to be a
+    qualitative, structured engineering-judgment process (Severity
+    S0--S3, Exposure E0--E4, Controllability, deriving ASIL and Safety
+    Goals) -- NOT itself a quantitative simulation or UQ exercise.
+  \item An honest, load-bearing distinction was established and
+    maintained throughout both documents: ProbOS does not perform
+    HARA, does not assign ASIL levels, and has not been used in an
+    actual ISO 26262 submission.
+  \item \texttt{docs/automotive\_ev\_positioning.md} and
+    \texttt{docs/automotive\_ev\_outreach\_email.md} written, citing
+    only real, already-computed ProbOS results.
+  \item A verification script written to catch overclaiming language
+    produced false alarms -- checker bugs (naive word matching
+    without adequate negation-lookback distance; a substring check
+    broken by a markdown line wrap; a vision-doc text replacement
+    broken by an unexpected LaTeX line wrap), not real document
+    problems. Each was diagnosed via direct grep before concluding
+    the document itself was correct, rather than editing content to
+    satisfy a possibly-broken check.
+  \item Cross-checked against \texttt{docs/vision/main.tex}'s stated
+    open questions: neither document claims a resolved competitive
+    differentiation, nor implies practitioner validation has occurred.
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item Real research surfaced the correct, load-bearing distinction
+    between HARA-as-judgment-process and ProbOS-as-supporting-evidence.
+  \item When automated verification flagged issues (three separate
+    times), the actual document text was checked directly before
+    concluding anything was wrong -- correctly distinguishing checker
+    bugs from real content problems each time.
+  \item This week correctly required no code changes.
+\end{enumerate}
+
+\section*{Numbers at Week 12 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 398/398 passing (unchanged, docs-only week)
+  \item New documents: 2 (positioning brief, outreach email)
+\end{itemize}
+
+\section*{Carried into future weeks}
+The outreach itself has not yet happened -- this week produced the
+materials, not the practitioner validation itself.
 \end{document}

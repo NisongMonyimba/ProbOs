@@ -120,13 +120,20 @@ outcomes show complete potency loss within one year, versus 82.6\%
 potency remaining at the deterministic point estimate.
 
 \subsection*{Automotive functional safety / EV battery management (ISO 26262) -- Structurally ready}
-This is not a new model -- it is the existing, already-validated
-battery model, reframed for a different regulator. ISO 26262's
-hazard-analysis and documented-failure-mode requirements are
-structurally analogous to what FDA/NRC already require, and
-\texttt{BatteryModel2Cell} already satisfies the underlying technical
-need. The primary remaining work is positioning and outreach specific
-to automotive/EV safety engineers, not new engineering.
+\texttt{BatteryModel2Cell} (already Validated) is positioned, not
+re-engineered, for this market. Month 3 Week 12 produced accurate
+positioning materials
+(\texttt{docs/automotive\_ev\_positioning.md},
+\texttt{docs/automotive\_ev\_outreach\_email.md}) grounded in real
+ISO 26262 research (HARA, Part 3 Clause 7). An honest, load-bearing
+distinction is maintained throughout: ProbOS does NOT perform HARA,
+does NOT assign ASIL levels, and has NOT been used in an actual
+ISO 26262 submission. It provides quantitative uncertainty evidence
+(Sobol-identified dominant risk drivers, Monte Carlo tail-risk
+quantification, provenance-traced causal explanations) that could
+genuinely support a HARA process's Severity/Exposure judgments --
+materials exist; the actual outreach conversation has not yet
+happened.
 
 \section*{Aspirational -- real targets, no work done yet}
 

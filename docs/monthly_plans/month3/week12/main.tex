@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3, Week 12\\Automotive / EV Safety Positioning}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 12 goal}
+Produce accurate, well-researched positioning materials mapping
+\texttt{BatteryModel2Cell}'s already-validated capabilities to
+ISO 26262's automotive functional-safety framework.
+
+\textbf{Critical distinction from Weeks 9--11, stated up front:} this
+is NOT an engineering week. No new model, no new code, and no new
+validation dataset are required -- the underlying battery model is
+already Validated (Kim 2007, Sobol $S_1=0.457$ for Ea\_SEI). The work
+here is entirely research and positioning: correctly understanding
+ISO 26262's actual terminology and requirements (ASIL levels, Hazard
+Analysis and Risk Assessment / HARA, safety case documentation) well
+enough to map our existing capabilities onto them accurately, without
+overclaiming compliance or certification we have not actually
+obtained. Exit criteria are ``materials exist and are accurate,'' not
+``tests pass.''
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- ISO 26262 research (before writing any positioning material)}
+\begin{itemize}[leftmargin=*]
+  \item Research ISO 26262's actual structure: ASIL classification,
+    the Hazard Analysis and Risk Assessment (HARA) process, and what
+    documentation a safety case actually requires -- from real,
+    citable sources, not assumed from general familiarity
+  \item Identify precisely which parts of \texttt{BatteryModel2Cell}'s
+    existing output (Sobol sensitivity indices, provenance-traced
+    tail-risk outcomes, Monte Carlo percentile trajectories) map
+    genuinely onto HARA-style hazard identification -- and be
+    explicit about anything that does NOT map cleanly
+  \item Confirm: are we claiming ProbOS \emph{could support} an
+    ISO 26262 safety case, or that it \emph{has been used in} one?
+    Only the former is currently true and must be the only claim made
+\end{itemize}
+
+\subsection*{Day 2 -- Draft the automotive/EV positioning brief}
+\begin{itemize}[leftmargin=*]
+  \item A dedicated technical brief for an automotive/EV safety
+    engineering audience, explaining what \texttt{BatteryModel2Cell}
+    already demonstrates and how it maps to ISO 26262 concepts
+  \item Explicitly reuse the REAL, already-computed results (Kim 2007
+    validation, $S_1=0.457$ for Ea\_SEI, the P95-worst-case-cell
+    result) -- no new numbers are invented for this audience
+\end{itemize}
+
+\subsection*{Day 3 -- Outreach materials}
+\begin{itemize}[leftmargin=*]
+  \item Draft an outreach email template for automotive/EV safety
+    engineers, analogous to \texttt{docs/enterprise\_pilot\_email.md}
+    but addressed to this specific audience
+  \item Keep the ask concrete and modest (a conversation to confirm
+    or correct the assumed pain point), not an overreaching pitch
+\end{itemize}
+
+\subsection*{Day 4 -- Cross-check against the honest open questions}
+\begin{itemize}[leftmargin=*]
+  \item Re-read \texttt{docs/vision/main.tex}'s stated open questions
+    and confirm the Week 12 materials do not implicitly resolve or
+    paper over either of them
+\end{itemize}
+
+\subsection*{Day 5 -- Review pass}
+\begin{itemize}[leftmargin=*]
+  \item Full read-through checking for any claim not directly
+    traceable to either an actual computed result already in the
+    codebase, or an accurately cited external source
+\end{itemize}
+
+\subsection*{Day 6 -- Confirm no regressions}
+\begin{itemize}[leftmargin=*]
+  \item Run \texttt{pre\_week\_audit.sh} regardless, since this is a
+    docs-only week -- confirms nothing was accidentally broken
+\end{itemize}
+
+\subsection*{Day 7 -- Documentation + retrospective}
+\begin{itemize}[leftmargin=*]
+  \item Update \texttt{docs/vision/main.tex}'s automotive section to
+    note positioning materials are complete
+  \item Retrospective appended to this document once complete
+\end{itemize}
+
+\section*{Exit criteria}
+Accurate, well-researched automotive/EV positioning materials exist,
+citing only real ISO 26262 concepts and real, already-computed ProbOS
+results -- with no overclaimed certification, compliance, or
+practitioner validation that has not actually occurred.
+
+\end{document}

@@ -5,6 +5,20 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Position-independent code for ALL targets, regardless of build
+# type. Found necessary via a deep C++/kernel sweep: static
+# libraries (probos_mc_omp, probos_distributions) compiled with
+# AddressSanitizer in Debug mode previously failed to link into
+# the probos_cpp shared object (the pybind11 Python extension)
+# with 'recompile with -fPIC'. CI never triggered this because it
+# always builds probos_cpp in Release mode (no sanitizers) -- but
+# anyone following the README's general Debug-build instructions
+# to debug a memory issue in the Python extension specifically
+# would have hit this and gotten stuck. Standard, idiomatic CMake
+# fix: negligible cost for plain executables, completely resolves
+# the shared-library linking failure.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # -----------------------------------------------------------------------
 # Compiler flags
 # -----------------------------------------------------------------------
@@ -36,6 +50,8 @@ endif()
 # -----------------------------------------------------------------------
 add_library(probos_distributions STATIC
     src/distributions/normal.cpp
+    src/distributions/lognormal.cpp
+    src/distributions/uniform.cpp
 )
 target_include_directories(probos_distributions
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include

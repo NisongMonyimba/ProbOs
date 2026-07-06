@@ -127,6 +127,24 @@ if(GTest_FOUND)
         probos_distributions GTest::gtest_main Threads::Threads
     )
     add_test(NAME test_uniform COMMAND test_uniform)
+
+    add_executable(test_battery_cell tests/test_battery_cell.cpp)
+    target_include_directories(test_battery_cell PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    target_link_libraries(test_battery_cell PRIVATE
+        GTest::gtest_main Threads::Threads
+    )
+    add_test(NAME test_battery_cell COMMAND test_battery_cell)
+
+    add_executable(test_monte_carlo_omp tests/test_monte_carlo_omp.cpp)
+    target_link_libraries(test_monte_carlo_omp PRIVATE
+        probos_mc_omp GTest::gtest_main Threads::Threads
+    )
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(test_monte_carlo_omp PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+    add_test(NAME test_monte_carlo_omp COMMAND test_monte_carlo_omp)
 else()
     message(WARNING "Google Test not found. Install: sudo apt-get install -y libgtest-dev")
 endif()

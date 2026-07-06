@@ -24,7 +24,7 @@ HOW TO READ THE LOG-LOG PLOT:
   the CLT is confirmed: error ~ N^(-0.5) = 1/sqrt(N).
 
 HOW TO RUN:
-  cd /home/nison/ProbOsWeek1
+  cd /home/nison/ProbOs
   source .venv/bin/activate
   python python/examples/week2_clt_demo.py
 """

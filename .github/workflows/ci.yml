@@ -63,6 +63,13 @@ jobs:
 
       - name: Install C++ build tools (for probos_cpp extension)
         run: |
+          # Remove the Microsoft azure-cli/prod repo sources -- a
+          # known, recurring GitHub Actions Ubuntu runner issue where
+          # Microsoft's own repo signing occasionally breaks
+          # ('Clearsigned file isn't valid'), which fails apt-get
+          # update ENTIRELY even though we never use Azure CLI.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list \
+                     /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
           sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libgmock-dev
 
@@ -135,6 +142,13 @@ jobs:
 
       - name: Install C++ dependencies
         run: |
+          # Remove the Microsoft azure-cli/prod repo sources -- a
+          # known, recurring GitHub Actions Ubuntu runner issue where
+          # Microsoft's own repo signing occasionally breaks
+          # ('Clearsigned file isn't valid'), which fails apt-get
+          # update ENTIRELY even though we never use Azure CLI.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list \
+                     /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
           sudo apt-get install -y \
             build-essential \
@@ -181,6 +195,13 @@ jobs:
 
       - name: Install LaTeX
         run: |
+          # Remove the Microsoft azure-cli/prod repo sources -- a
+          # known, recurring GitHub Actions Ubuntu runner issue where
+          # Microsoft's own repo signing occasionally breaks
+          # ('Clearsigned file isn't valid'), which fails apt-get
+          # update ENTIRELY even though we never use Azure CLI.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list \
+                     /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
           sudo apt-get install -y \
             texlive-latex-extra \
@@ -243,6 +264,13 @@ jobs:
 
       - name: Install C++ dependencies
         run: |
+          # Remove the Microsoft azure-cli/prod repo sources -- a
+          # known, recurring GitHub Actions Ubuntu runner issue where
+          # Microsoft's own repo signing occasionally breaks
+          # ('Clearsigned file isn't valid'), which fails apt-get
+          # update ENTIRELY even though we never use Azure CLI.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list \
+                     /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
           sudo apt-get install -y \
             build-essential cmake ninja-build \
@@ -329,6 +357,13 @@ jobs:
 
       - name: Install C++ build tools
         run: |
+          # Remove the Microsoft azure-cli/prod repo sources -- a
+          # known, recurring GitHub Actions Ubuntu runner issue where
+          # Microsoft's own repo signing occasionally breaks
+          # ('Clearsigned file isn't valid'), which fails apt-get
+          # update ENTIRELY even though we never use Azure CLI.
+          sudo rm -f /etc/apt/sources.list.d/azure-cli.list \
+                     /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update -qq
           sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libgmock-dev
 

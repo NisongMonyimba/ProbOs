@@ -50,11 +50,11 @@ public:
         int    N_threads = 0
     ) : N_(N), n_steps_(n_steps), dt_(dt), N_threads_(N_threads) {}
 
-    // Run: draw params from simple uniform priors around nominal,
-    // advance N particles for n_steps, return MCResult.
-    //
-    // Params drawn as: nominal * (1 + 0.05 * U(-1,1)) per parameter
-    // (5% uniform uncertainty -- matches Python parameter_priors.py intent)
+    // Run: draw params from the REAL battery priors (see
+    // kernel/battery_priors.hpp -- a faithful C++ port of
+    // python/src/parameter_priors.py's build_battery_priors(), 9
+    // Normal + 3 LogNormal + 1 Uniform + 2 more Normal), advance N
+    // particles for n_steps, return MCResult.
     MCResult run(uint64_t seed = 42) const;
 
     int N()        const { return N_; }

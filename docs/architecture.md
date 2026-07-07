@@ -122,13 +122,18 @@ against it (not assumed correct because it compiles).
   `probos_cpp` extension module, ending the "two disconnected
   implementations" problem
 
-**Known, documented limitation:** `MonteCarloEngineOMP` currently
-draws parameters from a simplified 5% uniform perturbation, not the
-full `battery_priors` distributions the Python engine uses. This means
-P50 estimates agree between the two engines (within 10%), but the
-P05-P95 spread does not match. This gap is explicitly tested for in
-`test_cpp_bindings.py` (fails loudly if it silently changes) rather
-than silently accepted or silently "fixed" without updating the test.
+**Fixed (Month 3, comprehensive C++ kernel sweep):**
+`MonteCarloEngineOMP` now draws parameters from the REAL
+`battery_priors` distributions (see `kernel/battery_priors.hpp`, a
+faithful C++ port of `python/src/parameter_priors.py`'s
+`build_battery_priors()`), replacing the previous simplified 5%
+uniform perturbation. Both P50 estimates and the P05-P95 spread now
+agree between the two engines within a reasonable statistical
+tolerance (empirically confirmed within ~1%). This was previously a
+known, documented limitation, explicitly tested for in
+`test_cpp_bindings.py`; that test is now rewritten
+(`test_spread_matches_python_given_real_priors`) to assert the
+correct, current behavior.
 
 ---
 

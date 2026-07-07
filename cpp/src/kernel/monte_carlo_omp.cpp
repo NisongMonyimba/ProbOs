@@ -4,6 +4,7 @@
 // =============================================================================
 
 #include "kernel/monte_carlo_omp.hpp"
+#include "kernel/battery_priors.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -48,10 +49,18 @@ MCResult MonteCarloEngineOMP::run(uint64_t seed) const {
 #endif
 
     // ------------------------------------------------------------------
-    // Draw parameter sets: nominal * (1 + 0.05 * U(-1,1))
-    // Each particle gets its own seed derived from global seed + i
-    // ------------------------------------------------------------------
-    Param nominal = BatteryCell::nominal_params();
+    // Draw REAL parameter sets from the actual 15-distribution battery
+    // priors (see kernel/battery_priors.hpp, a faithful C++ port of
+    // python/src/parameter_priors.py's build_battery_priors()).
+    //
+    // Previously this used a simplified 'nominal * (1 + 0.05*U(-1,1))'
+    // perturbation applied uniformly to ALL 15 parameters -- a real,
+    // documented discrepancy, now fixed at the root.
+    //
+    // Each particle gets its own seed derived from global seed + i.
+    // (P is unused now since sample_battery_params() knows its own
+    // PARAM_DIM internally.)
+    static_cast<void>(P);
 
     std::vector<Param> params(N);
 
@@ -59,10 +68,7 @@ MCResult MonteCarloEngineOMP::run(uint64_t seed) const {
     for (int i = 0; i < N; ++i) {
         uint64_t pseed = hash64(seed ^ static_cast<uint64_t>(i) * 2654435761ULL);
         std::mt19937_64 rng(pseed);
-        std::uniform_real_distribution<double> uni(-1.0, 1.0);
-        for (int j = 0; j < P; ++j) {
-            params[i][j] = nominal[j] * (1.0 + 0.05 * uni(rng));
-        }
+        params[i] = sample_battery_params(rng);
     }
 
     // ------------------------------------------------------------------

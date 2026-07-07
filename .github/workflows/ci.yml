@@ -156,11 +156,16 @@ jobs:
         working-directory: cpp
         run: cmake --build build
 
-      - name: Run C++ tests (13 tests)
+      - name: Run C++ tests (ctest -- all registered executables)
         working-directory: cpp
         run: |
-          ./build/test_normal --gtest_brief=1
-          echo "C++ exit: $?"
+          # CRITICAL FIX (Month 3 comprehensive C++ kernel sweep):
+          # this step previously invoked ONLY ./build/test_normal
+          # directly, meaning test_lognormal, test_uniform,
+          # test_battery_cell, and test_monte_carlo_omp were NEVER
+          # actually verified by CI. ctest auto-discovers and runs
+          # ALL test executables registered via add_test().
+          ctest --test-dir build --output-on-failure
 
   # ===========================================================================
   # JOB 3: LaTeX manuscript
@@ -260,7 +265,13 @@ jobs:
 
       - name: Run all C++ tests
         working-directory: cpp
-        run: ./build/test_normal --gtest_brief=1
+        run: |
+          # Fixed (Month 3 comprehensive C++ kernel sweep): this step's
+          # name claimed 'Run all C++ tests' but only ran test_normal --
+          # test_lognormal, test_uniform, test_battery_cell, and
+          # test_monte_carlo_omp were never actually verified here.
+          # ctest discovers and runs ALL registered executables.
+          ctest --test-dir build --output-on-failure
 
       - name: mypy + ruff (full tree)
         run: |

@@ -66,6 +66,7 @@ add_library(probos_mc_omp STATIC
 target_include_directories(probos_mc_omp
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+target_link_libraries(probos_mc_omp PUBLIC probos_distributions)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(probos_mc_omp PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(probos_mc_omp PUBLIC PROBOS_OPENMP_ENABLED)

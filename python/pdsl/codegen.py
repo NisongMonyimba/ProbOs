@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from python.pdsl.ast_nodes import (
     BinOp,
+    Comparison,
+    Conditional,
     DistributionNode,
     Expr,
     FuncCall,
@@ -80,7 +82,24 @@ def _expr_to_python(expr: Expr) -> str:
         args = ", ".join(_expr_to_python(a) for a in expr.args)
         return f"{np_func}({args})"
 
+    if isinstance(expr, Conditional):
+        cond = _condition_to_python(expr.cond)
+        then_branch = _expr_to_python(expr.then_expr)
+        else_branch = _expr_to_python(expr.else_expr)
+        return f"np.where({cond}, {then_branch}, {else_branch})"
+
     raise TypeError(f"Unknown expression type: {type(expr)}")
+
+
+def _condition_to_python(cond: Comparison) -> str:
+    """
+    Convert a Comparison AST node to a Python string. Comparison
+    operators already work natively as elementwise operators on
+    NumPy arrays via operator overloading.
+    """
+    left  = _expr_to_python(cond.left)
+    right = _expr_to_python(cond.right)
+    return f"({left} {cond.op} {right})"
 
 
 def _dist_to_python(name: str, dist: DistributionNode) -> str:

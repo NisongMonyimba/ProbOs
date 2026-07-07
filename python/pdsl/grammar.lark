@@ -38,9 +38,22 @@ numlist      : number ("," number)*
 // Expressions -- full arithmetic + unary minus + function calls
 // Function call arguments ARE full expressions (to support exp(-x/y))
 // -----------------------------------------------------------------------
-?expr        : expr "+" term    -> add
+?expr        : "if" condition "then" expr "else" expr -> conditional
+             | expr "+" term    -> add
              | expr "-" term    -> sub
              | term
+
+// -----------------------------------------------------------------------
+// Conditions -- comparison operators, used ONLY inside "if ... then ...
+// else ..." conditional expressions above. Deliberately NOT part of the
+// arithmetic ?expr chain.
+// -----------------------------------------------------------------------
+?condition   : expr "<"  expr   -> lt
+             | expr ">"  expr   -> gt
+             | expr "<=" expr   -> le
+             | expr ">=" expr   -> ge
+             | expr "==" expr   -> eq
+             | expr "!=" expr   -> ne
 
 ?term        : term "*" factor  -> mul
              | term "/" factor  -> div

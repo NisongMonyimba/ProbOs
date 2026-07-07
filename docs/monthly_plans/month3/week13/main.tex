@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3, Week 13\\PDSL v0.2: Control Flow}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 13 goal}
+Extend PDSL from v0.1 to v0.2 by adding comparison operators and
+conditional expressions -- the first control-flow constructs PDSL
+has ever supported.
+
+\textbf{Scope confirmed via direct inspection of \texttt{grammar.lark}
+before writing this plan:} PDSL v0.1 has ZERO comparison operators
+and ZERO conditional constructs -- only arithmetic (+, -, *, /, **,
+unary +/-) and function calls.
+
+\textbf{Design decision, stated up front:} this adds
+EXPRESSION-level conditionals (\texttt{if cond then expr else expr}),
+NOT statement-level control flow or loops. PDSL describes a model's
+per-step drift declaratively; the outer simulation engine already
+handles the step-by-step loop. An expression-level conditional (for
+clamping, thresholding, or piecewise physical behavior) is the right
+granularity.
+
+\section*{Day-by-day plan}
+
+\subsection*{Day 1 -- Grammar design}
+\begin{itemize}[leftmargin=*]
+  \item Add comparison operators to \texttt{grammar.lark}: \texttt{<},
+    \texttt{>}, \texttt{<=}, \texttt{>=}, \texttt{==}, \texttt{!=} --
+    at a new precedence level between \texttt{expr} and a new
+    top-level \texttt{condition} rule
+  \item Add a conditional expression rule:
+    \texttt{"if" condition "then" expr "else" expr -> conditional}
+  \item Test the grammar in isolation (Lark parse-tree inspection)
+    before touching \texttt{parser.py} or \texttt{codegen.py}
+\end{itemize}
+
+\subsection*{Day 2 -- AST nodes and parser}
+\begin{itemize}[leftmargin=*]
+  \item Add \texttt{Comparison} and \texttt{Conditional} AST node
+    types to \texttt{ast\_nodes.py}, matching existing node style
+  \item Extend \texttt{parser.py} to build these new AST nodes
+\end{itemize}
+
+\subsection*{Day 3 -- Code generation}
+\begin{itemize}[leftmargin=*]
+  \item Extend \texttt{codegen.py} to emit correct, VECTORISED
+    Python: a naive \texttt{if/else} would not vectorise correctly
+    over N particles -- must generate \texttt{xp.where(cond,
+    expr\_true, expr\_false)}, matching the vectorisation discipline
+    already used throughout the hand-written kernel models
+\end{itemize}
+
+\subsection*{Day 4 -- Test coverage}
+\begin{itemize}[leftmargin=*]
+  \item Grammar-level, codegen-level, and end-to-end tests: a
+    genuinely new PDSL model using a conditional compiles and runs
+    correctly through the full pipeline, matching a hand-written
+    Python equivalent
+\end{itemize}
+
+\subsection*{Day 5 -- Existing model regression check}
+\begin{itemize}[leftmargin=*]
+  \item Confirm ALL existing PDSL v0.1 models/examples still parse
+    and compile correctly -- strictly additive, not breaking
+\end{itemize}
+
+\subsection*{Day 6 -- pre\_week\_audit.sh + CI}
+\begin{itemize}[leftmargin=*]
+  \item Full audit pass
+\end{itemize}
+
+\subsection*{Day 7 -- Documentation + retrospective}
+\begin{itemize}[leftmargin=*]
+  \item Update \texttt{docs/vision/main.tex} if it references PDSL
+    version status
+  \item Retrospective appended once complete
+\end{itemize}
+
+\section*{Exit criteria}
+PDSL v0.2 correctly parses, compiles, and executes conditional
+expressions with comparison operators, generating correctly-
+vectorised NumPy/CuPy code (\texttt{xp.where}), with zero regressions
+to any existing v0.1 model.
+
+\end{document}

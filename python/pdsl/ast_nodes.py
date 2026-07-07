@@ -43,7 +43,28 @@ class FuncCall:
     name: str
     args: list[Expr]
 
-Expr = NumberLit | Var | BinOp | UnaryOp | Pow | FuncCall
+@dataclass
+class Comparison:
+    """
+    A comparison operator (<, >, <=, >=, ==, !=). Deliberately NOT
+    part of the Expr union below -- matching grammar.lark's own
+    separation of ?condition from ?expr.
+    """
+    op:    str
+    left:  Expr
+    right: Expr
+
+@dataclass
+class Conditional:
+    """
+    An expression-level conditional: if cond then expr else expr.
+    PDSL v0.2's first control-flow construct.
+    """
+    cond:      Comparison
+    then_expr: Expr
+    else_expr: Expr
+
+Expr = NumberLit | Var | BinOp | UnaryOp | Pow | FuncCall | Conditional
 
 
 # ---------------------------------------------------------------------------

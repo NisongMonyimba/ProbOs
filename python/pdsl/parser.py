@@ -12,6 +12,8 @@ from lark import Lark, Token, Transformer
 
 from python.pdsl.ast_nodes import (
     BinOp,
+    Comparison,
+    Conditional,
     DistributionNode,
     DriftDecl,
     Expr,
@@ -81,6 +83,34 @@ class _PDSLTransformer(Transformer[Token, Any]):
 
     def neg(self, items: list[Any]) -> UnaryOp:
         return UnaryOp("-", cast(Expr, items[0]))
+
+    # ------------------------------------------------------------------
+    # Comparisons + conditional (PDSL v0.2, Week 13)
+    # ------------------------------------------------------------------
+    def lt(self, items: list[Any]) -> Comparison:
+        return Comparison("<", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def gt(self, items: list[Any]) -> Comparison:
+        return Comparison(">", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def le(self, items: list[Any]) -> Comparison:
+        return Comparison("<=", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def ge(self, items: list[Any]) -> Comparison:
+        return Comparison(">=", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def eq(self, items: list[Any]) -> Comparison:
+        return Comparison("==", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def ne(self, items: list[Any]) -> Comparison:
+        return Comparison("!=", cast(Expr, items[0]), cast(Expr, items[1]))
+
+    def conditional(self, items: list[Any]) -> Conditional:
+        return Conditional(
+            cond=cast(Comparison, items[0]),
+            then_expr=cast(Expr, items[1]),
+            else_expr=cast(Expr, items[2]),
+        )
 
     def exprlist(self, items: list[Any]) -> list[Expr]:
         return [cast(Expr, x) for x in items]

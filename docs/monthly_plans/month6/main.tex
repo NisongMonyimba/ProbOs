@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\title{ProbOS --- Month 6 Pre-Plan\\Dashboard Hardening and Comprehensive Sweep}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Month goal}
+Harden the dashboard with a real UX pass, a security review, and a
+comprehensive sweep matching this project's established discipline.
+
+\section*{Week 22 -- Real UX pass}
+\begin{itemize}[leftmargin=*]
+  \item Test the cold-start flow with fresh eyes
+  \item Fix friction points, prioritizing anything confusing a
+    first-time practitioner user specifically
+\end{itemize}
+
+\section*{Week 23 -- Security review}
+\begin{itemize}[leftmargin=*]
+  \item The dashboard + API are a genuinely NEW attack surface
+  \item Input validation on all user-configurable priors/parameters
+\end{itemize}
+
+\textbf{Study materials for this week:}
+\begin{itemize}[leftmargin=*]
+  \item OWASP Top 10 (owasp.org, free) -- the standard baseline for
+    web application security.
+  \item Dafydd Stuttard \& Marcus Pinto, \emph{The Web Application
+    Hacker's Handbook} (2nd ed.) -- the deeper reference if warranted
+    before external exposure.
+\end{itemize}
+
+\section*{Week 24 -- Comprehensive dashboard sweep}
+\begin{itemize}[leftmargin=*]
+  \item Repeat the exact workaround/shortcut sweep discipline from
+    Month 3, applied specifically to the dashboard and API layers
+  \item Update \texttt{docs/standards/quality\_standards.md} to
+    extend its scope to the dashboard/API surface
+\end{itemize}
+
+\section*{Week 25 -- Retrospective + vision doc update}
+\begin{itemize}[leftmargin=*]
+  \item Full Month 4--6 retrospective
+  \item Update \texttt{docs/vision/main.tex}
+\end{itemize}
+
+\section*{Exit criteria}
+A hardened, security-reviewed dashboard with no known workarounds.
+
+\end{document}

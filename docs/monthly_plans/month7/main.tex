@@ -1,0 +1,52 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\title{ProbOS --- Month 7 Pre-Plan\\Pharma GPU and C++ Parity}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Month goal}
+Bring \texttt{PharmaStabilityModel} to the same GPU and C++
+performance-path maturity as \texttt{BatteryModel2Cell}.
+
+\section*{Week 26 -- GPU dispatch for PharmaStabilityModel}
+\begin{itemize}[leftmargin=*]
+  \item CuPy dispatch mirroring the battery model's \texttt{xp}
+    pattern exactly
+  \item Honest benchmark against CPU/C++ -- do NOT assume GPU wins
+\end{itemize}
+
+\section*{Week 27 -- C++ port}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{PharmaCell}-equivalent in C++
+  \item Native GoogleTest coverage from day one
+  \item pybind11 bindings
+\end{itemize}
+
+\section*{Week 28 -- Cross-language validation}
+\begin{itemize}[leftmargin=*]
+  \item Statistical agreement, not bit-exact, given different RNGs
+\end{itemize}
+
+\section*{Week 29 -- Dashboard integration}
+
+\textbf{Study materials for this month:}
+Primarily applying already-demonstrated skills from Months 1--3 --
+minimal new study material needed.
+\begin{itemize}[leftmargin=*]
+  \item Optional: Vandevoorde, Josuttis, Gregor, \emph{C++ Templates:
+    The Complete Guide} (2nd ed.) -- if pursuing the
+    \texttt{Normal<T>} autodiff future direction.
+\end{itemize}
+
+\section*{Exit criteria}
+Pharma has full GPU and C++ parity with battery, honestly benchmarked.
+
+\end{document}

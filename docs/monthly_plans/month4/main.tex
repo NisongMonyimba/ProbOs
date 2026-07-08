@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\title{ProbOS --- Month 4 Pre-Plan\\Dashboard Architecture and Core Build}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Month goal}
+Build the core dashboard for ProbOS's two already-validated domains
+(battery, pharma): a working, genuinely usable interface for running
+simulations, configuring priors, and viewing uncertainty results --
+not a prototype, but the foundation every later domain will build on.
+
+\section*{Week 14 -- Framework decision + spike}
+\begin{itemize}[leftmargin=*]
+  \item Spike BOTH candidate frameworks before committing:
+    Streamlit (fast, Python-native, weaker on custom UI control) and
+    a React frontend against the existing FastAPI backend (more
+    ``real product'' feel, more implementation work).
+  \item Exit criterion: a working ``hello world'' simulation trigger
+    in BOTH candidates, compared honestly on development speed,
+    customization ceiling, and fit with ProbOS's existing FastAPI
+    service layer.
+\end{itemize}
+
+\textbf{Study materials for this week:}
+\begin{itemize}[leftmargin=*]
+  \item Streamlit -- official docs (docs.streamlit.io) are genuinely
+    sufficient; no book needed given this framework's scope.
+  \item React -- react.dev's official docs (hooks-first, rewritten
+    2023) over any book; supplement with \emph{Learning React}
+    (O'Reilly, Banks \& Porcello) only if the React path is chosen.
+\end{itemize}
+
+\section*{Week 15 -- Core dashboard build}
+\begin{itemize}[leftmargin=*]
+  \item Model selector (battery, pharma)
+  \item Parameter/prior configuration UI -- must expose real prior
+    distributions (Normal/LogNormal/Uniform), not just point
+    estimates
+  \item Run-simulation trigger, wired to the existing FastAPI
+    \texttt{/simulate} endpoint
+\end{itemize}
+
+\section*{Week 16 -- Visualization layer}
+\begin{itemize}[leftmargin=*]
+  \item P05/P50/P95 percentile trajectory bands
+  \item Sobol sensitivity bar chart
+  \item Provenance trace explorer for a selected tail-risk outcome
+\end{itemize}
+
+\textbf{Study materials for this week:}
+\begin{itemize}[leftmargin=*]
+  \item Cole Nussbaumer Knaflic, \emph{Storytelling with Data}
+    (Wiley, 2015) -- the standard reference for designing numeric/
+    statistical dashboards that communicate uncertainty clearly.
+  \item Edward Tufte, \emph{The Visual Display of Quantitative
+    Information} -- foundational visual-design taste before building
+    charts representing safety-critical uncertainty.
+\end{itemize}
+
+\section*{Week 17 -- Error handling + first real user-flow test}
+\begin{itemize}[leftmargin=*]
+  \item Loading states, error messages for invalid prior
+    configurations, graceful failure for out-of-range parameters
+  \item First end-to-end user-flow test with someone other than the
+    builder, if possible
+\end{itemize}
+
+\section*{Exit criteria}
+A working dashboard covering both validated domains, with correctly
+visualized uncertainty, that a cold-start user can operate without
+explanation.
+
+\end{document}

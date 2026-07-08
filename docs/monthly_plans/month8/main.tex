@@ -1,0 +1,53 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\title{ProbOS --- Month 8 Pre-Plan\\Medical Device Domain (Part 1: Research Gate)}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Month goal}
+Determine, via real research BEFORE any model code, whether medical
+device battery safety can be genuinely validated.
+
+\section*{The real, open question, stated up front}
+Implantable device batteries typically use lithium-iodide or
+lithium-silver-vanadium-oxide chemistry -- NOT the lithium-ion
+chemistry \texttt{BatteryModel2Cell} already models. Unlike
+automotive, medical device may require a genuinely new model.
+
+\section*{Week 30 -- Research gate}
+\begin{itemize}[leftmargin=*]
+  \item Search for real, citable implantable device battery safety
+    data, matching the pharma model's Day 1 discipline
+  \item Confirm or reject the chemistry-transfer assumption with real
+    sources
+\end{itemize}
+
+\textbf{Study materials for this week:}
+\begin{itemize}[leftmargin=*]
+  \item FDA guidance documents on implantable device battery safety
+  \item ISO 14708 (active implantable medical devices)
+  \item A survey paper on implantable-device battery electrochemistry
+    (post-2015, IEEE/electrochemistry journals)
+\end{itemize}
+
+\section*{Week 31 -- Decision point}
+\begin{itemize}[leftmargin=*]
+  \item If real data found: design the correct chemistry-specific
+    model
+  \item If not found: document honestly, pivot to Month 10's research
+    gate early
+\end{itemize}
+
+\section*{Exit criteria}
+An honest, evidence-based answer -- not a model built on an assumed
+chemistry transfer.
+
+\end{document}

@@ -91,4 +91,54 @@ expressions with comparison operators, generating correctly-
 vectorised NumPy/CuPy code (\texttt{xp.where}), with zero regressions
 to any existing v0.1 model.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item PDSL v0.2 shipped: comparison operators (<, >, <=, >=, ==,
+    !=) and expression-level conditionals (if cond then expr else
+    expr) -- the first control-flow constructs PDSL has ever
+    supported.
+  \item An honest correction was made to this plan document's own
+    stated intention during Day 3: the plan said codegen ``must
+    generate xp.where(), matching CuPy dispatch'' -- but direct
+    inspection of the actual codegen.py showed PDSL v0.1 has no
+    xp/CuPy dispatch at all, only plain \texttt{np.}. np.where() was
+    the correct, properly-scoped choice.
+  \item Genuine end-to-end proof of correct vectorisation: 5
+    particles above a threshold and 5 below, in the SAME
+    \texttt{forward\_batch()} call, correctly diverged based on their
+    own individual state values. A boundary test confirmed strict
+    comparison semantics.
+  \item Two real, unrelated bugs were found and fixed, surfaced by
+    \texttt{check\_ci.sh}'s corrected, accurate failure reporting:
+  \begin{enumerate}[leftmargin=*]
+    \item \texttt{check\_ci.sh} itself had a genuine race condition,
+      permanently fixed by matching the exact commit SHA with a
+      polling retry loop.
+    \item CI's C++ dependency installation failed due to a broken
+      Microsoft azure-cli apt repository -- a genuine, external
+      infrastructure issue. Fixed robustly (grep by repo file
+      CONTENT, not a guessed filename).
+  \end{enumerate}
+\end{itemize}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item Verifying assumptions against the actual current codebase
+    caught the xp/CuPy scope-creep risk before any code was written.
+  \item A test failure was correctly diagnosed as being in the TEST
+    SCRIPT's PDSL syntax, not the actual codegen fix.
+  \item check\_ci.sh's fix immediately proved its own value: it
+    correctly caught a genuine CI failure, leading directly to
+    finding and fixing the Microsoft-repo infrastructure issue.
+\end{enumerate}
+
+\section*{Numbers at Week 13 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 408/408 passing
+  \item mypy strict: 0 errors
+  \item ruff: 0 warnings
+  \item Zero regressions to any existing PDSL v0.1 model
+\end{itemize}
 \end{document}

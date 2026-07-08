@@ -1,6 +1,6 @@
 # ProbOS Architecture
 
-**Last updated:** Month 2, Week 7 (FastAPI Service Layer)
+**Last updated:** Month 3, Week 13 (PDSL v0.2 + comprehensive kernel sweep)
 
 This document describes the current, working architecture of ProbOS.
 It supersedes the original Week 1 draft, which described only the
@@ -154,9 +154,12 @@ kernel call at `rtol=1e-10`, plus a live smoke test against a real
 `uvicorn` process over an actual socket (not just FastAPI's in-process
 `TestClient`).
 
-Only `BatteryModel2Cell` is currently registered in the server's model
-registry; extending it to the other Week 4 models is a natural,
-low-risk follow-up.
+As of Month 3 Week 9, all four models (`BatteryModel2Cell`,
+`OptionPricerModel`, `EDQueueModel`, `ClinicalTrialModel`) are
+registered in the server's model registry. `/filter` correctly
+and honestly rejects `clinical_trial` with HTTP 422, since a
+generic Gaussian-noise likelihood is meaningless for its
+count-based state.
 
 ---
 
@@ -183,9 +186,29 @@ hygiene, packaging/installability, build system, reproducibility,
 numerical validity, security (bandit, pip-audit), CI parity,
 documentation, and git hygiene.
 
-**Current numbers (Week 7 close):** 341 Python tests, 13 C++ tests,
-mypy strict 0 errors (full `python/` tree), ruff 0 warnings, 90%+ test
-coverage, 0 bandit findings, 0 known dependency CVEs.
+**Current numbers (Month 3 Week 13 close):** 408 Python tests, 5 C++
+test executables (test_normal, test_lognormal, test_uniform,
+test_battery_cell, test_monte_carlo_omp), mypy strict 0 errors (full
+`python/` tree), ruff 0 warnings, 90%+ test coverage, 0 bandit
+findings, 0 known dependency CVEs.
+
+**Since Week 7, also added:**
+- `PharmaStabilityModel` (Avrami kinetics), validated against
+  Gonzalez-Gonzalez et al. (2023) -- a second, independently
+  validated physical domain alongside the battery model
+- GPU kernel path for `BatteryModel2Cell` (CuPy + kernel fusion),
+  honestly benchmarked -- C++/OpenMP remains fastest at every tested
+  N, reported truthfully rather than oversold
+- `LogNormal` and `Uniform` C++ distribution classes, plus a full
+  C++ port of the real 15-parameter `battery_priors`, closing a
+  long-standing C++/Python parameter-spread discrepancy at the root
+- Native C++ test coverage for `BatteryCell` and
+  `MonteCarloEngineOMP`, previously zero, including a direct
+  same-seed/different-thread-count race-condition check
+- PDSL v0.2: comparison operators and expression-level conditionals,
+  correctly compiling to vectorised `np.where()`
+- Automotive/EV safety positioning materials, reusing the validated
+  battery model under an ISO 26262 framing
 
 ---
 

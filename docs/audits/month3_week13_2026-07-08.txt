@@ -1,0 +1,96 @@
+
+============================================================
+  1. CORRECTNESS
+============================================================
+  [PASS] Full Python test suite passes
+         
+         -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+         ======================= 408 passed, 1 warning in 10.02s ========================
+  [PASS] mypy strict on FULL python/ tree
+  [PASS] C++ test suite passes
+
+============================================================
+  2. CODE HYGIENE
+============================================================
+  [PASS] ruff clean on FULL python/ tree
+         All checks passed!
+  [PASS] No untracked TODO/FIXME/HACK markers
+  [PASS] No bare 'except:' clauses
+  [PASS] All python/ subpackages have __init__.py
+
+============================================================
+  2b. TEST COVERAGE
+============================================================
+  [PASS] Coverage >= 85% on python/src + python/pdsl
+         ----------------------------------------------------------------------------------
+         python/pdsl/__init__.py                    0      0      0      0   100%
+         python/pdsl/ast_nodes.py                  68      0      0      0   100%
+         python/pdsl/codegen.py                    95      7     40      5    91%   71-73, 78, 91, 109, 229
+         python/pdsl/compiler.py                   28      2      6      2    88%   60, 72
+         python/pdsl/parser.py                    106      3     14      2    96%   70, 79, 82, 164->163, 191->184
+         python/src/__init__.py                     0      0      0      0   100%
+         python/src/battery_model.py              115      2      4      1    97%   29-30, 105->139
+         python/src/distributions.py              183     24     16      0    88%   290, 301, 499, 618-622, 638, 716-717, 731, 816-822, 826, 830-831, 838, 927-928, 932, 936, 940, 943
+         python/src/monte_carlo.py                 77      0     14      0   100%
+         python/src/parameter_priors.py            58     35      6      1    38%   190-191, 199-229, 233-245
+         python/src/particle_filter.py            106      0     14      0   100%
+         python/src/pharma_stability_model.py      60     14     12      0    64%   52-53, 119-131, 134-135
+         python/src/provenance.py                  73      2     22      4    94%   183->186, 228, 233, 241->240
+         python/src/sensitivity.py                 90      0     18      0   100%
+         python/src/state.py                       31      0      8      0   100%
+         ----------------------------------------------------------------------------------
+         TOTAL                                   1090     89    174     15    91%
+         Required test coverage of 85% reached. Total coverage: 90.51%
+         ======================= 408 passed, 1 warning in 11.34s ========================
+
+============================================================
+  2c. PROPERTY-BASED TESTS (Hypothesis)
+============================================================
+  [PASS] Hypothesis property-based tests pass
+         collected 14 items
+         
+         python/tests/test_distributions_properties.py ..............             [100%]
+         
+         ============================== 14 passed in 2.12s ==============================
+
+============================================================
+  2d. DOCTESTS
+============================================================
+  [SKIP] No runnable doctest examples found yet in python/src/
+
+============================================================
+  8. SECURITY
+============================================================
+  [PASS] bandit: no HIGH-severity findings in python/src/ + python/pdsl/
+  [WARN] pip-audit found potential issues (review manually):
+         ERROR:pip_audit._cli:probos-kernel: Dependency not found on PyPI and could not be audited: probos-kernel (0.0.1)
+  [PASS] No hardcoded secret-like strings in source
+
+============================================================
+  3. PACKAGING & INSTALLABILITY
+============================================================
+  [PASS] Core + example imports work from outside repo dir
+
+============================================================
+  4. BUILD SYSTEM
+============================================================
+  [PASS] probos_cpp pybind11 extension is built
+  [PASS] cpp/build/ is correctly gitignored
+
+============================================================
+  5. REPRODUCIBILITY
+============================================================
+  [PASS] MonteCarloEngine same-seed reproducibility
+
+============================================================
+  6. GIT HYGIENE
+============================================================
+  [PASS] No tracked files > 5MB
+
+============================================================
+  SUMMARY
+============================================================
+  Passed: 16
+  Failed: 0
+============================================================
+  AUDIT RESULT: PASS -- clear to start next week's work

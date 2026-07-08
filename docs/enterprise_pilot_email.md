@@ -23,7 +23,13 @@ minutes — a risk completely invisible to deterministic simulation.
   the Python package via pybind11
 - REST API: `/simulate`, `/sensitivity`, `/filter` endpoints, ready to
   integrate into an existing validation pipeline
-- 341 tests, mypy strict, open-source: github.com/NisongMonyimba/ProbOs
+- Pharmaceutical stability model (Avrami kinetics): validated against
+  Gonzalez-Gonzalez et al. (2023), a real ICH-referenced study --
+  Sobol sensitivity identifies activation energy as the dominant
+  shelf-life risk driver (S1=0.993)
+- Control-flow-capable PDSL v0.2: declare stochastic models with
+  conditional/threshold logic without writing Python by hand
+- 408 tests, mypy strict, open-source: github.com/NisongMonyimba/ProbOs
 
 **Why now:**
 FDA, NRC, and ISO 14971 are moving toward mandatory uncertainty quantification
@@ -65,3 +71,9 @@ https://github.com/NisongMonyimba/ProbOs
 5. **TerraPower** — Nuclear reactor safety analysis
    Contact: Chief Engineer
    Angle: NRC uncertainty quantification requirements
+
+6. **A generic sponsor/CMC team** — Pharmaceutical stability and
+   shelf-life prediction (FDA CMC submissions)
+   Contact: Head of Pharmaceutical Development / CMC
+   Angle: ICH Q1A-aligned uncertainty quantification for stability
+   studies, using the now-validated PharmaStabilityModel

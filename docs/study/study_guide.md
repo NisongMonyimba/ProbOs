@@ -152,3 +152,40 @@ reading explains.
 | File | Resource | Chapters | Why |
 |------|----------|----------|-----|
 | `python/examples/week4_option_pricer.py`, `week4_ed_queue.py`, `week4_clinical_trial.py` (per-instance `self._rng`) | NumPy Random Generator docs | "Random sampling" quickstart | Root-cause fix for a real reproducibility bug: models drawing from the GLOBAL `np.random` state cannot be made reproducible by an external `seed` parameter alone -- each stochastic model now owns a private `np.random.default_rng(seed)`, the same pattern `MonteCarloEngine`/`ParticleFilter`/`SobolSensitivity` already used correctly for their own seeding |
+
+### Month 3 Week 10 -- GPU Kernel Path (CuPy + Kernel Fusion)
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/src/battery_model.py` (`xp` dispatch) | CuPy official documentation, "Basics of CuPy" | Full page | `cp.get_array_module()` pattern for writing NumPy/CuPy-agnostic code |
+| `python/src/battery_model.py` (`cp.fuse()`) | CuPy documentation, "User-Defined Kernels" -- `cp.fuse` section | Full page | Kernel fusion to reduce per-step launch overhead |
+| `cpp/CMakeLists.txt` (PIC/ASan fix) | GCC documentation, `-fsanitize=address` and `-fPIC` reference | Relevant sections | Root cause of the Debug-build linking failure |
+
+### Month 3 Week 11 -- PharmaStabilityModel (Avrami Kinetics)
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/src/pharma_stability_model.py` | Gonzalez-Gonzalez, O. et al. (2023), "Application of Accelerated Predictive Stability Studies...", *Molecules* 28(23), 7925 | Full paper | The real, cited validation source |
+| `python/src/pharma_stability_model.py` (Avrami form) | Avrami, M. (1939-1941), original kinetics papers (via secondary review) | Relevant sections | The `potency = exp(-k*t^n)` closed-form solution |
+| Day 3 fitting (`scipy.optimize.curve_fit`) | SciPy documentation, `curve_fit` | Full page | Diagnosed and fixed the degenerate 2-parameter fit |
+
+### Month 3 Week 12 -- Automotive/EV Safety Positioning (ISO 26262)
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `docs/automotive_ev_positioning.md` | ISO 26262 Part 3, Clause 7 (Hazard Analysis and Risk Assessment) | Clause 7 | The real regulatory framework the positioning brief maps against |
+
+### Month 3 Week 13 -- PDSL v0.2 (Control Flow)
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `python/pdsl/grammar.lark` (comparison + conditional rules) | Nystrom, *Crafting Interpreters* (free online) | Ch 6 (Parsing Expressions) | Precedence-tier design for comparison operators |
+| `python/pdsl/codegen.py` (`np.where`) | NumPy documentation, `numpy.where` | Full page | The correct, vectorised way to express an elementwise conditional |
+
+### Month 3 -- Comprehensive C++/Kernel Sweep
+
+| File | Resource | Chapters | Why |
+|------|----------|----------|-----|
+| `cpp/tests/test_lognormal.cpp` (reproducibility test fix) | C++ reference, `std::lognormal_distribution` | Relevant section | Normal-family STL distributions cache an internal value between calls |
+| `cpp/tests/test_monte_carlo_omp.cpp` (race-condition test) | Pacheco, *An Introduction to Parallel Programming* (revisit) | Ch 4-5 | Designing a same-seed-different-thread-count race-condition check |
+| `.github/workflows/ci.yml` (apt-get fix) | Debian/Ubuntu `apt` documentation, `sources.list.d` | Relevant section | Diagnosing the broken Microsoft repository signing issue |

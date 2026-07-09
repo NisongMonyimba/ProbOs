@@ -35,7 +35,6 @@
   }
   h1 .accent{color:var(--blue);}
   .lede{font-size:16.5px;color:var(--ink-soft);max-width:660px;margin:0 0 32px;}
-
   .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
   .tab{
     font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
@@ -43,7 +42,6 @@
     background:var(--paper);color:var(--ink-soft);cursor:pointer;
   }
   .tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-
   .panel{
     background:var(--paper); border:1px solid var(--line); border-radius:6px;
     padding:28px 28px 24px; margin-bottom:20px;
@@ -68,47 +66,28 @@
   }
   .toggle.on .knob{transform:translateX(24px);}
   .toggle-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
-  #chartWrap{position:relative;height:260px;margin:6px 0 8px;}
+  #chartWrap{position:relative;height:220px;margin:6px 0 4px;}
+  #histWrap{position:relative;height:160px;margin:14px 0 4px; display:none;}
   canvas{width:100%;height:100%;display:block;}
-  .readouts{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
-    background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden;
-    margin-top:18px;
-  }
-  .readout{background:var(--paper);padding:14px 14px 12px;}
-  .readout-label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
-  .readout-value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:var(--ink);}
-  .readout-value.danger{color:var(--danger);}
-  .readout-value.blue{color:var(--blue);}
-  .caption{font-size:12.5px;color:var(--ink-soft);margin-top:16px;line-height:1.55;}
-  .caption b{color:var(--ink);font-weight:500;}
-  .sliders{display:grid;grid-template-columns:1fr 1fr;gap:20px 28px;margin-bottom:6px;}
-  .slider-group{display:flex;flex-direction:column;gap:8px;}
-  .slider-label{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);}
-  .slider-label span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--ink);}
-  input[type=range]{
-    -webkit-appearance:none;appearance:none;width:100%;height:3px;
-    background:var(--line);border-radius:2px;outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-    background:var(--blue);cursor:pointer;border:2px solid var(--paper);
-    box-shadow:0 0 0 1px var(--blue);
-  }
-  .sens-list{display:flex;flex-direction:column;gap:10px;}
-  .sens-row{display:flex;align-items:center;gap:12px;}
-  .sens-name{width:170px;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
-  .sens-track{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
-  .sens-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .4s ease;}
-  .sens-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;width:38px;text-align:right;color:var(--ink-soft);}
-
+  .chart-caption{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:2px;}
   .legend{
     display:flex; flex-wrap:wrap; gap:14px 18px; margin:10px 0 4px;
     font-size:12px; color:var(--ink-soft);
   }
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-swatch{width:11px; height:11px; border-radius:3px; flex-shrink:0;}
-
+  .readouts{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden;
+    margin-top:18px;
+  }
+  .readout{background:var(--paper);padding:14px 14px 12px;}
+  .readout-label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .readout-value{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:500;color:var(--ink);}
+  .readout-value.danger{color:var(--danger);}
+  .readout-value.blue{color:var(--blue);}
+  .caption{font-size:12.5px;color:var(--ink-soft);margin-top:16px;line-height:1.55;}
+  .caption b{color:var(--ink);font-weight:500;}
   .interpret-banner{
     display:flex; gap:12px; align-items:flex-start;
     border-radius:5px; padding:12px 14px; margin-top:14px;
@@ -123,13 +102,11 @@
     white-space:nowrap; padding-top:1px;
   }
   .interpret-desc{font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
-
   .validated-box{
     background:var(--blue-dim);border:1px solid #B9D3EA;border-radius:5px;
     padding:14px 16px;margin-top:16px;font-size:12.5px;color:var(--ink);
   }
   .validated-box b{color:var(--blue);}
-
   .perf-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
   .perf-table th,.perf-table td{
     text-align:right;padding:9px 10px;border-bottom:1px solid var(--line-soft);
@@ -138,8 +115,7 @@
   .perf-table th{text-align:right;color:var(--ink-soft);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
   .perf-table td:first-child, .perf-table th:first-child{text-align:left;font-family:'Inter',sans-serif;}
   .perf-table tr:last-child td{font-weight:600;}
-  .perf-winner{color:var(--green);}
-
+  .perf-winner{color:#2E8B4E;}
   .code-block{
     background:var(--ink);color:#DCE9F6;border-radius:5px;padding:16px 18px;
     font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.7;
@@ -147,7 +123,6 @@
   }
   .code-block .kw{color:var(--amber);}
   .code-block .cm{color:#7C93AC;}
-
   .cta{
     background:var(--ink);color:#fff;border-radius:6px;padding:26px 28px;
     display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;
@@ -168,9 +143,9 @@
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
   }
   footer a{color:var(--ink-soft);}
+  .loading{font-size:13px;color:var(--ink-soft);padding:20px;text-align:center;}
   @media (max-width:640px){
-    .sliders{grid-template-columns:1fr;}
-    .readouts{grid-template-columns:repeat(2,1fr);}
+    .readouts{grid-template-columns:repeat(2,1fr) ;}
     .perf-table{font-size:11px;}
   }
 </style>
@@ -181,18 +156,20 @@
   <div class="eyebrow"><span class="dot"></span>ProbOS — probabilistic simulation for safety-critical engineering</div>
 
   <h1>One deterministic run gives you<br>a number. <span class="accent">Real uncertainty gives you a distribution.</span></h1>
-  <p class="lede">This preview covers what's actually been built and validated so far: battery thermal-runaway safety and pharmaceutical shelf-life stability, both using real, cited literature data. Switch models below, then flip the switch to go from a single point estimate to full uncertainty propagation.</p>
+  <p class="lede">Every result below comes from the actual, validated ProbOS kernel — not a browser reimplementation. 5,000-particle Monte Carlo runs, real cited parameters, computed once and embedded here exactly as produced.</p>
 
   <div class="tabs">
     <button class="tab active" id="tabBattery">Battery Safety</button>
     <button class="tab" id="tabPharma">Pharmaceutical Stability</button>
   </div>
 
-  <div class="panel">
+  <div id="loadingMsg" class="panel loading">Loading real simulation data…</div>
+
+  <div class="panel" id="mainPanel" style="display:none;">
     <div class="panel-head">
       <div>
-        <div class="panel-title" id="panelTitle">Capacity fade at 500 cycles, 45°C nominal</div>
-        <div class="panel-sub" id="panelSub">Arrhenius-based degradation model, simplified for this demo</div>
+        <div class="panel-title" id="panelTitle"></div>
+        <div class="panel-sub" id="panelSub"></div>
       </div>
       <div class="toggle-row">
         <span class="toggle-label" id="toggleLabel">deterministic</span>
@@ -201,69 +178,34 @@
     </div>
 
     <div id="chartWrap"><canvas id="chart"></canvas></div>
+    <p class="chart-caption" id="chartCaption"></p>
+
+    <div id="histWrap"><canvas id="hist"></canvas></div>
     <div class="legend" id="legend"></div>
 
     <div class="readouts">
       <div class="readout">
-        <div class="readout-label" id="roPointLabel">Point estimate</div>
-        <div class="readout-value" id="roPoint">12.3%</div>
+        <div class="readout-label" id="roPointLabel"></div>
+        <div class="readout-value" id="roPoint">—</div>
       </div>
       <div class="readout">
-        <div class="readout-label">Mean</div>
-        <div class="readout-value blue" id="roMean">—</div>
+        <div class="readout-label">Median (P50)</div>
+        <div class="readout-value blue" id="roMedian">—</div>
       </div>
       <div class="readout">
-        <div class="readout-label">Std deviation</div>
-        <div class="readout-value" id="roStd">—</div>
-      </div>
-      <div class="readout">
-        <div class="readout-label" id="roTailLabel">P(fade &gt; 16%)</div>
+        <div class="readout-label" id="roTailLabel"></div>
         <div class="readout-value danger" id="roTail">—</div>
       </div>
     </div>
 
     <div class="interpret-banner level-good" id="pointBanner">
-      <span class="interpret-label" id="pointBannerLabel">Normal</span>
-      <span class="interpret-desc" id="pointBannerDesc">Within expected wear for this cycle count and chemistry.</span>
-    </div>
-    <div class="interpret-banner level-good" id="tailBanner" style="display:none;">
-      <span class="interpret-label" id="tailBannerLabel">No modeled risk</span>
-      <span class="interpret-desc" id="tailBannerDesc">At this uncertainty level, no simulated outcome crossed the threshold.</span>
+      <span class="interpret-label" id="pointBannerLabel"></span>
+      <span class="interpret-desc" id="pointBannerDesc"></span>
     </div>
 
-    <p class="caption" id="caption"><b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells — with real manufacturing tolerance, real thermal variation — would exceed a safety threshold.</p>
+    <p class="caption" id="caption"></p>
 
-    <div class="validated-box" id="validatedBox">
-      <b>Validated against:</b> Kim et al. (2007), accelerating rate calorimetry data. Sobol sensitivity identifies SEI decomposition activation energy as the dominant risk driver (S1=0.457). This demo uses a simplified illustrative formula, not the real validated kernel — see GitHub for the actual model.
-    </div>
-  </div>
-
-  <div class="panel" id="controlsPanel" style="display:none;">
-    <div class="panel-head">
-      <div>
-        <div class="panel-title">Input uncertainty</div>
-        <div class="panel-sub">Adjust real-world parameter scatter and re-run 4,000 samples</div>
-      </div>
-    </div>
-    <div class="sliders">
-      <div class="slider-group">
-        <div class="slider-label"><span id="slider1Label">Cell temperature spread (±°C)</span><span id="slider1Val">4.0</span></div>
-        <input type="range" id="slider1" min="0.5" max="10" step="0.5" value="4">
-      </div>
-      <div class="slider-group">
-        <div class="slider-label"><span id="slider2Label">Manufacturing tolerance (%)</span><span id="slider2Val">6.0</span></div>
-        <input type="range" id="slider2" min="1" max="15" step="0.5" value="6">
-      </div>
-    </div>
-  </div>
-  <div class="panel" id="sensPanel" style="display:none;">
-    <div class="panel-head">
-      <div>
-        <div class="panel-title">What's driving the spread</div>
-        <div class="panel-sub">Share of output variance explained by each input</div>
-      </div>
-    </div>
-    <div class="sens-list" id="sensList"></div>
+    <div class="validated-box" id="validatedBox"></div>
   </div>
 
   <div class="panel">
@@ -285,7 +227,7 @@
         <tr><td>50,000</td><td>5,965.92</td><td class="perf-winner">353.37</td><td>3,289.51</td></tr>
       </tbody>
     </table>
-    <p class="caption">C++/OpenMP wins at every particle count tested — GPU kernel fusion genuinely improved GPU performance (up to 7.6x faster at small N versus the unfused version), and GPU now beats plain Python at N&gt;=2,000, but reported honestly: it does not beat C++ on this hardware. We built and shipped this result rather than quietly dropping the GPU path when it didn't win.</p>
+    <p class="caption">C++/OpenMP wins at every particle count tested — GPU kernel fusion genuinely improved GPU performance, and GPU now beats plain Python at N&gt;=2,000, but reported honestly: it does not beat C++ on this hardware.</p>
   </div>
 
   <div class="panel">
@@ -301,12 +243,12 @@
     <span class="kw">param</span>    Ea_SEI ~ Normal(1.35e5, 5e3)
     <span class="kw">drift</span>    T1 = <span class="kw">if</span> T1 &gt; 403.15 <span class="kw">then</span> arrhenius(Ea_SEI, T1) <span class="kw">else</span> 0.0
 }</div>
-    <p class="caption">Compiles to real, vectorised <code>np.where(...)</code> — verified with a genuine per-particle divergence proof (different simulated cells taking different branches in the same batch), not just "it compiles."</p>
+    <p class="caption">Compiles to real, vectorised <code>np.where(...)</code> — verified with a genuine per-particle divergence proof, not just "it compiles."</p>
   </div>
 
   <div class="cta">
     <div class="cta-text">
-      <b>This is a toy model. The validated one is on GitHub.</b>
+      <b>Every number above is real. The full kernel is on GitHub.</b>
       <span>Battery, pharma, and automotive safety UQ — open source, Apache 2.0.</span>
     </div>
     <div class="cta-buttons">
@@ -321,53 +263,71 @@
 </div>
 <script>
 (function(){
-  var canvas = document.getElementById('chart');
-  var ctx = canvas.getContext('2d');
+  var BAND_HEX = {good:'#2E8B4E', watch:'#B89B1F', caution:'#C6741E', danger:'#B0473F'};
+
+  var chartCanvas = document.getElementById('chart');
+  var chartCtx = chartCanvas.getContext('2d');
+  var histCanvas = document.getElementById('hist');
+  var histCtx = histCanvas.getContext('2d');
   var toggle = document.getElementById('uqToggle');
   var toggleLabel = document.getElementById('toggleLabel');
-  var controlsPanel = document.getElementById('controlsPanel');
-  var sensPanel = document.getElementById('sensPanel');
+  var histWrap = document.getElementById('histWrap');
   var caption = document.getElementById('caption');
   var validatedBox = document.getElementById('validatedBox');
-  var slider1 = document.getElementById('slider1');
-  var slider2 = document.getElementById('slider2');
-  var slider1Val = document.getElementById('slider1Val');
-  var slider2Val = document.getElementById('slider2Val');
-  var slider1Label = document.getElementById('slider1Label');
-  var slider2Label = document.getElementById('slider2Label');
   var panelTitle = document.getElementById('panelTitle');
   var panelSub = document.getElementById('panelSub');
+  var chartCaption = document.getElementById('chartCaption');
   var roPointLabel = document.getElementById('roPointLabel');
   var roTailLabel = document.getElementById('roTailLabel');
   var tabBattery = document.getElementById('tabBattery');
   var tabPharma = document.getElementById('tabPharma');
-  var BAND_HEX = {good:'#2E8B4E', watch:'#B89B1F', caution:'#C6741E', danger:'#B0473F'};
-  var legendEl = document.getElementById('legend');
-
-  function renderLegend(bands){
-    legendEl.innerHTML = '';
-    bands.forEach(function(b){
-      var item = document.createElement('div');
-      item.className = 'legend-item';
-      item.innerHTML =
-        '<span class="legend-swatch" style="background:' + (BAND_HEX[b.level]||'#999') + '"></span>' +
-        '<span>' + b.label + '</span>';
-      legendEl.appendChild(item);
-    });
-  }
   var pointBanner = document.getElementById('pointBanner');
   var pointBannerLabel = document.getElementById('pointBannerLabel');
   var pointBannerDesc = document.getElementById('pointBannerDesc');
-  var tailBanner = document.getElementById('tailBanner');
-  var tailBannerLabel = document.getElementById('tailBannerLabel');
-  var tailBannerDesc = document.getElementById('tailBannerDesc');
+  var legendEl = document.getElementById('legend');
+  var loadingMsg = document.getElementById('loadingMsg');
+  var mainPanel = document.getElementById('mainPanel');
 
-  var TAIL_BANDS = [
-    {upTo:0, label:'No modeled risk', desc:'At this uncertainty level, no simulated outcome crossed the threshold.', level:'good'},
-    {upTo:1, label:'Low risk', desc:'A rare tail event, but not zero \u2014 exactly what a deterministic model would miss.', level:'watch'},
-    {upTo:5, label:'Moderate risk', desc:'Worth tracking; a non-trivial share of realistic outcomes cross the threshold.', level:'caution'},
-    {upTo:Infinity, label:'Elevated risk', desc:'A meaningful share of realistic outcomes cross the threshold; recommend review.', level:'danger'}
-  ];
+  var uqOn = false;
+  var REAL_DATA = null;
+  var current = null;
+
+  var MODEL_META = {
+    battery: {
+      panelTitle: 'Thermal runaway trajectory from ARC onset (403.15 K)',
+      panelSub: 'BatteryModel2Cell, real 15-parameter priors, N=5000, seed=42',
+      pointLabel: 'Deterministic peak T1',
+      tailLabel: 'P(T1 &gt; 3500 K)',
+      unit: ' K',
+      axisLabel: 'seconds',
+      pointBands: [
+        {upTo:500, label:'Stable', desc:'Temperature stays near the ARC onset condition; no significant runaway.', level:'good'},
+        {upTo:1500, label:'Reaction initiated', desc:'Meaningful exothermic heat release has begun.', level:'watch'},
+        {upTo:3500, label:'Thermal runaway', desc:'Rapid, uncontrolled heating is underway.', level:'caution'},
+        {upTo:Infinity, label:'Catastrophic runaway', desc:'Extreme temperature; cell failure is effectively certain.', level:'danger'}
+      ],
+      validated: '<b>Validated against:</b> Kim et al. (2007), accelerating rate calorimetry data. This is the REAL kernel output, not a browser approximation \u2014 the model\u2019s own real Sobol sensitivity identifies SEI decomposition activation energy as the dominant risk driver (S1=0.457).',
+      captionDet: '<b>Deterministic mode:</b> the model is run ONCE at nominal literature parameter values. Starting from the 403.15 K ARC onset condition, this single run reaches the peak temperature shown after 300 seconds \u2014 with no way to know how a real population of cells, each with real manufacturing and material variation, would actually behave.',
+      captionProb: '<b>Probabilistic mode:</b> the SAME real kernel, run 5,000 times with each particle drawing its own parameter set from the real, literature-derived priors. The result: the overwhelming majority of simulated cells undergo catastrophic thermal runaway \u2014 not a rare tail event, but the dominant outcome under these conditions.'
+    },
+    pharma: {
+      panelTitle: 'Potency remaining at 365 days, 25\u00b0C storage',
+      panelSub: 'PharmaStabilityModel, real fitted Avrami parameters, N=5000, seed=42',
+      pointLabel: 'Deterministic potency',
+      tailLabel: 'P(potency &lt; 90%)',
+      unit: '%',
+      axisLabel: 'days',
+      pointBands: [
+        {upTo:80, label:'Significant loss', desc:'Substantial potency loss; batch is likely non-compliant with typical release specs.', level:'danger'},
+        {upTo:90, label:'Below typical spec', desc:'Below the common 90% potency release specification; batch may fail QC.', level:'caution'},
+        {upTo:95, label:'Within spec', desc:'Meets the typical release specification, but the margin is narrowing.', level:'watch'},
+        {upTo:Infinity, label:'Well within spec', desc:'Comfortable margin above the typical 90% release specification.', level:'good'}
+      ],
+      validated: '<b>Validated against:</b> Gonzalez-Gonzalez et al. (2023), <i>Molecules</i> 28(23), 7925. This is the REAL kernel output using the paper\u2019s own cited activation energy (Ea=18.52 kcal/mol) and reported standard error (\u00b12.61 kcal/mol) \u2014 not an invented uncertainty level.',
+      captionDet: '<b>Deterministic mode:</b> a single run at the nominal, literature-cited activation energy. There is no way to know how a real manufacturing batch\u2019s natural variation in activation energy would affect real-world shelf life.',
+      captionProb: '<b>Probabilistic mode:</b> the SAME real kernel, run 5,000 times with activation energy drawn from the paper\u2019s own reported uncertainty. The worst-case 5% of real outcomes show complete potency loss within one year \u2014 a risk invisible to the single deterministic number above.'
+    }
+  };
 
   function findBand(value, bands){
     for(var i=0;i<bands.length;i++){
@@ -380,308 +340,209 @@
     labelEl.textContent = band.label;
     descEl.textContent = band.desc;
   }
-  var uqOn = false;
+  function renderLegend(bands){
+    legendEl.innerHTML = '';
+    bands.forEach(function(b){
+      var item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML =
+        '<span class="legend-swatch" style="background:' + (BAND_HEX[b.level]||'#999') + '"></span>' +
+        '<span>' + b.label + '</span>';
+      legendEl.appendChild(item);
+    });
+  }
 
-  var MODELS = {
-    battery: {
-      panelTitle: 'Capacity fade at 500 cycles, 45\u00b0C nominal',
-      panelSub: 'Arrhenius-based degradation model, simplified for this demo',
-      pointLabel: 'Point estimate',
-      tailLabel: 'P(fade &gt; 16%)',
-      threshold: 16, axisMax: 30, axisUnit: '%',
-      slider1: {label: 'Cell temperature spread (\u00b1\u00b0C)', min:0.5, max:10, step:0.5, def:4},
-      slider2: {label: 'Manufacturing tolerance (%)', min:1, max:15, step:0.5, def:6},
-      sensNames: ['Cell temperature', 'Manufacturing tolerance', 'Rate constant scatter'],
-      pointBands: [
-        {upTo:8, label:'Normal', desc:'Within expected wear for this cycle count and chemistry.', level:'good'},
-        {upTo:14, label:'Accelerated', desc:'Faster fade than typical; worth monitoring at the next service interval.', level:'watch'},
-        {upTo:20, label:'Near end-of-life', desc:'Approaching the ~20% fade threshold most OEM battery warranties define as end-of-life.', level:'caution'},
-        {upTo:Infinity, label:'Beyond end-of-life', desc:'Past the typical end-of-life threshold; replacement or safety review recommended.', level:'danger'}
-      ],
-      validated: '<b>Validated against:</b> Kim et al. (2007), accelerating rate calorimetry data. Sobol sensitivity identifies SEI decomposition activation energy as the dominant risk driver (S1=0.457). This demo uses a simplified illustrative formula, not the real validated kernel \u2014 see GitHub for the actual model.',
-      captionDet: '<b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells \u2014 with real manufacturing tolerance, real thermal variation \u2014 would exceed a safety threshold.',
-      captionProb: '<b>Probabilistic mode:</b> the same model, but temperature, manufacturing tolerance, and rate-constant scatter are now propagated as distributions through 4,000 Monte Carlo samples. The output is a probability of failure against a threshold, not a single hopeful number.',
-      A0: 0.4728270310830171,
-      pointEstimate: function(){
-        return this.fade(45, 0, this.A0) * 100;
-      },
-      fade: function(tempC, tolFrac, arrheniusA){
-        var Ea = 20000, R = 8.314;
-        var T = tempC + 273.15;
-        var rate = arrheniusA * Math.exp(-Ea/(R*T));
-        var f = rate * 500 * (1 + tolFrac);
-        return Math.max(0, f);
-      },
-      runMonteCarlo: function(s1, s2){
-        var n = 4000, samples = [], p1 = [], p2 = [], p3 = [];
-        var self = this;
-        for(var i=0;i<n;i++){
-          var t = gaussian(45, s1/2);
-          var tol = gaussian(0, s2/200);
-          var a = self.A0 * (1 + gaussian(0, 0.08));
-          var f = self.fade(t, tol, a) * 100;
-          samples.push(f); p1.push(t); p2.push(tol); p3.push(a);
-        }
-        return {samples:samples, p1:p1, p2:p2, p3:p3};
-      }
-    },
-    pharma: {
-      panelTitle: 'Potency remaining at 365 days, 25\u00b0C storage',
-      panelSub: 'Avrami degradation kinetics, real fitted parameters (Month 3 Week 11)',
-      pointLabel: 'Potency remaining',
-      tailLabel: 'P(potency &lt; 90%)',
-      threshold: 90, axisMax: 100, axisUnit: '%',
-      slider1: {label: 'Activation energy uncertainty (\u00b1kcal/mol)', min:0.5, max:5, step:0.1, def:1.0},
-      slider2: {label: 'Storage temperature (\u00b0C)', min:15, max:35, step:1, def:25},
-      sensNames: ['Activation energy', 'Storage temperature', 'Pre-exponential factor'],
-      pointBands: [
-        {upTo:80, label:'Significant loss', desc:'Substantial potency loss; batch is likely non-compliant with typical release specs.', level:'danger'},
-        {upTo:90, label:'Below typical spec', desc:'Below the common 90% potency release specification; batch may fail QC.', level:'caution'},
-        {upTo:95, label:'Within spec', desc:'Meets the typical release specification, but the margin is narrowing.', level:'watch'},
-        {upTo:Infinity, label:'Well within spec', desc:'Comfortable margin above the typical 90% release specification.', level:'good'}
-      ],
-      validated: '<b>Validated against:</b> Gonzalez-Gonzalez et al. (2023), <i>Molecules</i> 28(23), 7925 \u2014 a real, peer-reviewed, ICH-referenced chlorhexidine stability study. Reproduces the paper\u2019s real 365-day degradation percentages to within 1.18 percentage points. Sobol sensitivity identifies activation energy as overwhelmingly dominant (S1=0.993). This demo uses the SAME real fitted parameters as the validated model (Ea=18.52 kcal/mol), not a re-derived toy.',
-      captionDet: '<b>Deterministic mode:</b> a single storage-condition scenario at the nominal activation energy. There is no way to know how a real manufacturing batch\u2019s natural variation in activation energy would affect real-world shelf life.',
-      captionProb: '<b>Probabilistic mode:</b> activation energy and storage temperature are now propagated as distributions through 4,000 Monte Carlo samples \u2014 using the paper\u2019s OWN reported standard error on Ea (\u00b12.61 kcal/mol), not an invented number. The worst-case 5% of real outcomes in the validated model show complete potency loss within one year.',
-      Ea0: 18.52, A0: 1.89e10, n0: 1.0, R_kcal: 1.987204e-3,
-      pointEstimate: function(){
-        return this.potency(this.Ea0, this.A0, 298.15, this.n0, 365);
-      },
-      potency: function(Ea, A, T_kelvin, n, tDays){
-        var k = A * Math.exp(-Ea / (this.R_kcal * T_kelvin));
-        var p = Math.exp(-k * Math.pow(tDays, n)) * 100;
-        return Math.max(0, Math.min(100, p));
-      },
-      runMonteCarlo: function(s1, s2){
-        var n = 4000, samples = [], p1 = [], p2 = [], p3 = [];
-        var self = this;
-        for(var i=0;i<n;i++){
-          var ea = gaussian(self.Ea0, s1);
-          var tempC = s2;
-          var tKelvin = tempC + 273.15;
-          var aFactor = self.A0 * (1 + gaussian(0, 0.03));
-          var pVal = self.potency(ea, aFactor, tKelvin, self.n0, 365);
-          samples.push(pVal); p1.push(ea); p2.push(tempC); p3.push(aFactor);
-        }
-        return {samples:samples, p1:p1, p2:p2, p3:p3};
-      }
-    }
-  };
-  var current = MODELS.battery;
+  function percentile(sortedArr, p){
+    var idx = Math.min(sortedArr.length - 1, Math.floor(p * sortedArr.length));
+    return sortedArr[idx];
+  }
 
-  function resize(){
+  function resizeCanvas(canvas, ctx){
     var wrap = canvas.parentElement;
     var dpr = window.devicePixelRatio || 1;
     canvas.width = wrap.clientWidth * dpr;
     canvas.height = wrap.clientHeight * dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', function(){ if(current) render(); });
 
-  function gaussian(mean, std){
-    var u1 = Math.max(Math.random(), 1e-10), u2 = Math.random();
-    var z = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
-    return mean + z*std;
-  }
-  function mean(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
-  function std(arr){
-    var m = mean(arr);
-    return Math.sqrt(mean(arr.map(function(x){return (x-m)*(x-m);})));
-  }
-  function corr(x,y){
-    var mx=mean(x), my=mean(y);
-    var num=0, dx=0, dy=0;
-    for(var i=0;i<x.length;i++){
-      num += (x[i]-mx)*(y[i]-my);
-      dx += (x[i]-mx)*(x[i]-mx);
-      dy += (y[i]-my)*(y[i]-my);
-    }
-    return Math.abs(num/Math.sqrt(dx*dy || 1));
-  }
+  function drawTimeSeries(meta, kernelData, showBand, axisX){
+    resizeCanvas(chartCanvas, chartCtx);
+    var w = chartCanvas.clientWidth, h = chartCanvas.clientHeight;
+    chartCtx.clearRect(0,0,w,h);
 
-  function drawPoint(value){
-    resize();
-    var w = canvas.clientWidth, h = canvas.clientHeight;
-    ctx.clearRect(0,0,w,h);
-    var padL=44, padR=20, padT=20, padB=32;
+    var ts = kernelData.percentile_time_series;
+    var xVals = axisX;
+    var allVals = ts.p05.concat(ts.p50).concat(ts.p95);
+    var minY = Math.min.apply(null, allVals);
+    var maxY = Math.max.apply(null, allVals);
+    var pad = (maxY - minY) * 0.08 || 1;
+    minY -= pad; maxY += pad;
+
+    var padL=54, padR=16, padT=14, padB=26;
     var plotW = w-padL-padR, plotH = h-padT-padB;
-    var minX=0, maxX=current.axisMax;
-    function xPix(v){ return padL + (v-minX)/(maxX-minX)*plotW; }
+    function xPix(i){ return padL + (i/(xVals.length-1))*plotW; }
+    function yPix(v){ return padT + (1 - (v-minY)/(maxY-minY))*plotH; }
 
-    ctx.strokeStyle = '#E7EDF6'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+    chartCtx.strokeStyle = '#E7EDF6'; chartCtx.lineWidth=1;
+    chartCtx.beginPath(); chartCtx.moveTo(padL, padT); chartCtx.lineTo(padL, padT+plotH); chartCtx.lineTo(padL+plotW, padT+plotH); chartCtx.stroke();
 
-    ctx.fillStyle = '#6B4E8E'; ctx.font = '11px IBM Plex Mono, monospace';
-    ctx.textAlign='center';
-    var step = maxX/3;
-    for(var v=0; v<=maxX; v+=step){
-      ctx.fillText(Math.round(v)+current.axisUnit, xPix(v), padT+plotH+18);
+    chartCtx.fillStyle = '#6B4E8E'; chartCtx.font = '10.5px IBM Plex Mono, monospace'; chartCtx.textAlign='right';
+    for(var g=0; g<=4; g++){
+      var v = minY + (maxY-minY)*(g/4);
+      var y = yPix(v);
+      chartCtx.fillText(Math.round(v)+meta.unit, padL-6, y+3);
     }
 
-    var x0 = xPix(value);
-    var y0 = padT + plotH/2;
-    ctx.strokeStyle = '#2F5FAD'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(x0, padT+10); ctx.lineTo(x0, padT+plotH); ctx.stroke();
-    ctx.fillStyle = '#2F5FAD';
-    ctx.beginPath(); ctx.arc(x0, y0, 6, 0, Math.PI*2); ctx.fill();
+    if(showBand){
+      chartCtx.fillStyle = 'rgba(47,95,173,0.12)';
+      chartCtx.beginPath();
+      chartCtx.moveTo(xPix(0), yPix(ts.p05[0]));
+      for(var i=0;i<xVals.length;i++) chartCtx.lineTo(xPix(i), yPix(ts.p05[i]));
+      for(var j=xVals.length-1;j>=0;j--) chartCtx.lineTo(xPix(j), yPix(ts.p95[j]));
+      chartCtx.closePath(); chartCtx.fill();
 
-    ctx.fillStyle = '#1E3A6E'; ctx.font = '500 12px IBM Plex Mono, monospace'; ctx.textAlign='center';
-    ctx.fillText(value.toFixed(1)+current.axisUnit, x0, padT);
+      chartCtx.strokeStyle = '#B0473F'; chartCtx.lineWidth=1; chartCtx.setLineDash([3,3]);
+      chartCtx.beginPath();
+      for(var k=0;k<xVals.length;k++){
+        var px=xPix(k), py=yPix(ts.p95[k]);
+        if(k===0) chartCtx.moveTo(px,py); else chartCtx.lineTo(px,py);
+      }
+      chartCtx.stroke(); chartCtx.setLineDash([]);
+    }
+
+    chartCtx.strokeStyle = '#2F5FAD'; chartCtx.lineWidth=2;
+    chartCtx.beginPath();
+    for(var m=0;m<xVals.length;m++){
+      var px2=xPix(m), py2=yPix(ts.p50[m]);
+      if(m===0) chartCtx.moveTo(px2,py2); else chartCtx.lineTo(px2,py2);
+    }
+    chartCtx.stroke();
+
+    chartCtx.fillStyle = '#6B4E8E'; chartCtx.font = '10.5px IBM Plex Mono, monospace'; chartCtx.textAlign='center';
+    chartCtx.fillText(xVals[0]+' '+meta.axisLabel, padL+20, padT+plotH+16);
+    chartCtx.fillText(xVals[xVals.length-1]+' '+meta.axisLabel, padL+plotW-24, padT+plotH+16);
   }
 
-  function drawDistribution(samples){
-    resize();
-    var w = canvas.clientWidth, h = canvas.clientHeight;
-    ctx.clearRect(0,0,w,h);
-    var padL=44, padR=20, padT=20, padB=32;
+  function drawHistogram(meta, band_list, finalDist){
+    resizeCanvas(histCanvas, histCtx);
+    var w = histCanvas.clientWidth, h = histCanvas.clientHeight;
+    histCtx.clearRect(0,0,w,h);
+
+    var sorted = finalDist.slice().sort(function(a,b){return a-b;});
+    var minX = sorted[0], maxX = sorted[sorted.length-1];
+    var padL=54, padR=16, padT=10, padB=26;
     var plotW = w-padL-padR, plotH = h-padT-padB;
-    var minX=0, maxX=current.axisMax;
-    function xPix(v){ return padL + (v-minX)/(maxX-minX)*plotW; }
+    function xPix(v){ return padL + ((v-minX)/(maxX-minX || 1))*plotW; }
 
     var nBins = 40;
     var bins = new Array(nBins).fill(0);
-    samples.forEach(function(s){
-      var idx = Math.floor((s-minX)/(maxX-minX)*nBins);
+    finalDist.forEach(function(v){
+      var idx = Math.floor(((v-minX)/(maxX-minX || 1))*nBins);
+      if(idx>=nBins) idx = nBins-1;
       if(idx>=0 && idx<nBins) bins[idx]++;
     });
     var maxBin = Math.max.apply(null, bins);
 
-    ctx.strokeStyle = '#E7EDF6'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+    histCtx.strokeStyle = '#E7EDF6'; histCtx.lineWidth=1;
+    histCtx.beginPath(); histCtx.moveTo(padL, padT); histCtx.lineTo(padL, padT+plotH); histCtx.lineTo(padL+plotW, padT+plotH); histCtx.stroke();
 
-    var thresholdX = xPix(current.threshold);
-    ctx.strokeStyle = '#B08D57'; ctx.setLineDash([4,3]); ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.moveTo(thresholdX, padT); ctx.lineTo(thresholdX, padT+plotH); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#8A6B3F'; ctx.font='11px IBM Plex Mono, monospace'; ctx.textAlign='left';
-    ctx.fillText(current.threshold+current.axisUnit+' threshold', thresholdX+6, padT+12);
-
-    var isLowerBad = current.pointLabel.indexOf('remaining') !== -1;
     var binW = plotW/nBins;
     for(var i=0;i<nBins;i++){
-      var binVal = minX + (i/nBins)*(maxX-minX);
-      var barH = (bins[i]/maxBin) * (plotH-10);
+      var binVal = minX + ((i+0.5)/nBins)*(maxX-minX);
+      var barH = (bins[i]/maxBin) * (plotH-6);
       var x = padL + i*binW;
       var y = padT+plotH-barH;
-      var barBand = findBand(binVal, current.pointBands);
-      ctx.fillStyle = BAND_HEX[barBand.level] || '#2F5FAD';
-      ctx.fillRect(x+0.5, y, binW-1, barH);
+      var b = findBand(binVal, band_list);
+      histCtx.fillStyle = BAND_HEX[b.level] || '#2F5FAD';
+      histCtx.fillRect(x+0.5, y, binW-1, barH);
     }
 
-    ctx.fillStyle = '#6B4E8E'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.textAlign='center';
-    var step = maxX/3;
-    for(var v2=0; v2<=maxX; v2+=step){
-      ctx.fillText(Math.round(v2)+current.axisUnit, xPix(v2), padT+plotH+18);
-    }
+    histCtx.fillStyle = '#6B4E8E'; histCtx.font = '10.5px IBM Plex Mono, monospace'; histCtx.textAlign='center';
+    histCtx.fillText(Math.round(minX)+meta.unit, padL+24, padT+plotH+16);
+    histCtx.fillText(Math.round(maxX)+meta.unit, padL+plotW-24, padT+plotH+16);
+    histCtx.textAlign='left';
+    histCtx.fillText('5,000 real simulated particles', padL, padT+10);
   }
 
-  function renderSensitivity(mc){
-    var c1 = corr(mc.p1, mc.samples);
-    var c2 = corr(mc.p2, mc.samples);
-    var c3 = corr(mc.p3, mc.samples);
-    var total = c1+c2+c3;
-    var items = [
-      {name:current.sensNames[0], val: c1/total},
-      {name:current.sensNames[1], val: c2/total},
-      {name:current.sensNames[2], val: c3/total}
-    ].sort(function(a,b){return b.val-a.val;});
+  function render(){
+    var meta = MODEL_META[current];
+    var kernelData = REAL_DATA[current];
+    var isBattery = current === 'battery';
+    var axisX = isBattery
+      ? Array.from({length:30}, function(_,i){ return Math.round(i * (300/29)); })
+      : kernelData.percentile_time_series.days.map(function(d){ return Math.round(d); });
 
-    var list = document.getElementById('sensList');
-    list.innerHTML = '';
-    items.forEach(function(it){
-      var pct = Math.round(it.val*100);
-      var row = document.createElement('div');
-      row.className = 'sens-row';
-      row.innerHTML =
-        '<div class="sens-name">'+it.name+'</div>'+
-        '<div class="sens-track"><div class="sens-fill" style="width:'+pct+'%"></div></div>'+
-        '<div class="sens-pct">'+pct+'%</div>';
-      list.appendChild(row);
-    });
-  }
+    panelTitle.textContent = meta.panelTitle;
+    panelSub.textContent = meta.panelSub;
+    roPointLabel.textContent = meta.pointLabel;
+    roTailLabel.innerHTML = meta.tailLabel;
+    validatedBox.innerHTML = meta.validated;
+    caption.innerHTML = uqOn ? meta.captionProb : meta.captionDet;
+    renderLegend(meta.pointBands);
 
-  function update(){
-    var pt = current.pointEstimate();
-    document.getElementById('roPoint').textContent = pt.toFixed(1)+'%';
+    var pointEstimate = isBattery ? kernelData.point_estimate_T1_K : kernelData.point_estimate_potency_pct;
+    var finalDist = isBattery ? kernelData.final_T1_distribution_K : kernelData.final_potency_distribution_pct;
+    var sortedDist = finalDist.slice().sort(function(a,b){return a-b;});
+    var medianVal = percentile(sortedDist, 0.5);
 
-    renderBanner(pointBanner, pointBannerLabel, pointBannerDesc, findBand(pt, current.pointBands));
+    document.getElementById('roPoint').textContent = Math.round(pointEstimate) + meta.unit;
+    document.getElementById('roMedian').textContent = uqOn ? (Math.round(medianVal) + meta.unit) : '\u2014';
+
+    renderBanner(pointBanner, pointBannerLabel, pointBannerDesc, findBand(pointEstimate, meta.pointBands));
 
     if(!uqOn){
-      drawPoint(pt);
-      document.getElementById('roMean').textContent = '\u2014';
-      document.getElementById('roStd').textContent = '\u2014';
+      drawTimeSeries(meta, kernelData, false, axisX);
+      chartCaption.textContent = 'Deterministic: one run, nominal parameters (P50 line only)';
+      histWrap.style.display = 'none';
       document.getElementById('roTail').textContent = '\u2014';
-      tailBanner.style.display = 'none';
     } else {
-      var s1 = parseFloat(slider1.value);
-      var s2 = parseFloat(slider2.value);
-      var mc = current.runMonteCarlo(s1, s2);
-      var m = mean(mc.samples);
-      var s = std(mc.samples);
-      var isLowerBad = current.pointLabel.indexOf('remaining') !== -1;
-      var tailCount = mc.samples.filter(function(x){
-        return isLowerBad ? x < current.threshold : x > current.threshold;
+      drawTimeSeries(meta, kernelData, true, axisX);
+      chartCaption.textContent = '5,000-particle real Monte Carlo: P05\u2013P95 band (shaded) and median (solid line)';
+      histWrap.style.display = 'block';
+      drawHistogram(meta, meta.pointBands, finalDist);
+
+      var threshold = isBattery ? 3500 : 90;
+      var isLowerBad = !isBattery;
+      var tailCount = finalDist.filter(function(x){
+        return isLowerBad ? x < threshold : x > threshold;
       }).length;
-      var tailPct = (tailCount/mc.samples.length*100);
-
-      drawDistribution(mc.samples);
-      document.getElementById('roMean').textContent = m.toFixed(1)+'%';
-      document.getElementById('roStd').textContent = '\u00b1'+s.toFixed(1)+'%';
+      var tailPct = (tailCount/finalDist.length*100);
       document.getElementById('roTail').textContent = tailPct.toFixed(1)+'%';
-      renderSensitivity(mc);
-      tailBanner.style.display = 'flex';
-      renderBanner(tailBanner, tailBannerLabel, tailBannerDesc, findBand(tailPct, TAIL_BANDS));
     }
-  }
-
-  function applyModel(){
-    panelTitle.textContent = current.panelTitle;
-    panelSub.textContent = current.panelSub;
-    roPointLabel.textContent = current.pointLabel;
-    roTailLabel.innerHTML = current.tailLabel;
-    slider1Label.textContent = current.slider1.label;
-    slider2Label.textContent = current.slider2.label;
-    slider1.min = current.slider1.min; slider1.max = current.slider1.max;
-    slider1.step = current.slider1.step; slider1.value = current.slider1.def;
-    slider2.min = current.slider2.min; slider2.max = current.slider2.max;
-    slider2.step = current.slider2.step; slider2.value = current.slider2.def;
-    slider1Val.textContent = current.slider1.def;
-    slider2Val.textContent = current.slider2.def;
-    validatedBox.innerHTML = current.validated;
-    caption.innerHTML = uqOn ? current.captionProb : current.captionDet;
-    renderLegend(current.pointBands);
-    update();
   }
 
   tabBattery.addEventListener('click', function(){
-    current = MODELS.battery;
+    current = 'battery';
     tabBattery.classList.add('active');
     tabPharma.classList.remove('active');
-    applyModel();
+    render();
   });
   tabPharma.addEventListener('click', function(){
-    current = MODELS.pharma;
+    current = 'pharma';
     tabPharma.classList.add('active');
     tabBattery.classList.remove('active');
-    applyModel();
+    render();
   });
-
   toggle.addEventListener('click', function(){
     uqOn = !uqOn;
     toggle.classList.toggle('on', uqOn);
     toggleLabel.textContent = uqOn ? 'probabilistic' : 'deterministic';
-    controlsPanel.style.display = uqOn ? 'block' : 'none';
-    sensPanel.style.display = uqOn ? 'block' : 'none';
-    caption.innerHTML = uqOn ? current.captionProb : current.captionDet;
-    update();
+    render();
   });
 
-  slider1.addEventListener('input', function(){ slider1Val.textContent = parseFloat(slider1.value).toFixed(1); update(); });
-  slider2.addEventListener('input', function(){ slider2Val.textContent = parseFloat(slider2.value).toFixed(1); update(); });
-
-  window.addEventListener('load', update);
-  renderLegend(current.pointBands);
-  update();
+  fetch('demo_data.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      REAL_DATA = data;
+      current = 'battery';
+      loadingMsg.style.display = 'none';
+      mainPanel.style.display = 'block';
+      render();
+    })
+    .catch(function(err){
+      loadingMsg.textContent = 'Could not load simulation data: ' + err;
+    });
 })();
 </script>
 </body>

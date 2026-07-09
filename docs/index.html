@@ -197,7 +197,7 @@
         <div class="readout-value" id="roStd">—</div>
       </div>
       <div class="readout">
-        <div class="readout-label" id="roTailLabel">P(fade &gt; 20%)</div>
+        <div class="readout-label" id="roTailLabel">P(fade &gt; 16%)</div>
         <div class="readout-value danger" id="roTail">—</div>
       </div>
     </div>
@@ -319,8 +319,8 @@
       panelTitle: 'Capacity fade at 500 cycles, 45\u00b0C nominal',
       panelSub: 'Arrhenius-based degradation model, simplified for this demo',
       pointLabel: 'Point estimate',
-      tailLabel: 'P(fade &gt; 20%)',
-      threshold: 20, axisMax: 30, axisUnit: '%',
+      tailLabel: 'P(fade &gt; 16%)',
+      threshold: 16, axisMax: 30, axisUnit: '%',
       slider1: {label: 'Cell temperature spread (\u00b1\u00b0C)', min:0.5, max:10, step:0.5, def:4},
       slider2: {label: 'Manufacturing tolerance (%)', min:1, max:15, step:0.5, def:6},
       sensNames: ['Cell temperature', 'Manufacturing tolerance', 'Rate constant scatter'],

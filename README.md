@@ -4,9 +4,9 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![C++](https://img.shields.io/badge/C++-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-341%20Python%20%2B%2013%20C%2B%2B-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-408%20Python%20%2B%205%20C%2B%2B-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Month%202%20Week%207-Complete-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Month%203%20Week%2013-Complete-blue?style=for-the-badge)
 
 **Uncertainty is a first-class data type.**
 
@@ -46,6 +46,11 @@ ProbOS simulates **5,000 batteries simultaneously** and finds that the
 worst-case (P05) battery decomposes **11.6x faster** than the mean.
 That tail risk is completely invisible to deterministic models.
 
+The same principle now applies across two independently validated physical
+domains — battery thermal runaway and pharmaceutical shelf-life stability
+— with a third (automotive/EV safety) positioned to reuse the battery model
+directly, since it shares the same underlying chemistry.
+
 ---
 
 ## Quick Start
@@ -78,19 +83,20 @@ cmake -B cpp/build -S cpp -G Ninja -DCMAKE_BUILD_TYPE=Release \
 cmake --build cpp/build
 
 # Run everything
-python -m pytest python/tests/   # 341 Python tests
-./cpp/build/test_normal          # 13 C++ tests
-bash pre_week_audit.sh           # full quality audit (coverage, security, etc.)
+python -m pytest python/tests/          # 408 Python tests
+ctest --test-dir cpp/build               # 5 C++ test executables
+bash pre_week_audit.sh                   # full quality audit (coverage, security, etc.)
 ```
 
 ### Expected output
 
 ```
-341/341 Python tests passing
-13/13   C++ tests passing
+408/408 Python tests passing
+5/5     C++ test executables passing (test_normal, test_lognormal,
+        test_uniform, test_battery_cell, test_monte_carlo_omp)
 mypy strict: 0 errors (full python/ tree)
 ruff: 0 warnings
-pre_week_audit.sh: 21/21 checks passed
+pre_week_audit.sh: 16/16 checks passed
 ```
 
 ### Run the FastAPI service
@@ -100,6 +106,16 @@ uvicorn python.server.main:app --reload
 # open http://localhost:8000/docs for interactive API documentation
 ```
 
+### Watch CI status from the terminal
+
+```bash
+bash check_ci.sh
+```
+
+Matches the exact commit at `HEAD` (not just "most recent run") via a
+short polling retry loop — safe to call immediately after `git push`,
+no manual delay needed.
+
 ---
 
 ## Architecture
@@ -108,14 +124,18 @@ uvicorn python.server.main:app --reload
 
 ```
 +-------------------------------------------------------------+
-|              python/server/  (FastAPI, Week 7)              |
+|              python/server/  (FastAPI, Month 2 Week 7)      |
 |   GET  /health        POST /simulate                        |
 |   POST /sensitivity    POST /filter                         |
+|   All 4 models registered (Month 3 Week 9)                  |
 +----------------------------+--------------------------------+
                              |
 +----------------------------+--------------------------------+
-|              python/pdsl/  (PDSL compiler, Week 4)           |
+|         python/pdsl/  (PDSL compiler, v0.1 Month 1 Week 4,   |
+|                         v0.2 control flow Month 3 Week 13)   |
 |   grammar.lark -> parser -> ast_nodes -> codegen -> compiler|
+|   v0.2 adds: comparison operators, if/then/else conditionals |
+|   compiling to vectorised np.where()                         |
 +----------------------------+--------------------------------+
                              |
 +----------------------------+--------------------------------+
@@ -123,11 +143,16 @@ uvicorn python.server.main:app --reload
 |                                                               |
 |   Distribution (ABC)       Model (ABC)                       |
 |   +-- Normal, LogNormal,   +-- BatteryModel2Cell              |
-|       Uniform, Beta,           (8-state Arrhenius ODE)        |
-|       Empirical                                               |
+|       Uniform, Beta,           (8-state Arrhenius ODE,        |
+|       Empirical                validated: Kim et al. 2007)   |
+|                             +-- PharmaStabilityModel           |
+|                                 (Avrami kinetics, validated:   |
+|                                 Gonzalez-Gonzalez et al. 2023) |
 |                                                               |
 |   MonteCarloEngine   SobolSensitivity   ProvenanceTracker    |
 |   ParticleFilter (validated against exact Kalman filter)     |
+|   GPUMonteCarloEngine (CuPy + kernel fusion, honestly          |
+|       benchmarked -- C++/OpenMP wins at every tested N)       |
 +----------------------------+--------------------------------+
                              |
              +---------------+---------------+
@@ -135,10 +160,15 @@ uvicorn python.server.main:app --reload
 +------------------------+       +--------------------------+
 |  Python engines        |       |  cpp/ (C++20 + pybind11) |
 |  numpy + SALib         |       |  BatteryCell             |
-|  341 pytest tests      |       |  MonteCarloEngineOMP      |
-|                        |       |  probos_cpp extension     |
-|                        |       |  7x faster (measured)     |
-|                        |       |  13 Google Tests          |
+|  408 pytest tests      |       |  MonteCarloEngineOMP     |
+|                        |       |  (real battery_priors,   |
+|                        |       |   not a placeholder      |
+|                        |       |   perturbation)          |
+|                        |       |  Normal, LogNormal,      |
+|                        |       |  Uniform distributions   |
+|                        |       |  probos_cpp extension    |
+|                        |       |  7x faster (measured)    |
+|                        |       |  5 test executables      |
 +------------------------+       +--------------------------+
 ```
 
@@ -151,13 +181,15 @@ ProbOs/
 |   +-- src/                          Core kernel
 |   |   +-- distributions.py          Distribution ABC + 5 classes
 |   |   +-- state.py                  Model ABC
-|   |   +-- battery_model.py          BatteryModel2Cell
-|   |   +-- parameter_priors.py       15 priors (Kim 2007)
+|   |   +-- battery_model.py          BatteryModel2Cell (+ GPU/xp dispatch)
+|   |   +-- pharma_stability_model.py PharmaStabilityModel (Avrami kinetics)
+|   |   +-- parameter_priors.py       15 real battery priors (Kim 2007)
 |   |   +-- monte_carlo.py            MonteCarloEngine
+|   |   +-- gpu_monte_carlo.py        GPUMonteCarloEngine (CuPy)
 |   |   +-- sensitivity.py            SobolSensitivity
 |   |   +-- provenance.py             ProvenanceTracker
 |   |   +-- particle_filter.py        ParticleFilter (SIR)
-|   +-- pdsl/                         PDSL compiler
+|   +-- pdsl/                         PDSL compiler (v0.1 + v0.2 control flow)
 |   |   +-- grammar.lark, parser.py, ast_nodes.py,
 |   |       codegen.py, compiler.py
 |   +-- server/                       FastAPI service layer
@@ -167,30 +199,33 @@ ProbOs/
 |   |       week3_clt_convergence.py, week3_sobol_battery.py,
 |   |       week4_option_pricer.py, week4_ed_queue.py,
 |   |       week4_clinical_trial.py
-|   +-- tests/                        341 tests total
+|   +-- tests/                        408 tests total
 |
 +-- cpp/
-|   +-- include/distributions/normal.hpp
-|   +-- include/kernel/battery_cell.hpp
-|   +-- include/kernel/monte_carlo_omp.hpp
-|   +-- src/distributions/normal.cpp
-|   +-- src/kernel/monte_carlo_omp.cpp
-|   +-- src/kernel/benchmark_omp.cpp
+|   +-- include/distributions/        normal.hpp, lognormal.hpp, uniform.hpp
+|   +-- include/kernel/               battery_cell.hpp, monte_carlo_omp.hpp,
+|   |                                 battery_priors.hpp (real 15-param priors)
+|   +-- src/distributions/            normal.cpp, lognormal.cpp, uniform.cpp
+|   +-- src/kernel/monte_carlo_omp.cpp, benchmark_omp.cpp
 |   +-- src/main.cpp
 |   +-- bindings/probos_bindings.cpp   pybind11 -> probos_cpp
-|   +-- tests/test_normal.cpp          13 Google Tests
-|   +-- CMakeLists.txt
+|   +-- tests/                        5 test executables (test_normal,
+|   |                                 test_lognormal, test_uniform,
+|   |                                 test_battery_cell, test_monte_carlo_omp)
+|   +-- CMakeLists.txt                 -fPIC globally (Debug+ASan+shared-lib fix)
 |
 +-- docs/
+|   +-- vision/                       Mission, vision, industry roadmap
 |   +-- monthly_plans/                Day-by-day plan + retrospective
-|   |   +-- overall/                  per week, per month, PDF-compiled
-|   |   +-- month1/week1-4/
-|   |   +-- month2/week5-7/
+|   |   +-- overall/                  24-month master roadmap, PDF-compiled
+|   |   +-- month1/week1-4/, month2/week5-8/, month3/week9-13/
+|   |   +-- month4/ ... month12/      Year 1 pre-planning (directional)
 |   +-- standards/quality_standards.md
-|   +-- study/study_guide.md
+|   +-- study/study_guide.md          Real study log, updated as work happens
 |   +-- audits/                       Archived pre_week_audit.sh reports
 |   +-- architecture.md               This project's architecture, in depth
-|   +-- retrospectives/
+|   +-- automotive_ev_positioning.md, automotive_ev_outreach_email.md
+|   +-- sbir_phase1_onepager.md, enterprise_pilot_email.md
 |
 +-- manuscript/                       Research paper (LaTeX, publication
 |                                      deferred to Year 2 -- see overall plan)
@@ -199,7 +234,8 @@ ProbOs/
 +-- pyproject.toml                    Single source of truth for dependencies
 +-- pre_week_audit.sh                 Standing quality audit (run before
 |                                      every new week's work)
-+-- check_ci.sh                       Watch/verify CI status from the terminal
++-- check_ci.sh                       Watch/verify CI status (matches exact
+|                                      commit SHA, no manual delay needed)
 ```
 
 ---
@@ -216,22 +252,12 @@ log_density = np.log(distribution.pdf(x))
 log_density = distribution.log_pdf(x)
 ```
 
-| Expression | Value at `x = mu + 50*sigma` | Status |
-|-----------|-------|--------|
-| `pdf(x)` | `0.0` | Underflow to zero |
-| `np.log(pdf(x))` | `-inf` | **WRONG** |
-| `log_pdf(x)` analytical | `-1259.44` | **Correct** |
+### Battery Safety (Month 1) — Validated
 
-### Monte Carlo + Sensitivity (Month 1)
-
-Running N=5,000 particles through `BatteryModel2Cell`:
-
-| Metric | Value |
-|--------|-------|
-| `sigma/sqrt(N)` for T1 at N=5000 | 7.30 K |
-| CLT log-log slope | -0.569 (theory -0.500) |
-| **Ea_SEI** Sobol $S_1$ / $S_T$ | **0.457 / 0.729** (dominates T1 variance) |
-| P05 SEI decomposition rate | **11.6x faster** than the P50 mean |
+`BatteryModel2Cell`, an 8-state Arrhenius thermal-runaway ODE with 15
+uncertain parameters, validated against Kim et al. (2007) accelerating
+rate calorimetry data. Sobol sensitivity identifies the SEI decomposition
+activation energy as the dominant risk driver (S1=0.457).
 
 ### Sequential Inference (Month 2 Week 5)
 
@@ -240,14 +266,18 @@ converge to an exact closed-form Kalman filter solution on a
 linear-Gaussian test case, with Monte Carlo error provably shrinking as
 particle count grows from N=100 to N=2000.
 
-### C++/OpenMP Kernel + pybind11 (Month 1 Week 4, Month 2 Week 6)
+### C++/OpenMP Kernel + pybind11 (Month 1 Week 4, Month 2 Week 6, Month 3 sweep)
 
 `BatteryCell::forward_step()` matches the Python
 `BatteryModel2Cell.forward_batch()` to `rtol=1e-8`–`1e-10`. The bound
 `probos_cpp.MonteCarloEngineOMP` runs **~7x faster** than the pure-Python
-engine (measured, not claimed).
+engine (measured, not claimed). As of Month 3's comprehensive kernel
+sweep, the C++ engine draws from the REAL 15-parameter `battery_priors`
+(not a simplified placeholder), closing a previously-documented C++/
+Python parameter-spread discrepancy at the root — confirmed within
+~1% agreement of the Python engine's own spread.
 
-### PDSL Compiler (Month 1 Week 4)
+### PDSL Compiler (v0.1 Month 1 Week 4, v0.2 control flow Month 3 Week 13)
 
 Declare a stochastic model in a small DSL instead of hand-writing a
 `Model` subclass:
@@ -260,9 +290,48 @@ model battery {
 }
 ```
 
+PDSL v0.2 adds comparison operators and expression-level conditionals:
+
+```
+drift x = if x > 5.0 then -1.0 else 1.0
+```
+
+correctly compiling to vectorised `np.where()`, verified with a genuine
+per-particle divergence proof (different particles taking different
+branches within the same `forward_batch()` call, not just "it compiles").
+
 Pipeline: `grammar.lark -> parser.py -> ast_nodes.py -> codegen.py -> compiler.py`.
 
-### REST API (Month 2 Week 7)
+### GPU Kernel Path (Month 3 Week 10) — Honestly Benchmarked
+
+`GPUMonteCarloEngine` (CuPy + kernel fusion) was built and honestly
+benchmarked against CPU/C++. Kernel fusion genuinely improved GPU
+performance (up to 7.6x faster at small N), and GPU now beats plain
+Python at N>=2000 — but **C++/OpenMP remains the fastest engine at
+every tested N**, reported truthfully rather than oversold.
+
+### Pharmaceutical Stability (Month 3 Week 11) — Validated
+
+`PharmaStabilityModel` uses Avrami kinetics, validated against
+Gonzalez-Gonzalez et al. (2023), a real, peer-reviewed, ICH-referenced
+chlorhexidine stability study — reproducing the paper's real 365-day
+degradation percentages to within 1.18 percentage points. Sobol
+sensitivity identifies activation energy as overwhelmingly dominant
+(S1=0.993); Monte Carlo propagation reveals a real tail risk invisible
+to deterministic simulation — the worst-case 5% of outcomes show
+complete potency loss within one year.
+
+### Automotive/EV Safety Positioning (Month 3 Week 12)
+
+`BatteryModel2Cell` (already Validated) is positioned, not
+re-engineered, for ISO 26262 automotive functional safety — the same
+validated model, reframed for a different regulator. Materials
+explicitly state what ProbOS does NOT claim (HARA performance, ASIL
+assignment, ISO 26262 certification) before describing what it
+genuinely provides: quantitative uncertainty evidence supporting a
+HARA process's Severity/Exposure judgments.
+
+### REST API (Month 2 Week 7, extended Month 3 Week 9)
 
 ```
 GET  /health
@@ -276,13 +345,10 @@ reaches kernel code. All four registered models (battery, option
 pricer, ED queue, clinical trial) work with `/simulate` and
 `/sensitivity`; `BatteryModel2Cell` (the only fully-deterministic
 model) is verified against a direct kernel call at `rtol=1e-10`, while
-the three genuinely stochastic models are verified structurally
-(matching shapes, correct percentile ordering) -- their
-`forward_batch()` implementations draw fresh randomness from the
-global random state on every call by design, so bit-exact
-reproducibility from a seed alone is not guaranteed for them.
-`/filter` correctly rejects `clinical_trial` with a clear error rather
-than a meaningless result.
+the three genuinely stochastic models each own a private
+`np.random.default_rng(seed)` (fixed at the root, Month 3 Week 9) for
+genuine reproducibility. `/filter` correctly rejects `clinical_trial`
+with a clear error rather than a meaningless result.
 
 ### Cross-Discipline Validation (Month 1 Week 4)
 
@@ -308,6 +374,7 @@ Checks: full test suite, mypy strict (full tree), ruff, coverage floor
 (85%), Hypothesis property-based tests, doctest, bandit security scan,
 pip-audit CVE scan, packaging/build verification, reproducibility, git
 hygiene. See `docs/standards/quality_standards.md` for the full checklist.
+Results are archived under `docs/audits/`.
 
 ### Check system requirements before setting up
 
@@ -315,11 +382,11 @@ hygiene. See `docs/standards/quality_standards.md` for the full checklist.
 bash check_system_requirements.sh
 ```
 
-Run this on any machine (does not need to be inside a clone --
+Run this on any machine (does not need to be inside a clone —
 just download and run) to see what's present, what's missing, and
 what's optional. Separates REQUIRED items (Python 3.11+, g++,
 cmake, ninja, Google Test, pdflatex) from OPTIONAL, GPU-only items
-(NVIDIA GPU, CuPy -- needed only for `python/src/gpu_monte_carlo.py`,
+(NVIDIA GPU, CuPy — needed only for `python/src/gpu_monte_carlo.py`,
 Month 3 Week 10; everything else works fully without a GPU).
 
 ### Watch CI status from the terminal
@@ -377,44 +444,46 @@ The full 24-month roadmap, with an honest month-by-month breakdown of
 what is DONE, PLANNED, or DIRECTIONAL, lives in
 `docs/monthly_plans/overall/main.tex` (compiled PDF alongside). Every
 individual week has its own day-by-day plan and retrospective under
-`docs/monthly_plans/<month>/<week>/`.
+`docs/monthly_plans/<month>/<week>/`. Months 4-12 have pre-planning
+documents (`docs/monthly_plans/month4/` through `month12/`), kept
+intentionally directional rather than over-specified in detail this
+far in advance, per this project's own established discipline.
 
 **Status at a glance:**
 
 ```
 Month 1  [COMPLETE]  Kernel foundation
-  Week 1  Distribution ABC
-  Week 2  Model ABC + BatteryModel2Cell (Kim 2007 validated)
-  Week 3  MonteCarloEngine + SobolSensitivity + ProvenanceTracker
-  Week 4  DP profiling, C++/OpenMP kernel, PDSL v0.1,
-          3 cross-discipline examples
+Month 2  [COMPLETE]  Inference + service layer
+Month 3  [COMPLETE]  GPU kernel path, pharma domain (validated),
+                     automotive positioning, PDSL v0.2 (control flow),
+                     comprehensive C++/kernel sweep
 
-Month 2  [IN PROGRESS]  Inference + service layer
-  Week 5  ParticleFilter (validated vs exact Kalman filter)   [DONE]
-  Week 6  pybind11 bindings -- C++ kernel enters Python       [DONE]
-  Week 7  FastAPI service layer                                [DONE]
-  Week 8  Cross-discipline filtering examples + Month 2
-          retrospective                                        [NEXT]
-
-Month 3+  DIRECTIONAL -- to be planned in detail as each
-          month approaches, per the process established after
-          Month 1 (see docs/monthly_plans/overall/main.tex)
+Month 4-6   [PLANNED]  Dashboard architecture, core build,
+                       automotive framing, hardening + sweep
+Month 7     [PLANNED]  Pharma GPU + C++ parity
+Month 8-9   [PLANNED]  Medical device domain (research-gate first)
+Month 10    [PLANNED]  Nuclear or aerospace domain (research-gate first)
+Month 11    [PLANNED]  PDSL v0.3
+Month 12    [PLANNED]  Year 1 comprehensive audit
 ```
+
+See `docs/vision/main.tex` for the full mission, vision, and honest
+Validated/Structurally-ready/Aspirational breakdown per industry.
 
 ---
 
 ## Quality Standards
 
 Every layer is validated against a closed-form solution, literature
-reference, or cross-implementation comparison before being trusted --
+reference, or cross-implementation comparison before being trusted —
 never just "it runs without crashing." Full standards and rationale in
 `docs/standards/quality_standards.md`.
 
 **Current numbers:**
 
 ```
-341/341 Python tests passing
-13/13   C++ tests passing
+408/408 Python tests passing
+5/5     C++ test executables passing
 mypy strict: 0 errors (full python/ tree)
 ruff: 0 warnings
 Coverage: 90%+ (floor: 85%)
@@ -428,7 +497,7 @@ pip-audit: 0 known CVEs
 
 | Item | Detail |
 |------|--------|
-| Author | [AUTHOR NAME] |
+| Author | Nisong Monyimba |
 | Organisation | Reality Computing Corporation |
 | Started | June 2026 |
 | License | Apache-2.0 |

@@ -372,8 +372,9 @@
     chartCtx.clearRect(0,0,w,h);
 
     var ts = kernelData.percentile_time_series;
+    var detSeries = kernelData.deterministic_time_series;
     var xVals = axisX;
-    var allVals = ts.p05.concat(ts.p50).concat(ts.p95);
+    var allVals = showBand ? ts.p05.concat(ts.p50).concat(ts.p95) : detSeries;
     var minY = Math.min.apply(null, allVals);
     var maxY = Math.max.apply(null, allVals);
     var pad = (maxY - minY) * 0.08 || 1;
@@ -411,10 +412,11 @@
       chartCtx.stroke(); chartCtx.setLineDash([]);
     }
 
+    var lineSeries = showBand ? ts.p50 : detSeries;
     chartCtx.strokeStyle = '#2F5FAD'; chartCtx.lineWidth=2;
     chartCtx.beginPath();
     for(var m=0;m<xVals.length;m++){
-      var px2=xPix(m), py2=yPix(ts.p50[m]);
+      var px2=xPix(m), py2=yPix(lineSeries[m]);
       if(m===0) chartCtx.moveTo(px2,py2); else chartCtx.lineTo(px2,py2);
     }
     chartCtx.stroke();
@@ -493,7 +495,7 @@
 
     if(!uqOn){
       drawTimeSeries(meta, kernelData, false, axisX);
-      chartCaption.textContent = 'Deterministic: one run, nominal parameters (P50 line only)';
+      chartCaption.textContent = 'Deterministic: the TRUE single run at nominal parameters (not the Monte Carlo median)';
       histWrap.style.display = 'none';
       document.getElementById('roTail').textContent = '\u2014';
     } else {

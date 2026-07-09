@@ -102,6 +102,21 @@
   .sens-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .4s ease;}
   .sens-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;width:38px;text-align:right;color:var(--ink-soft);}
 
+  .interpret-banner{
+    display:flex; gap:12px; align-items:flex-start;
+    border-radius:5px; padding:12px 14px; margin-top:14px;
+    border-left:4px solid var(--line);
+  }
+  .interpret-banner.level-good{border-left-color:#3D7A4A; background:#EAF3EC;}
+  .interpret-banner.level-watch{border-left-color:#8A6B3F; background:#F5EFE2;}
+  .interpret-banner.level-caution{border-left-color:#B08D57; background:#F8F1E2;}
+  .interpret-banner.level-danger{border-left-color:var(--danger); background:var(--danger-dim);}
+  .interpret-label{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    white-space:nowrap; padding-top:1px;
+  }
+  .interpret-desc{font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+
   .validated-box{
     background:var(--blue-dim);border:1px solid #B9D3EA;border-radius:5px;
     padding:14px 16px;margin-top:16px;font-size:12.5px;color:var(--ink);
@@ -197,6 +212,15 @@
         <div class="readout-label" id="roTailLabel">P(fade &gt; 16%)</div>
         <div class="readout-value danger" id="roTail">—</div>
       </div>
+    </div>
+
+    <div class="interpret-banner level-good" id="pointBanner">
+      <span class="interpret-label" id="pointBannerLabel">Normal</span>
+      <span class="interpret-desc" id="pointBannerDesc">Within expected wear for this cycle count and chemistry.</span>
+    </div>
+    <div class="interpret-banner level-good" id="tailBanner" style="display:none;">
+      <span class="interpret-label" id="tailBannerLabel">No modeled risk</span>
+      <span class="interpret-desc" id="tailBannerDesc">At this uncertainty level, no simulated outcome crossed the threshold.</span>
     </div>
 
     <p class="caption" id="caption"><b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells — with real manufacturing tolerance, real thermal variation — would exceed a safety threshold.</p>
@@ -309,6 +333,31 @@
   var roTailLabel = document.getElementById('roTailLabel');
   var tabBattery = document.getElementById('tabBattery');
   var tabPharma = document.getElementById('tabPharma');
+  var pointBanner = document.getElementById('pointBanner');
+  var pointBannerLabel = document.getElementById('pointBannerLabel');
+  var pointBannerDesc = document.getElementById('pointBannerDesc');
+  var tailBanner = document.getElementById('tailBanner');
+  var tailBannerLabel = document.getElementById('tailBannerLabel');
+  var tailBannerDesc = document.getElementById('tailBannerDesc');
+
+  var TAIL_BANDS = [
+    {upTo:0, label:'No modeled risk', desc:'At this uncertainty level, no simulated outcome crossed the threshold.', level:'good'},
+    {upTo:1, label:'Low risk', desc:'A rare tail event, but not zero \u2014 exactly what a deterministic model would miss.', level:'watch'},
+    {upTo:5, label:'Moderate risk', desc:'Worth tracking; a non-trivial share of realistic outcomes cross the threshold.', level:'caution'},
+    {upTo:Infinity, label:'Elevated risk', desc:'A meaningful share of realistic outcomes cross the threshold; recommend review.', level:'danger'}
+  ];
+
+  function findBand(value, bands){
+    for(var i=0;i<bands.length;i++){
+      if(value <= bands[i].upTo) return bands[i];
+    }
+    return bands[bands.length-1];
+  }
+  function renderBanner(el, labelEl, descEl, band){
+    el.className = 'interpret-banner level-' + band.level;
+    labelEl.textContent = band.label;
+    descEl.textContent = band.desc;
+  }
   var uqOn = false;
 
   var MODELS = {
@@ -321,6 +370,12 @@
       slider1: {label: 'Cell temperature spread (\u00b1\u00b0C)', min:0.5, max:10, step:0.5, def:4},
       slider2: {label: 'Manufacturing tolerance (%)', min:1, max:15, step:0.5, def:6},
       sensNames: ['Cell temperature', 'Manufacturing tolerance', 'Rate constant scatter'],
+      pointBands: [
+        {upTo:8, label:'Normal', desc:'Within expected wear for this cycle count and chemistry.', level:'good'},
+        {upTo:14, label:'Accelerated', desc:'Faster fade than typical; worth monitoring at the next service interval.', level:'watch'},
+        {upTo:20, label:'Near end-of-life', desc:'Approaching the ~20% fade threshold most OEM battery warranties define as end-of-life.', level:'caution'},
+        {upTo:Infinity, label:'Beyond end-of-life', desc:'Past the typical end-of-life threshold; replacement or safety review recommended.', level:'danger'}
+      ],
       validated: '<b>Validated against:</b> Kim et al. (2007), accelerating rate calorimetry data. Sobol sensitivity identifies SEI decomposition activation energy as the dominant risk driver (S1=0.457). This demo uses a simplified illustrative formula, not the real validated kernel \u2014 see GitHub for the actual model.',
       captionDet: '<b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells \u2014 with real manufacturing tolerance, real thermal variation \u2014 would exceed a safety threshold.',
       captionProb: '<b>Probabilistic mode:</b> the same model, but temperature, manufacturing tolerance, and rate-constant scatter are now propagated as distributions through 4,000 Monte Carlo samples. The output is a probability of failure against a threshold, not a single hopeful number.',
@@ -357,6 +412,12 @@
       slider1: {label: 'Activation energy uncertainty (\u00b1kcal/mol)', min:0.5, max:5, step:0.1, def:2.61},
       slider2: {label: 'Storage temperature (\u00b0C)', min:15, max:35, step:1, def:25},
       sensNames: ['Activation energy', 'Storage temperature', 'Pre-exponential factor'],
+      pointBands: [
+        {upTo:80, label:'Significant loss', desc:'Substantial potency loss; batch is likely non-compliant with typical release specs.', level:'danger'},
+        {upTo:90, label:'Below typical spec', desc:'Below the common 90% potency release specification; batch may fail QC.', level:'caution'},
+        {upTo:95, label:'Within spec', desc:'Meets the typical release specification, but the margin is narrowing.', level:'watch'},
+        {upTo:Infinity, label:'Well within spec', desc:'Comfortable margin above the typical 90% release specification.', level:'good'}
+      ],
       validated: '<b>Validated against:</b> Gonzalez-Gonzalez et al. (2023), <i>Molecules</i> 28(23), 7925 \u2014 a real, peer-reviewed, ICH-referenced chlorhexidine stability study. Reproduces the paper\u2019s real 365-day degradation percentages to within 1.18 percentage points. Sobol sensitivity identifies activation energy as overwhelmingly dominant (S1=0.993). This demo uses the SAME real fitted parameters as the validated model (Ea=18.52 kcal/mol), not a re-derived toy.',
       captionDet: '<b>Deterministic mode:</b> a single storage-condition scenario at the nominal activation energy. There is no way to know how a real manufacturing batch\u2019s natural variation in activation energy would affect real-world shelf life.',
       captionProb: '<b>Probabilistic mode:</b> activation energy and storage temperature are now propagated as distributions through 4,000 Monte Carlo samples \u2014 using the paper\u2019s OWN reported standard error on Ea (\u00b12.61 kcal/mol), not an invented number. The worst-case 5% of real outcomes in the validated model show complete potency loss within one year.',
@@ -521,11 +582,14 @@
     var pt = current.pointEstimate();
     document.getElementById('roPoint').textContent = pt.toFixed(1)+'%';
 
+    renderBanner(pointBanner, pointBannerLabel, pointBannerDesc, findBand(pt, current.pointBands));
+
     if(!uqOn){
       drawPoint(pt);
       document.getElementById('roMean').textContent = '\u2014';
       document.getElementById('roStd').textContent = '\u2014';
       document.getElementById('roTail').textContent = '\u2014';
+      tailBanner.style.display = 'none';
     } else {
       var s1 = parseFloat(slider1.value);
       var s2 = parseFloat(slider2.value);
@@ -543,6 +607,8 @@
       document.getElementById('roStd').textContent = '\u00b1'+s.toFixed(1)+'%';
       document.getElementById('roTail').textContent = tailPct.toFixed(1)+'%';
       renderSensitivity(mc);
+      tailBanner.style.display = 'flex';
+      renderBanner(tailBanner, tailBannerLabel, tailBannerDesc, findBand(tailPct, TAIL_BANDS));
     }
   }
 

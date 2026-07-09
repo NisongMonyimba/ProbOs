@@ -6,11 +6,12 @@
 #   Every push or pull request to main triggers:
 #   1. Fresh Ubuntu 22.04 VM
 #   2. Python 3.11 + C++20 + CMake + Ninja + Google Test + pybind11
-#   3. 341 Python tests (pytest) including property-based tests
+#   3. 408 Python tests (pytest) including property-based tests
 #   4. mypy strict type checking (full python/ tree)
 #   5. ruff lint (full python/ tree)
 #   6. All Week 2-4 examples
-#   7. 13 C++ tests
+#   7. 5 C++ test executables (test_normal, test_lognormal,
+#      test_uniform, test_battery_cell, test_monte_carlo_omp)
 #   8. LaTeX manuscript compilation (13 pages)
 #   9. Full integration (RunTests.sh equivalent, includes pybind11 extension)
 #   10. Pre-week quality audit (coverage, hypothesis, bandit, pip-audit)
@@ -34,7 +35,7 @@ jobs:
   # JOB 1: Python tests + static analysis
   # ===========================================================================
   python-tests:
-    name: Python Tests (341 pytest + mypy + ruff)
+    name: Python Tests (408 pytest + mypy + ruff)
     runs-on: ubuntu-22.04
 
     steps:
@@ -82,7 +83,7 @@ jobs:
           cmake --build cpp/build
           ls -la cpp/build/probos_cpp*.so
 
-      - name: Run pytest (341 tests, including C++ bindings)
+      - name: Run pytest (408 tests, including C++ bindings)
         run: |
           python -m pytest python/tests/ -v --tb=short --no-header
           echo "pytest exit: $?"
@@ -254,7 +255,7 @@ jobs:
   # JOB 4: Full integration (RunTests.sh equivalent)
   # ===========================================================================
   integration:
-    name: Full Integration (341 Python + 13 C++)
+    name: Full Integration (408 Python + 5 C++ executables)
     runs-on: ubuntu-22.04
     needs: [ python-tests, cpp-tests ]
 
@@ -332,7 +333,7 @@ jobs:
           echo "  PROBOS CI -- ALL JOBS PASSED"
           echo "  Month 1 : Distribution, Model, MC, Sobol, Provenance, PDSL"
           echo "  Month 2 : ParticleFilter, pybind11 bindings"
-          echo "  Total   : 341 Python + 13 C++ tests"
+          echo "  Total   : 408 Python + 5 C++ test executables"
           echo "  mypy    : 0 errors (full python/ tree)"
           echo "  ruff    : 0 warnings (full python/ tree)"
           echo "  Coverage: >=85% on python/src + python/pdsl"

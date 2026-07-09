@@ -31,6 +31,9 @@ keep building in the wrong direction.
 
 Thanks for considering it either way.
 
+P.S. -- if you want to see what I mean, here's a 30-second
+interactive demo: https://nisongmonyimba.github.io/ProbOs/ -- no install, no meeting, just a click.
+
 [Your name]
 [Contact info]
 

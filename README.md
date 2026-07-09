@@ -7,11 +7,13 @@
 ![Tests](https://img.shields.io/badge/Tests-408%20Python%20%2B%205%20C%2B%2B-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-Apache%202.0-green?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Month%203%20Week%2013-Complete-blue?style=for-the-badge)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Try%20it%20now-F5A623?style=for-the-badge&logo=googlechrome&logoColor=white)](https://nisongmonyimba.github.io/ProbOs/)
 
 **Uncertainty is a first-class data type.**
 
 *A probabilistic execution runtime built one week at a time.*
 
+[**Try the Live Demo**](https://nisongmonyimba.github.io/ProbOs/) •
 [What is ProbOS?](#what-is-probos) •
 [Quick Start](#quick-start) •
 [Architecture](#architecture) •

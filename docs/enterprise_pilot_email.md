@@ -9,8 +9,8 @@ quantifies uncertainty in safety-critical physical systems.
 
 **The problem we solve:**
 Deterministic models miss tail risks. Our Monte Carlo engine showed that the
-P95 worst-case battery cell heats 4,560 K faster than the median over 300
-minutes — a risk completely invisible to deterministic simulation.
+P95 worst-case battery cell decomposes 11.6x faster than the median case —
+a risk completely invisible to deterministic simulation.
 
 **What we built:**
 - Vectorised Monte Carlo: 5,000 particles, P05/P50/P95 trajectories, < 2s
@@ -41,6 +41,10 @@ bottleneck in your validation pipeline. In exchange, I offer a free pilot
 integration on one of your existing battery/device/clinical models.
 
 Would you have 30 minutes in the next two weeks?
+
+P.S. -- if useful before our call, here's a 30-second interactive
+demo showing the deterministic-vs-probabilistic difference directly
+in your browser (no install, no meeting): https://nisongmonyimba.github.io/ProbOs/
 
 Best regards,
 [FOUNDER NAME]

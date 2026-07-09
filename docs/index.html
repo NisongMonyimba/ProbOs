@@ -102,6 +102,13 @@
   .sens-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .4s ease;}
   .sens-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;width:38px;text-align:right;color:var(--ink-soft);}
 
+  .legend{
+    display:flex; flex-wrap:wrap; gap:14px 18px; margin:10px 0 4px;
+    font-size:12px; color:var(--ink-soft);
+  }
+  .legend-item{display:flex; align-items:center; gap:6px;}
+  .legend-swatch{width:11px; height:11px; border-radius:3px; flex-shrink:0;}
+
   .interpret-banner{
     display:flex; gap:12px; align-items:flex-start;
     border-radius:5px; padding:12px 14px; margin-top:14px;
@@ -194,6 +201,7 @@
     </div>
 
     <div id="chartWrap"><canvas id="chart"></canvas></div>
+    <div class="legend" id="legend"></div>
 
     <div class="readouts">
       <div class="readout">
@@ -334,6 +342,19 @@
   var tabBattery = document.getElementById('tabBattery');
   var tabPharma = document.getElementById('tabPharma');
   var BAND_HEX = {good:'#2E8B4E', watch:'#B89B1F', caution:'#C6741E', danger:'#B0473F'};
+  var legendEl = document.getElementById('legend');
+
+  function renderLegend(bands){
+    legendEl.innerHTML = '';
+    bands.forEach(function(b){
+      var item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML =
+        '<span class="legend-swatch" style="background:' + (BAND_HEX[b.level]||'#999') + '"></span>' +
+        '<span>' + b.label + '</span>';
+      legendEl.appendChild(item);
+    });
+  }
   var pointBanner = document.getElementById('pointBanner');
   var pointBannerLabel = document.getElementById('pointBannerLabel');
   var pointBannerDesc = document.getElementById('pointBannerDesc');
@@ -628,6 +649,7 @@
     slider2Val.textContent = current.slider2.def;
     validatedBox.innerHTML = current.validated;
     caption.innerHTML = uqOn ? current.captionProb : current.captionDet;
+    renderLegend(current.pointBands);
     update();
   }
 
@@ -658,6 +680,7 @@
   slider2.addEventListener('input', function(){ slider2Val.textContent = parseFloat(slider2.value).toFixed(1); update(); });
 
   window.addEventListener('load', update);
+  renderLegend(current.pointBands);
   update();
 })();
 </script>

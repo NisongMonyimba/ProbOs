@@ -107,10 +107,10 @@
     border-radius:5px; padding:12px 14px; margin-top:14px;
     border-left:4px solid var(--line);
   }
-  .interpret-banner.level-good{border-left-color:#3D7A4A; background:#EAF3EC;}
-  .interpret-banner.level-watch{border-left-color:#8A6B3F; background:#F5EFE2;}
-  .interpret-banner.level-caution{border-left-color:#B08D57; background:#F8F1E2;}
-  .interpret-banner.level-danger{border-left-color:var(--danger); background:var(--danger-dim);}
+  .interpret-banner.level-good{border-left-color:#2E8B4E; background:#E4F4E9;}
+  .interpret-banner.level-watch{border-left-color:#B89B1F; background:#FBF6DC;}
+  .interpret-banner.level-caution{border-left-color:#C6741E; background:#FBEADA;}
+  .interpret-banner.level-danger{border-left-color:#B0473F; background:#F6E1DF;}
   .interpret-label{
     font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
     white-space:nowrap; padding-top:1px;
@@ -333,6 +333,7 @@
   var roTailLabel = document.getElementById('roTailLabel');
   var tabBattery = document.getElementById('tabBattery');
   var tabPharma = document.getElementById('tabPharma');
+  var BAND_HEX = {good:'#2E8B4E', watch:'#B89B1F', caution:'#C6741E', danger:'#B0473F'};
   var pointBanner = document.getElementById('pointBanner');
   var pointBannerLabel = document.getElementById('pointBannerLabel');
   var pointBannerDesc = document.getElementById('pointBannerDesc');
@@ -409,7 +410,7 @@
       pointLabel: 'Potency remaining',
       tailLabel: 'P(potency &lt; 90%)',
       threshold: 90, axisMax: 100, axisUnit: '%',
-      slider1: {label: 'Activation energy uncertainty (\u00b1kcal/mol)', min:0.5, max:5, step:0.1, def:2.61},
+      slider1: {label: 'Activation energy uncertainty (\u00b1kcal/mol)', min:0.5, max:5, step:0.1, def:1.0},
       slider2: {label: 'Storage temperature (\u00b0C)', min:15, max:35, step:1, def:25},
       sensNames: ['Activation energy', 'Storage temperature', 'Pre-exponential factor'],
       pointBands: [
@@ -541,8 +542,8 @@
       var barH = (bins[i]/maxBin) * (plotH-10);
       var x = padL + i*binW;
       var y = padT+plotH-barH;
-      var isBad = isLowerBad ? (binVal <= current.threshold) : (binVal >= current.threshold);
-      ctx.fillStyle = isBad ? '#B0473F' : '#2F5FAD';
+      var barBand = findBand(binVal, current.pointBands);
+      ctx.fillStyle = BAND_HEX[barBand.level] || '#2F5FAD';
       ctx.fillRect(x+0.5, y, binW-1, barH);
     }
 

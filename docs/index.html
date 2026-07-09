@@ -9,19 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F6F4EF; --paper:#FFFFFF; --ink:#262B26; --ink-soft:#6B7268;
-    --line:#D6D2C4; --line-soft:#E8E5DB; --blue:#3D6B5C; --blue-dim:#E1E8E4;
-    --amber:#B08D57; --amber-dim:#F0E9D8; --danger:#9C4A3F; --danger-dim:#F3E3E0;
-    --green:#3D6B5C;
+    --bg:#F4F7FC; --paper:#FFFFFF; --ink:#1E3A6E; --ink-soft:#6B4E8E;
+    --line:#D3DCEA; --line-soft:#E7EDF6; --blue:#2F5FAD; --blue-dim:#E4ECFB;
+    --amber:#B08D57; --amber-dim:#F0E9D8; --danger:#B0473F; --danger-dim:#F6E1DF;
+    --green:#2F5FAD;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:
-      linear-gradient(var(--line-soft) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
-      var(--bg);
-    background-size:28px 28px; color:var(--ink);
+    background: var(--bg);
+    color:var(--ink);
     font-family:'Inter',sans-serif; line-height:1.6;
   }
   .wrap{max-width:920px;margin:0 auto;padding:56px 24px 96px;}
@@ -428,10 +425,10 @@
     var minX=0, maxX=current.axisMax;
     function xPix(v){ return padL + (v-minX)/(maxX-minX)*plotW; }
 
-    ctx.strokeStyle = '#E8E5DB'; ctx.lineWidth=1;
+    ctx.strokeStyle = '#E7EDF6'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
 
-    ctx.fillStyle = '#6B7268'; ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#6B4E8E'; ctx.font = '11px IBM Plex Mono, monospace';
     ctx.textAlign='center';
     var step = maxX/3;
     for(var v=0; v<=maxX; v+=step){
@@ -440,12 +437,12 @@
 
     var x0 = xPix(value);
     var y0 = padT + plotH/2;
-    ctx.strokeStyle = '#3D6B5C'; ctx.lineWidth=2;
+    ctx.strokeStyle = '#2F5FAD'; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(x0, padT+10); ctx.lineTo(x0, padT+plotH); ctx.stroke();
-    ctx.fillStyle = '#3D6B5C';
+    ctx.fillStyle = '#2F5FAD';
     ctx.beginPath(); ctx.arc(x0, y0, 6, 0, Math.PI*2); ctx.fill();
 
-    ctx.fillStyle = '#262B26'; ctx.font = '500 12px IBM Plex Mono, monospace'; ctx.textAlign='center';
+    ctx.fillStyle = '#1E3A6E'; ctx.font = '500 12px IBM Plex Mono, monospace'; ctx.textAlign='center';
     ctx.fillText(value.toFixed(1)+current.axisUnit, x0, padT);
   }
 
@@ -466,7 +463,7 @@
     });
     var maxBin = Math.max.apply(null, bins);
 
-    ctx.strokeStyle = '#E8E5DB'; ctx.lineWidth=1;
+    ctx.strokeStyle = '#E7EDF6'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
 
     var thresholdX = xPix(current.threshold);
@@ -484,11 +481,11 @@
       var x = padL + i*binW;
       var y = padT+plotH-barH;
       var isBad = isLowerBad ? (binVal <= current.threshold) : (binVal >= current.threshold);
-      ctx.fillStyle = isBad ? '#9C4A3F' : '#3D6B5C';
+      ctx.fillStyle = isBad ? '#B0473F' : '#2F5FAD';
       ctx.fillRect(x+0.5, y, binW-1, barH);
     }
 
-    ctx.fillStyle = '#6B7268'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.textAlign='center';
+    ctx.fillStyle = '#6B4E8E'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.textAlign='center';
     var step = maxX/3;
     for(var v2=0; v2<=maxX; v2+=step){
       ctx.fillText(Math.round(v2)+current.axisUnit, xPix(v2), padT+plotH+18);

@@ -211,7 +211,6 @@
       </div>
     </div>
   </div>
-
   <div class="panel" id="sensPanel" style="display:none;">
     <div class="panel-head">
       <div>
@@ -221,7 +220,6 @@
     </div>
     <div class="sens-list" id="sensList"></div>
   </div>
-
   <div class="cta">
     <div class="cta-text">
       <b>This is a toy model. The validated one is on GitHub.</b>
@@ -232,14 +230,11 @@
       <a class="btn btn-secondary" href="mailto:nisongmonyimba278@gmail.com?subject=ProbOS">Contact</a>
     </div>
   </div>
-
   <footer>
     <span>ProbOS — Apache 2.0 — early and actively developed</span>
     <span><a href="https://github.com/NisongMonyimba/ProbOs">github.com/NisongMonyimba/ProbOs</a></span>
   </footer>
-
 </div>
-
 <script>
 (function(){
   var canvas = document.getElementById('chart');
@@ -254,7 +249,6 @@
   var tempVal = document.getElementById('tempVal');
   var tolVal = document.getElementById('tolVal');
   var uqOn = false;
-
   function resize(){
     var wrap = canvas.parentElement;
     var dpr = window.devicePixelRatio || 1;
@@ -263,9 +257,8 @@
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   window.addEventListener('resize', resize);
-
   function gaussian(mean, std){
-    var u1 = Math.random(), u2 = Math.random();
+    var u1 = Math.max(Math.random(), 1e-10), u2 = Math.random();
     var z = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
     return mean + z*std;
   }
@@ -278,7 +271,11 @@
     return Math.max(0, fade);
   }
 
-  var A0 = 0.000145;
+  // Calibrated so the deterministic point estimate at nominal
+  // conditions (45C, zero tolerance) lands at 12.3%, matching the
+  // demo's own stated scenario. (0.000145 was the ORIGINAL value and
+  // was wrong by ~3260x, producing ~0.004% instead -- fixed here.)
+  var A0 = 0.4728270310830171;
 
   function pointEstimate(){
     return fadeModel(45, 0, A0) * 100;

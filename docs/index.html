@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProbOS — see the distribution, not just the number</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F3;
+    --paper:#FFFFFF;
+    --ink:#12233B;
+    --ink-soft:#4A5B72;
+    --line:#C7D0D9;
+    --line-soft:#DEE4E9;
+    --blue:#2B6CB0;
+    --blue-dim:#DCE9F6;
+    --amber:#F5A623;
+    --amber-dim:#FCEBC7;
+    --danger:#D64545;
+    --danger-dim:#F9DCDC;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+      var(--bg);
+    background-size:28px 28px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:56px 24px 96px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow .dot{width:7px;height:7px;background:var(--amber);border-radius:50%;display:inline-block;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(30px,5vw,46px);
+    line-height:1.12;
+    margin:0 0 18px;
+    letter-spacing:-0.01em;
+  }
+  h1 .accent{color:var(--blue);}
+  .lede{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:620px;
+    margin:0 0 44px;
+  }
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:28px 28px 24px;
+    margin-bottom:20px;
+  }
+  .panel-head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    margin-bottom:22px;flex-wrap:wrap;gap:14px;
+  }
+  .panel-title{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:17px;}
+  .panel-sub{font-size:13px;color:var(--ink-soft);margin-top:3px;}
+  .toggle-row{display:flex;align-items:center;gap:10px;}
+  .toggle{
+    position:relative;width:52px;height:28px;background:var(--line);
+    border-radius:14px;cursor:pointer;transition:background .25s ease;
+    border:none;padding:0;flex-shrink:0;
+  }
+  .toggle.on{background:var(--blue);}
+  .toggle .knob{
+    position:absolute;top:3px;left:3px;width:22px;height:22px;
+    background:var(--paper);border-radius:50%;transition:transform .25s ease;
+    box-shadow:0 1px 2px rgba(18,35,59,.25);
+  }
+  .toggle.on .knob{transform:translateX(24px);}
+  .toggle-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+  #chartWrap{position:relative;height:260px;margin:6px 0 8px;}
+  canvas{width:100%;height:100%;display:block;}
+  .readouts{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden;
+    margin-top:18px;
+  }
+  .readout{background:var(--paper);padding:14px 14px 12px;}
+  .readout-label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .readout-value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:var(--ink);}
+  .readout-value.danger{color:var(--danger);}
+  .readout-value.blue{color:var(--blue);}
+  .caption{font-size:12.5px;color:var(--ink-soft);margin-top:16px;line-height:1.55;}
+  .caption b{color:var(--ink);font-weight:500;}
+  .sliders{display:grid;grid-template-columns:1fr 1fr;gap:20px 28px;margin-bottom:6px;}
+  .slider-group{display:flex;flex-direction:column;gap:8px;}
+  .slider-label{
+    display:flex;justify-content:space-between;
+    font-size:13px;color:var(--ink-soft);
+  }
+  .slider-label span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:3px;
+    background:var(--line);border-radius:2px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--blue);cursor:pointer;border:2px solid var(--paper);
+    box-shadow:0 0 0 1px var(--blue);
+  }
+  .sens-list{display:flex;flex-direction:column;gap:10px;}
+  .sens-row{display:flex;align-items:center;gap:12px;}
+  .sens-name{width:150px;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
+  .sens-track{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+  .sens-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .4s ease;}
+  .sens-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;width:38px;text-align:right;color:var(--ink-soft);}
+  .cta{
+    background:var(--ink);color:#fff;border-radius:6px;padding:26px 28px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;
+    border-bottom:3px solid var(--amber);
+  }
+  .cta-text b{display:block;font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:500;margin-bottom:4px;}
+  .cta-text span{font-size:13.5px;color:#B9C4D2;}
+  .cta-buttons{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+    padding:11px 18px;border-radius:5px;text-decoration:none;white-space:nowrap;
+    display:inline-block;border:1px solid transparent;
+  }
+  .btn-primary{background:var(--amber);color:#3A2500;}
+  .btn-secondary{background:transparent;color:#fff;border-color:#3A4A62;}
+  footer{
+    margin-top:36px;font-size:12px;color:var(--ink-soft);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  footer a{color:var(--ink-soft);}
+  @media (max-width:640px){
+    .sliders{grid-template-columns:1fr;}
+    .readouts{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow"><span class="dot"></span>ProbOS — probabilistic simulation for safety-critical engineering</div>
+
+  <h1>One deterministic run gives you<br>a number. <span class="accent">Real uncertainty gives you a distribution.</span></h1>
+  <p class="lede">This is a simplified, in-browser version of a battery capacity-fade model. Flip the switch below to go from a single point estimate to full uncertainty propagation — the same shift ProbOS applies to safety-critical simulation.</p>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Capacity fade at 500 cycles, 45°C nominal</div>
+        <div class="panel-sub">Arrhenius-based degradation model, simplified for this demo</div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label" id="toggleLabel">deterministic</span>
+        <button class="toggle" id="uqToggle" aria-label="Toggle uncertainty propagation"><span class="knob"></span></button>
+      </div>
+    </div>
+
+    <div id="chartWrap"><canvas id="chart"></canvas></div>
+
+    <div class="readouts">
+      <div class="readout">
+        <div class="readout-label">Point estimate</div>
+        <div class="readout-value" id="roPoint">12.3%</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Mean fade</div>
+        <div class="readout-value blue" id="roMean">—</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Std deviation</div>
+        <div class="readout-value" id="roStd">—</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">P(fade &gt; 20%)</div>
+        <div class="readout-value danger" id="roTail">—</div>
+      </div>
+    </div>
+
+    <p class="caption" id="caption"><b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells — with real manufacturing tolerance, real thermal variation — would exceed a safety threshold.</p>
+  </div>
+
+  <div class="panel" id="controlsPanel" style="display:none;">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Input uncertainty</div>
+        <div class="panel-sub">Adjust real-world parameter scatter and re-run 4,000 samples</div>
+      </div>
+    </div>
+    <div class="sliders">
+      <div class="slider-group">
+        <div class="slider-label"><span>Cell temperature spread (±°C)</span><span id="tempVal">4.0</span></div>
+        <input type="range" id="tempSlider" min="0.5" max="10" step="0.5" value="4">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Manufacturing tolerance (%)</span><span id="tolVal">6.0</span></div>
+        <input type="range" id="tolSlider" min="1" max="15" step="0.5" value="6">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="sensPanel" style="display:none;">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">What's driving the spread</div>
+        <div class="panel-sub">Share of output variance explained by each input</div>
+      </div>
+    </div>
+    <div class="sens-list" id="sensList"></div>
+  </div>
+
+  <div class="cta">
+    <div class="cta-text">
+      <b>This is a toy model. The validated one is on GitHub.</b>
+      <span>Battery, pharma, and automotive safety UQ — open source, Apache 2.0.</span>
+    </div>
+    <div class="cta-buttons">
+      <a class="btn btn-primary" href="https://github.com/NisongMonyimba/ProbOs">View on GitHub</a>
+      <a class="btn btn-secondary" href="mailto:nisongmonyimba278@gmail.com?subject=ProbOS">Contact</a>
+    </div>
+  </div>
+
+  <footer>
+    <span>ProbOS — Apache 2.0 — early and actively developed</span>
+    <span><a href="https://github.com/NisongMonyimba/ProbOs">github.com/NisongMonyimba/ProbOs</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById('chart');
+  var ctx = canvas.getContext('2d');
+  var toggle = document.getElementById('uqToggle');
+  var toggleLabel = document.getElementById('toggleLabel');
+  var controlsPanel = document.getElementById('controlsPanel');
+  var sensPanel = document.getElementById('sensPanel');
+  var caption = document.getElementById('caption');
+  var tempSlider = document.getElementById('tempSlider');
+  var tolSlider = document.getElementById('tolSlider');
+  var tempVal = document.getElementById('tempVal');
+  var tolVal = document.getElementById('tolVal');
+  var uqOn = false;
+
+  function resize(){
+    var wrap = canvas.parentElement;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = wrap.clientWidth * dpr;
+    canvas.height = wrap.clientHeight * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  function gaussian(mean, std){
+    var u1 = Math.random(), u2 = Math.random();
+    var z = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+    return mean + z*std;
+  }
+
+  function fadeModel(tempC, tolFrac, arrheniusA){
+    var Ea = 20000, R = 8.314;
+    var T = tempC + 273.15;
+    var rate = arrheniusA * Math.exp(-Ea/(R*T));
+    var fade = rate * 500 * (1 + tolFrac);
+    return Math.max(0, fade);
+  }
+
+  var A0 = 0.000145;
+
+  function pointEstimate(){
+    return fadeModel(45, 0, A0) * 100;
+  }
+
+  function runMonteCarlo(tempSpread, tolPct){
+    var n = 4000;
+    var samples = [];
+    var tempSamples = [], tolSamples = [], aSamples = [];
+    for(var i=0;i<n;i++){
+      var t = gaussian(45, tempSpread/2);
+      var tol = gaussian(0, tolPct/200);
+      var a = A0 * (1 + gaussian(0, 0.08));
+      var f = fadeModel(t, tol, a) * 100;
+      samples.push(f);
+      tempSamples.push(t); tolSamples.push(tol); aSamples.push(a);
+    }
+    return {samples:samples, temp:tempSamples, tol:tolSamples, a:aSamples};
+  }
+
+  function mean(arr){ return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
+  function std(arr){
+    var m = mean(arr);
+    return Math.sqrt(mean(arr.map(function(x){return (x-m)*(x-m);})));
+  }
+  function corr(x,y){
+    var mx=mean(x), my=mean(y);
+    var num=0, dx=0, dy=0;
+    for(var i=0;i<x.length;i++){
+      num += (x[i]-mx)*(y[i]-my);
+      dx += (x[i]-mx)*(x[i]-mx);
+      dy += (y[i]-my)*(y[i]-my);
+    }
+    return Math.abs(num/Math.sqrt(dx*dy || 1));
+  }
+
+  function drawPoint(value){
+    resize();
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    var padL=44, padR=20, padT=20, padB=32;
+    var plotW = w-padL-padR, plotH = h-padT-padB;
+    var minX=0, maxX=30;
+    function xPix(v){ return padL + (v-minX)/(maxX-minX)*plotW; }
+
+    ctx.strokeStyle = '#DEE4E9'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+    ctx.fillStyle = '#4A5B72'; ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.textAlign='center';
+    for(var v=0; v<=30; v+=10){
+      var x = xPix(v);
+      ctx.fillText(v+'%', x, padT+plotH+18);
+    }
+
+    var x0 = xPix(value);
+    var y0 = padT + plotH/2;
+    ctx.strokeStyle = '#2B6CB0'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x0, padT+10); ctx.lineTo(x0, padT+plotH); ctx.stroke();
+    ctx.fillStyle = '#2B6CB0';
+    ctx.beginPath(); ctx.arc(x0, y0, 6, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#12233B'; ctx.font = '500 12px IBM Plex Mono, monospace'; ctx.textAlign='center';
+    ctx.fillText(value.toFixed(1)+'%', x0, padT);
+  }
+
+  function drawDistribution(samples){
+    resize();
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    var padL=44, padR=20, padT=20, padB=32;
+    var plotW = w-padL-padR, plotH = h-padT-padB;
+    var minX=0, maxX=30;
+    function xPix(v){ return padL + (v-minX)/(maxX-minX)*plotW; }
+
+    var nBins = 40;
+    var bins = new Array(nBins).fill(0);
+    samples.forEach(function(s){
+      var idx = Math.floor((s-minX)/(maxX-minX)*nBins);
+      if(idx>=0 && idx<nBins) bins[idx]++;
+    });
+    var maxBin = Math.max.apply(null, bins);
+
+    ctx.strokeStyle = '#DEE4E9'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+    var thresholdX = xPix(20);
+    ctx.strokeStyle = '#F5A623'; ctx.setLineDash([4,3]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(thresholdX, padT); ctx.lineTo(thresholdX, padT+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#B8790C'; ctx.font='11px IBM Plex Mono, monospace'; ctx.textAlign='left';
+    ctx.fillText('20% threshold', thresholdX+6, padT+12);
+
+    var binW = plotW/nBins;
+    for(var i=0;i<nBins;i++){
+      var binVal = minX + (i/nBins)*(maxX-minX);
+      var barH = (bins[i]/maxBin) * (plotH-10);
+      var x = padL + i*binW;
+      var y = padT+plotH-barH;
+      ctx.fillStyle = binVal >= 20 ? '#D64545' : '#2B6CB0';
+      ctx.fillRect(x+0.5, y, binW-1, barH);
+    }
+
+    ctx.fillStyle = '#4A5B72'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.textAlign='center';
+    for(var v2=0; v2<=30; v2+=10){
+      ctx.fillText(v2+'%', xPix(v2), padT+plotH+18);
+    }
+  }
+
+  function renderSensitivity(mc){
+    var cTemp = corr(mc.temp, mc.samples);
+    var cTol = corr(mc.tol, mc.samples);
+    var cA = corr(mc.a, mc.samples);
+    var total = cTemp+cTol+cA;
+    var items = [
+      {name:'Cell temperature', val: cTemp/total},
+      {name:'Manufacturing tolerance', val: cTol/total},
+      {name:'Rate constant scatter', val: cA/total}
+    ].sort(function(a,b){return b.val-a.val;});
+
+    var list = document.getElementById('sensList');
+    list.innerHTML = '';
+    items.forEach(function(it){
+      var pct = Math.round(it.val*100);
+      var row = document.createElement('div');
+      row.className = 'sens-row';
+      row.innerHTML =
+        '<div class="sens-name">'+it.name+'</div>'+
+        '<div class="sens-track"><div class="sens-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="sens-pct">'+pct+'%</div>';
+      list.appendChild(row);
+    });
+  }
+
+  function update(){
+    var pt = pointEstimate();
+    document.getElementById('roPoint').textContent = pt.toFixed(1)+'%';
+
+    if(!uqOn){
+      drawPoint(pt);
+      document.getElementById('roMean').textContent = '—';
+      document.getElementById('roStd').textContent = '—';
+      document.getElementById('roTail').textContent = '—';
+    } else {
+      var tempSpread = parseFloat(tempSlider.value);
+      var tolPct = parseFloat(tolSlider.value);
+      var mc = runMonteCarlo(tempSpread, tolPct);
+      var m = mean(mc.samples);
+      var s = std(mc.samples);
+      var tailCount = mc.samples.filter(function(x){return x>20;}).length;
+      var tailPct = (tailCount/mc.samples.length*100);
+
+      drawDistribution(mc.samples);
+      document.getElementById('roMean').textContent = m.toFixed(1)+'%';
+      document.getElementById('roStd').textContent = '±'+s.toFixed(1)+'%';
+      document.getElementById('roTail').textContent = tailPct.toFixed(1)+'%';
+      renderSensitivity(mc);
+    }
+  }
+
+  toggle.addEventListener('click', function(){
+    uqOn = !uqOn;
+    toggle.classList.toggle('on', uqOn);
+    toggleLabel.textContent = uqOn ? 'probabilistic' : 'deterministic';
+    controlsPanel.style.display = uqOn ? 'block' : 'none';
+    sensPanel.style.display = uqOn ? 'block' : 'none';
+    caption.innerHTML = uqOn
+      ? '<b>Probabilistic mode:</b> the same model, but temperature, manufacturing tolerance, and rate-constant scatter are now propagated as distributions through 4,000 Monte Carlo samples. The output is a probability of failure against a threshold, not a single hopeful number.'
+      : '<b>Deterministic mode:</b> inputs are fixed at their nominal values, so the model returns exactly one number. There is no way to know how often real cells — with real manufacturing tolerance, real thermal variation — would exceed a safety threshold.';
+    update();
+  });
+
+  tempSlider.addEventListener('input', function(){ tempVal.textContent = parseFloat(tempSlider.value).toFixed(1); update(); });
+  tolSlider.addEventListener('input', function(){ tolVal.textContent = parseFloat(tolSlider.value).toFixed(1); update(); });
+
+  window.addEventListener('load', update);
+  update();
+})();
+</script>
+</body>
+</html>

@@ -377,8 +377,16 @@
     var allVals = showBand ? ts.p05.concat(ts.p50).concat(ts.p95) : detSeries;
     var minY = Math.min.apply(null, allVals);
     var maxY = Math.max.apply(null, allVals);
-    var pad = (maxY - minY) * 0.08 || 1;
-    minY -= pad; maxY += pad;
+    // Pad only the TOP for visual breathing room above the peak.
+    // Previously padded both top and bottom by 8% of the full
+    // range -- for a large range relative to a small minimum
+    // (403 K to 5,368 K), that ~397 K bottom padding nearly
+    // cancelled out the real starting value, dragging the axis
+    // floor down to ~6 K. Confirmed via direct computation,
+    // still present after a hard refresh -- a genuine bug, not
+    // a caching artifact. The floor now uses the TRUE minimum.
+    var pad = (maxY - minY) * 0.05 || 1;
+    maxY += pad;
 
     var padL=54, padR=16, padT=14, padB=26;
     var plotW = w-padL-padR, plotH = h-padT-padB;

@@ -272,3 +272,35 @@ class TestSobolSummary:
         s = small_result.summary()
         for name in small_result.param_names:
             assert name in s, f"Parameter {name} missing from summary"
+
+def test_sobol_same_seed_produces_identical_results() -> None:
+    """
+    Regression test for a real, confirmed bug: saltelli.sample()
+    does NOT respect np.random.seed() -- it requires an explicit
+    seed= keyword argument.
+    """
+    model = BatteryModel2Cell()
+    priors = build_battery_priors()
+
+    sobol1 = SobolSensitivity(model, priors, N_saltelli=64, n_steps=5, dt=1.0, seed=42)
+    result1 = sobol1.run()
+
+    sobol2 = SobolSensitivity(model, priors, N_saltelli=64, n_steps=5, dt=1.0, seed=42)
+    result2 = sobol2.run()
+
+    assert np.array_equal(result1.S1, result2.S1)
+    assert np.array_equal(result1.ST, result2.ST)
+
+
+def test_sobol_different_seeds_produce_different_results() -> None:
+    """Sanity check: different seeds should NOT collide."""
+    model = BatteryModel2Cell()
+    priors = build_battery_priors()
+
+    sobol1 = SobolSensitivity(model, priors, N_saltelli=64, n_steps=5, dt=1.0, seed=1)
+    result1 = sobol1.run()
+
+    sobol2 = SobolSensitivity(model, priors, N_saltelli=64, n_steps=5, dt=1.0, seed=2)
+    result2 = sobol2.run()
+
+    assert not np.array_equal(result1.S1, result2.S1)

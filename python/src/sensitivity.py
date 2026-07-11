@@ -196,11 +196,19 @@ class SobolSensitivity:
         pnames  = self._model.param_names()
 
         # Step 2: Saltelli sample -- shape (N_saltelli*(2*pd+2), pd)
-        np.random.seed(self._seed)
+        #
+        # BUG FIX: np.random.seed() does NOT control
+        # saltelli.sample()'s output -- confirmed via direct
+        # testing. saltelli.sample() takes its own explicit seed=
+        # keyword argument, which must be passed directly -- the
+        # same bug class already fixed for other stochastic models
+        # (drawing from GLOBAL np.random state is not reproducible
+        # via an external seed parameter alone).
         param_matrix = saltelli.sample(
             problem,
             self._N_saltelli,
             calc_second_order=False,
+            seed=self._seed,
         )
         n_total = param_matrix.shape[0]
 

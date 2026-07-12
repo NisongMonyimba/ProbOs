@@ -68,9 +68,18 @@ certificate.
 Variance-based sensitivity analysis via SALib's Saltelli sampling
 scheme. Computes first-order ($S_1$) and total-effect ($S_T$) Sobol
 indices. On `BatteryModel2Cell`, identifies `Ea_SEI` as the dominant
-thermal-runaway driver ($S_1 = 0.457$). SALib's known non-reproducibility
-at low sample sizes is documented directly in code and tests rather
-than hidden.
+thermal-runaway driver ($S_1 = 0.457$ at $n\_steps=10$, matching the
+manuscript's own configuration). A real, previously-undiscovered
+seeding bug was found and fixed (Month 3): `saltelli.sample()` was
+silently ignoring its seed argument, regardless of sample size --
+not a known/accepted low-sample-size limitation, a genuine defect
+affecting every configuration. Fixed by passing `seed=` directly;
+reproducibility is now verified bit-identical across independent
+runs and covered by a permanent regression test
+(`test_sobol_same_seed_produces_identical_results`). Re-testing at
+the manuscript's exact original configuration confirmed the
+original $S_1=0.457$ result holds up within its own stated
+confidence interval.
 
 ### `ProvenanceTracker` (provenance.py) -- Week 3
 

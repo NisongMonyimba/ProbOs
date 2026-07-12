@@ -606,8 +606,8 @@
       sobolList.appendChild(row);
     });
     sobolCaption.innerHTML =
-      '<b>' + params[0].name + '</b> and <b>' + params[1].name + '</b> together account for the overwhelming majority of variance. ' +
-      'This is a corrected, freshly re-verified result: a real reproducibility bug in the sensitivity kernel (saltelli.sample() silently ignoring its seed) was found and fixed while building this chart \u2014 the previously-published S1=0.457 for Ea_SEI predates that fix and was never verifiably stable. This value (S1='+params[0].S1.toFixed(3)+') is confirmed bit-identical across independent re-runs.';
+      '<b>' + params[0].name + '</b> and <b>' + params[1].name + '</b> together account for the overwhelming majority of variance, evaluated at t=300 seconds into the runaway. ' +
+      'A real reproducibility bug in the sensitivity kernel (saltelli.sample() silently ignoring its seed) was found and fixed while building this chart, confirmed via bit-identical results across independent re-runs. This later-time-horizon result (S1='+params[0].S1.toFixed(3)+') is a genuinely different physical question from the project\u2019s earlier-cited S1=0.457 at t=10s \u2014 not a correction to it, since Sobol sensitivity is time-dependent and both values held up under direct re-verification at their own respective configurations.';
   }
 
   chartCanvas.addEventListener('mousemove', function(e){

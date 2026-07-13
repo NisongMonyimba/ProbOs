@@ -1,0 +1,10 @@
+model injection_molding {
+  state    weight = 96.826
+  param    Barrel_Temp ~ Normal(225.0, 3.333)
+  param    Injection_Pressure ~ Normal(40.0, 2.5)
+  param    Coolant_Flow ~ Normal(7.0, 1.167)
+  param    Holding_Pressure ~ Normal(40.0, 1.667)
+  param    Injection_Speed ~ Normal(45.0, 1.667)
+  drift    weight = (96.826 + 0.02144 * (Barrel_Temp - 225.0) + 0.02573 * (Injection_Pressure - 40.0) + 0.04667 * (Coolant_Flow - 7.0) + 0.02180 * (Holding_Pressure - 40.0) + 0.02085 * (Injection_Speed - 45.0)) - weight
+  run N=5000 steps=1 dt=1.0 seed=42
+}

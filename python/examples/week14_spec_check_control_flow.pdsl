@@ -1,0 +1,6 @@
+model spec_check {
+  state    out_of_spec = 0.0
+  param    weight ~ Normal(96.826, 0.121)
+  drift    out_of_spec = (if weight > 98.0 then 1.0 else 0.0) - out_of_spec
+  run N=5000 steps=1 dt=1.0 seed=42
+}

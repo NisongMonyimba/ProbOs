@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\title{ProbOS --- Month 3, Week 14\\Injection Molding Process Qualification (Research Gate First)}
+\author{Nisong Monyimba}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Week 14 goal}
+Add injection molding process qualification as a new domain model,
+reusing the existing, validated engine (\texttt{Distribution}/
+\texttt{Model} ABCs, \texttt{MonteCarloEngine}, \texttt{SobolSensitivity},
+the now-fixed reproducible seeding, C++ \texttt{LogNormal}/
+\texttt{Uniform} classes, PDSL v0.2) --- explicitly NOT a new
+architecture, a new model class on infrastructure already at
+408/408 green tests.
+
+\textbf{Decision, stated up front:} build the real model first, with
+a genuine research gate (Day 1, before any model code), THEN add it
+as a fourth tab to the live demo --- not assuming the originating
+pitch document's claim that ``public literature on PP/PC process
+windows'' exists without verifying it directly.
+
+\section*{Day 1 -- Research gate (before any model code)}
+\begin{itemize}[leftmargin=*]
+  \item Search for a real, citable, published injection molding
+    process-window dataset (PP or PC material) with real reported
+    process parameters and real reported out-of-spec/defect outcomes
+    --- the exact discipline already used for
+    \texttt{PharmaStabilityModel} (Gonzalez-Gonzalez et al. 2023)
+  \item \textbf{Explicit decision gate:} if real, usable data is
+    found, proceed to Day 2 as planned below. If not found, document
+    the gap honestly and either narrow the model's scope to what
+    real data DOES support, or defer the week's remaining time to
+    another already-planned item
+\end{itemize}
+
+\section*{Day 2 -- InjectionMoldingProcessModel (contingent on Day 1)}
+\begin{itemize}[leftmargin=*]
+  \item Same architectural pattern as \texttt{BatteryModel2Cell}:
+    state variables (cavity pressure, melt temperature, fill time,
+    cooling time, part dimensional outcome), parameters with real
+    uncertainty informed by Day 1's findings (resin lot viscosity ---
+    reuses the existing C++ \texttt{LogNormal} class directly; ambient
+    humidity and machine repeatability as \texttt{Normal}; wall-
+    thickness tolerance from mold wear)
+  \item Output: probability of an out-of-spec part as a function of
+    the process window --- directly analogous to the battery model's
+    thermal-runaway probability output
+\end{itemize}
+
+\section*{Day 3 -- Monte Carlo + Sobol sensitivity}
+\begin{itemize}[leftmargin=*]
+  \item Wire the real \texttt{MonteCarloEngine} and
+    \texttt{SobolSensitivity} (now genuinely reproducible, per this
+    session's own seeding-bug fix and its permanent regression test)
+    to the new model
+  \item The actual sellable insight: ``of N process parameters,
+    which 2--3 are actually driving scrap rate''
+\end{itemize}
+
+\section*{Day 4 -- Validation against the real Day 1 dataset}
+\begin{itemize}[leftmargin=*]
+  \item Validate against whatever real dataset Day 1 found, with an
+    honestly stated tolerance and methodology strength
+\end{itemize}
+
+\section*{Day 5 -- PDSL spec for process windows}
+\begin{itemize}[leftmargin=*]
+  \item A real PDSL v0.2 example letting a process engineer define a
+    process window declaratively
+\end{itemize}
+
+\section*{Day 6 -- Fourth demo tab}
+\begin{itemize}[leftmargin=*]
+  \item Add Injection Molding as a fourth tab to the live demo,
+    following the EXACT same discipline already established: real
+    pre-computed kernel data, no JS toy-formula reimplementation,
+    real interpretation bands, real Sobol breakdown, hover tooltips
+\end{itemize}
+
+\section*{Day 7 -- Audit, documentation, retrospective}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{pre\_week\_audit.sh}, full test suite, CI, retrospective
+\end{itemize}
+
+\section*{Business framing (for reference, not this week's engineering scope)}
+Open-core (Apache 2.0) for the model and Sobol analysis; a paid
+audit-trail tier reframes the earlier MoldMind + ValidTrail ideas as
+one feature on existing infrastructure. Outreach is explicitly OUT
+of this week's scope.
+
+\section*{Exit criteria}
+A genuinely validated (or honestly gap-documented) injection molding
+domain model, wired to the real Sobol/Monte Carlo engine, with a
+working PDSL example and a fourth live demo tab built on real data.
+
+\end{document}

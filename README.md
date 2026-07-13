@@ -93,7 +93,7 @@ bash pre_week_audit.sh                   # full quality audit (coverage, securit
 ### Expected output
 
 ```
-408/408 Python tests passing
+419/419 Python tests passing
 5/5     C++ test executables passing (test_normal, test_lognormal,
         test_uniform, test_battery_cell, test_monte_carlo_omp)
 mypy strict: 0 errors (full python/ tree)
@@ -162,7 +162,7 @@ no manual delay needed.
 +------------------------+       +--------------------------+
 |  Python engines        |       |  cpp/ (C++20 + pybind11) |
 |  numpy + SALib         |       |  BatteryCell             |
-|  408 pytest tests      |       |  MonteCarloEngineOMP     |
+|  419 pytest tests      |       |  MonteCarloEngineOMP     |
 |                        |       |  (real battery_priors,   |
 |                        |       |   not a placeholder      |
 |                        |       |   perturbation)          |
@@ -352,6 +352,10 @@ the three genuinely stochastic models each own a private
 genuine reproducibility. `/filter` correctly rejects `clinical_trial`
 with a clear error rather than a meaningless result.
 
+### Injection Molding Process Qualification (Month 3 Week 14)
+
+`InjectionMoldingProcessModel` -- a third real, validated domain on existing infrastructure. Validated against Kavade & Kadam (2012), real physical experiments, not simulation. The model's own real Sobol sensitivity ranking reproduces all 5 parameters in the exact same order as the paper's independently-measured real ANOVA ranking -- confirmed by a permanent regression test.
+
 ### Cross-Discipline Validation (Month 1 Week 4)
 
 The same kernel, with zero core changes, correctly models:
@@ -484,7 +488,7 @@ never just "it runs without crashing." Full standards and rationale in
 **Current numbers:**
 
 ```
-408/408 Python tests passing
+419/419 Python tests passing
 5/5     C++ test executables passing
 mypy strict: 0 errors (full python/ tree)
 ruff: 0 warnings

@@ -100,4 +100,72 @@ A genuinely validated (or honestly gap-documented) injection molding
 domain model, wired to the real Sobol/Monte Carlo engine, with a
 working PDSL example and a fourth live demo tab built on real data.
 
+
+\section*{What was actually accomplished (retrospective)}
+
+\begin{itemize}[leftmargin=*]
+  \item A third real, validated domain (\texttt{InjectionMoldingProcessModel})
+    added on existing, unmodified infrastructure -- zero new
+    architecture, matching the week's own stated goal.
+  \item Day 1's research gate found two real, independent sources:
+    Kavade \& Kadam (2012) (real physical experiments, the primary
+    validation target) and Moayyedian et al. (2021) (FEA simulation,
+    used only as a structural cross-check) -- exactly the
+    ``don't assume a pitch document's citation claim without
+    verifying it'' discipline stated up front in this week's own
+    plan.
+  \item The model's own real Sobol sensitivity ranking reproduced
+    ALL FIVE parameters in the exact same relative order as the
+    source paper's independently-measured real ANOVA ranking, now
+    covered by a permanent regression test.
+  \item An honest architectural difference was documented, not
+    hidden: unlike \texttt{BatteryModel2Cell} or
+    \texttt{PharmaStabilityModel}, injection molding is a genuinely
+    static process (confirmed idempotent) -- the demo tab
+    accordingly skips the time-series chart rather than faking a
+    flat placeholder trajectory.
+\end{itemize}
+
+\section*{Real bugs found and fixed during this week}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{PDSL drift semantics (Day 5):} the first PDSL source
+    wrote the drift expression as if it directly SET the new state
+    value; PDSL's actual, established semantics are Euler-integration
+    style (\texttt{new\_state = state + dt*drift}), matching
+    Battery/Pharma. Confirmed via cross-validation against the
+    hand-written Python model: the mean was off by exactly the
+    nominal weight itself (96.826g), diagnosed via direct computation
+    before fixing.
+  \item \textbf{Readout grid collapse (found via direct user review):}
+    hiding grid child elements with \texttt{display:none} does not
+    collapse a CSS grid container's own column tracks, leaving a
+    large empty blank space. Fixed by dynamically changing
+    \texttt{grid-template-columns} on the container itself.
+  \item \textbf{Stale Sobol/PDSL panel titles (found via direct user
+    review):} both panels were hardcoded to always describe
+    ``battery,'' even while displaying injection molding's own real
+    data -- confirmed as a real correctness bug, not just a cosmetic
+    issue, and fixed with genuine per-tab dynamic content.
+\end{enumerate}
+
+\section*{What went right}
+\begin{enumerate}[leftmargin=*]
+  \item Direct user review of live screenshots caught two real UI
+    bugs that automated checks (DOM-ID matching, balance checks)
+    could not have caught, since both were about what actually
+    RENDERS, not structural correctness.
+  \item A suspected third bug (histogram bin coloring) was correctly
+    resolved as NOT a bug after full bin-by-bin computation --
+    avoided ``fixing'' correctly-working code based on an
+    incomplete percentile-level check.
+\end{enumerate}
+
+\section*{Numbers at Week 14 close}
+\begin{itemize}[leftmargin=*]
+  \item Python tests: 419/419 passing
+  \item mypy strict: 0 errors: ruff: 0 warnings
+  \item Real Sobol structural validation: exact match to the source
+    paper's ANOVA ranking, all 5 parameters
+  \item Fourth live demo tab, real data, zero known workarounds
+\end{itemize}
 \end{document}

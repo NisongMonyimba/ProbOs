@@ -261,17 +261,12 @@
   <div class="panel">
     <div class="panel-head">
       <div>
-        <div class="panel-title">PDSL v0.2 — declare a model, don't hand-write it</div>
-        <div class="panel-sub">A small domain-specific language, now with control flow (Month 3 Week 13)</div>
+        <div class="panel-title" id="pdslPanelTitle">PDSL v0.2 — declare a model, don't hand-write it</div>
+        <div class="panel-sub" id="pdslPanelSub">A small domain-specific language, now with control flow (Month 3 Week 13)</div>
       </div>
     </div>
-    <div class="code-block"><span class="cm">// A thresholded drift, compiling to vectorised numpy code</span>
-<span class="kw">model</span> battery {
-    <span class="kw">state</span>    T1 = 298.0
-    <span class="kw">param</span>    Ea_SEI ~ Normal(1.35e5, 5e3)
-    <span class="kw">drift</span>    T1 = <span class="kw">if</span> T1 &gt; 403.15 <span class="kw">then</span> arrhenius(Ea_SEI, T1) <span class="kw">else</span> 0.0
-}</div>
-    <p class="caption">Compiles to real, vectorised <code>np.where(...)</code> — verified with a genuine per-particle divergence proof, not just "it compiles."</p>
+    <div class="code-block" id="pdslCodeBlock"></div>
+    <p class="caption" id="pdslCaption"></p>
   </div>
 
   <div class="cta">
@@ -319,6 +314,44 @@
   var readoutsGrid = document.getElementById('readoutsGrid');
   var roMedianBox = document.getElementById('roMedianBox');
   var roTailBox = document.getElementById('roTailBox');
+  var pdslCodeBlock = document.getElementById('pdslCodeBlock');
+  var pdslPanelTitle = document.getElementById('pdslPanelTitle');
+  var pdslPanelSub = document.getElementById('pdslPanelSub');
+  var pdslCaption = document.getElementById('pdslCaption');
+
+  var PDSL_EXAMPLES = {
+    battery: {
+      title: 'PDSL v0.2 \u2014 declare a model, don\'t hand-write it',
+      sub: 'A small domain-specific language, now with control flow (Month 3 Week 13)',
+      code: '<span class="cm">// A thresholded drift, compiling to vectorised numpy code</span>\n' +
+        '<span class="kw">model</span> battery {\n' +
+        '    <span class="kw">state</span>    T1 = 298.0\n' +
+        '    <span class="kw">param</span>    Ea_SEI ~ Normal(1.35e5, 5e3)\n' +
+        '    <span class="kw">drift</span>    T1 = <span class="kw">if</span> T1 &gt; 403.15 <span class="kw">then</span> arrhenius(Ea_SEI, T1) <span class="kw">else</span> 0.0\n' +
+        '}',
+      caption: 'Compiles to real, vectorised <code>np.where(...)</code> \u2014 verified with a genuine per-particle divergence proof, not just "it compiles."'
+    },
+    injection_molding: {
+      title: 'PDSL v0.2 \u2014 the real injection molding process model',
+      sub: 'The exact real linear sensitivity model, cross-validated against the Python implementation',
+      code: '<span class="cm">// Real, cross-validated: mean/std match the Python model exactly</span>\n' +
+        '<span class="kw">model</span> injection_molding {\n' +
+        '  <span class="kw">state</span>    weight = 96.826\n' +
+        '  <span class="kw">param</span>    Barrel_Temp ~ Normal(225.0, 3.333)\n' +
+        '  <span class="kw">param</span>    Injection_Pressure ~ Normal(40.0, 2.5)\n' +
+        '  <span class="kw">drift</span>    weight = (96.826 + 0.02144*(Barrel_Temp-225.0)\n' +
+        '                    + 0.02573*(Injection_Pressure-40.0) + ...) - weight\n' +
+        '}',
+      caption: 'Real fix found while building this: PDSL drift is Euler-integration style (new_state = state + dt*drift), not direct assignment \u2014 confirmed via cross-validation against the hand-written Python model (means/stds matched exactly after the fix).'
+    }
+  };
+  function renderPdslExample(){
+    var ex = PDSL_EXAMPLES[current] || PDSL_EXAMPLES.battery;
+    pdslPanelTitle.textContent = ex.title;
+    pdslPanelSub.textContent = ex.sub;
+    pdslCodeBlock.innerHTML = ex.code;
+    pdslCaption.innerHTML = ex.caption;
+  }
   var pointBanner = document.getElementById('pointBanner');
   var pointBannerLabel = document.getElementById('pointBannerLabel');
   var pointBannerDesc = document.getElementById('pointBannerDesc');
@@ -607,11 +640,13 @@
       legendEl2.style.display = 'none';
       roMedianBox.style.display = 'none';
       roTailBox.style.display = 'none';
+      readoutsGrid.style.gridTemplateColumns = '1fr';
       document.getElementById('roTail').textContent = '\u2014';
     } else {
       legendEl2.style.display = 'flex';
       roMedianBox.style.display = 'block';
       roTailBox.style.display = 'block';
+      readoutsGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
       if(meta.hasTimeSeries !== false) drawTimeSeries(meta, kernelData, true, axisX);
       if(meta.hasTimeSeries !== false) chartCaption.textContent = '5,000-particle real Monte Carlo: P05\u2013P95 band (shaded) and median (solid line)';
       histWrap.style.display = 'block';
@@ -634,6 +669,7 @@
     ({battery:tabBattery, automotive:tabAutomotive, pharma:tabPharma, injection_molding:tabInjectionMolding})[name].classList.add('active');
     render();
     renderSobolChart();
+    renderPdslExample();
   }
   tabBattery.addEventListener('click', function(){ setActiveTab('battery'); });
   tabAutomotive.addEventListener('click', function(){ setActiveTab('automotive'); });
@@ -739,6 +775,7 @@
       loadingMsg.style.display = 'none';
       mainPanel.style.display = 'block';
       renderSobolChart();
+      renderPdslExample();
       render();
     })
     .catch(function(err){

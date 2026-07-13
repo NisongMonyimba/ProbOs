@@ -177,6 +177,7 @@
     <button class="tab active" id="tabBattery">Battery Safety</button>
     <button class="tab" id="tabAutomotive">Automotive / EV Safety</button>
     <button class="tab" id="tabPharma">Pharmaceutical Stability</button>
+    <button class="tab" id="tabInjectionMolding">Injection Molding</button>
   </div>
 
   <div id="loadingMsg" class="panel loading">Loading real simulation data…</div>
@@ -309,6 +310,7 @@
   var tabBattery = document.getElementById('tabBattery');
   var tabAutomotive = document.getElementById('tabAutomotive');
   var tabPharma = document.getElementById('tabPharma');
+  var tabInjectionMolding = document.getElementById('tabInjectionMolding');
   var sobolList = document.getElementById('sobolList');
   var sobolCaption = document.getElementById('sobolCaption');
   var pointBanner = document.getElementById('pointBanner');
@@ -373,6 +375,25 @@
       validated: '<b>Validated against:</b> Gonzalez-Gonzalez et al. (2023), <i>Molecules</i> 28(23), 7925. This is the REAL kernel output using the paper\u2019s own cited activation energy (Ea=18.52 kcal/mol) and reported standard error (\u00b12.61 kcal/mol) \u2014 not an invented uncertainty level.',
       captionDet: '<b>Deterministic mode:</b> a single run at the nominal, literature-cited activation energy. There is no way to know how a real manufacturing batch\u2019s natural variation in activation energy would affect real-world shelf life.',
       captionProb: '<b>Probabilistic mode:</b> the SAME real kernel, run 5,000 times with activation energy drawn from the paper\u2019s own reported uncertainty. The worst-case 5% of real outcomes show complete potency loss within one year \u2014 a risk invisible to the single deterministic number above.'
+    },
+    injection_molding: {
+      panelTitle: 'Part weight per shot, real Taguchi-derived process model',
+      panelSub: 'InjectionMoldingProcessModel, 5 real significant process parameters, N=5000, seed=42',
+      pointLabel: 'Deterministic weight',
+      tailLabel: 'P(out of spec)',
+      unit: 'g',
+      hasTimeSeries: false,
+      specCenter: 97.02,
+      toSeverity: function(w){ return Math.abs(w - 97.02); },
+      pointBands: [
+        {upTo:0.3, label:'Well within spec', desc:'Comfortably centered between the real 96.04g-98.0g spec limits.', level:'good'},
+        {upTo:0.6, label:'Within spec', desc:'Within spec, but the margin to one limit is narrowing.', level:'watch'},
+        {upTo:0.98, label:'Near limit', desc:'Approaching the real USL or LSL from Kavade & Kadam (2012).', level:'caution'},
+        {upTo:Infinity, label:'Out of spec', desc:'Beyond the real 96.04g-98.0g spec window; part would be rejected.', level:'danger'}
+      ],
+      validated: '<b>Validated against:</b> Kavade, M.V. and Kadam, G.S. (2012), IOSR Journal of Mechanical and Civil Engineering, 4(4), 49-58 \u2014 REAL physical experiments (real injection molding machine, real weighing scale, real coolant flow meters), not simulation. Real ANOVA sensitivity ranking, real process capability (Cp=4.042), and a real, physically EXECUTED confirmation experiment (predicted 96.826\u00b10.318g, measured 96.539g).',
+      captionDet: '<b>Deterministic mode:</b> one shot at nominal process settings. Unlike battery/pharma, this process is genuinely static \u2014 there is no real within-shot time evolution to simulate (confirmed idempotent).',
+      captionProb: '<b>Probabilistic mode:</b> 5,000 real independent simulated shots, each drawing real process-parameter variation. Each sample represents one real production shot, not a point in time.'
     }
   };
 
@@ -513,7 +534,8 @@
       var barH = (bins[i]/maxBin) * (plotH-6);
       var x = padL + i*binW;
       var y = padT+plotH-barH;
-      var b = findBand(binVal, band_list);
+      var severityBinVal = meta.toSeverity ? meta.toSeverity(binVal) : binVal;
+      var b = findBand(severityBinVal, band_list);
       histCtx.fillStyle = BAND_HEX[b.level] || '#2F5FAD';
       histCtx.fillRect(x+0.5, y, binW-1, barH);
     }
@@ -531,10 +553,11 @@
   function render(){
     var meta = MODEL_META[current];
     var kernelData = REAL_DATA[current === 'automotive' ? 'battery' : current];
+    var isInjMolding = current === 'injection_molding';
     var isBattery = (current === 'battery' || current === 'automotive');
-    var axisX = isBattery
+    var axisX = meta.hasTimeSeries === false ? [] : (isBattery
       ? Array.from({length:30}, function(_,i){ return Math.round(i * (300/29)); })
-      : kernelData.percentile_time_series.days.map(function(d){ return Math.round(d); });
+      : kernelData.percentile_time_series.days.map(function(d){ return Math.round(d); }));
 
     panelTitle.textContent = meta.panelTitle;
     panelSub.textContent = meta.panelSub;
@@ -544,30 +567,48 @@
     caption.innerHTML = uqOn ? meta.captionProb : meta.captionDet;
     renderLegend(meta.pointBands);
 
-    var pointEstimate = isBattery ? kernelData.point_estimate_T1_K : kernelData.point_estimate_potency_pct;
-    var finalDist = isBattery ? kernelData.final_T1_distribution_K : kernelData.final_potency_distribution_pct;
+    var pointEstimate, finalDist;
+    if(isBattery){
+      pointEstimate = kernelData.point_estimate_T1_K;
+      finalDist = kernelData.final_T1_distribution_K;
+    } else if(isInjMolding){
+      pointEstimate = kernelData.point_estimate_weight_g;
+      finalDist = kernelData.final_weight_distribution_g;
+    } else {
+      pointEstimate = kernelData.point_estimate_potency_pct;
+      finalDist = kernelData.final_potency_distribution_pct;
+    }
     var sortedDist = finalDist.slice().sort(function(a,b){return a-b;});
     var medianVal = percentile(sortedDist, 0.5);
 
     document.getElementById('roPoint').textContent = Math.round(pointEstimate) + meta.unit;
     document.getElementById('roMedian').textContent = uqOn ? (Math.round(medianVal) + meta.unit) : '\u2014';
 
-    renderBanner(pointBanner, pointBannerLabel, pointBannerDesc, findBand(pointEstimate, meta.pointBands));
+    var severityVal = meta.toSeverity ? meta.toSeverity(pointEstimate) : pointEstimate;
+    renderBanner(pointBanner, pointBannerLabel, pointBannerDesc, findBand(severityVal, meta.pointBands));
+
+    if(meta.hasTimeSeries === false){
+      chartWrap.style.display = 'none';
+      chartCaption.textContent = '';
+    } else {
+      chartWrap.style.display = 'block';
+    }
 
     if(!uqOn){
-      drawTimeSeries(meta, kernelData, false, axisX);
-      chartCaption.textContent = 'Deterministic: the TRUE single run at nominal parameters (not the Monte Carlo median)';
+      if(meta.hasTimeSeries !== false) drawTimeSeries(meta, kernelData, false, axisX);
+      if(meta.hasTimeSeries !== false) chartCaption.textContent = 'Deterministic: the TRUE single run at nominal parameters (not the Monte Carlo median)';
       histWrap.style.display = 'none';
       document.getElementById('roTail').textContent = '\u2014';
     } else {
-      drawTimeSeries(meta, kernelData, true, axisX);
-      chartCaption.textContent = '5,000-particle real Monte Carlo: P05\u2013P95 band (shaded) and median (solid line)';
+      if(meta.hasTimeSeries !== false) drawTimeSeries(meta, kernelData, true, axisX);
+      if(meta.hasTimeSeries !== false) chartCaption.textContent = '5,000-particle real Monte Carlo: P05\u2013P95 band (shaded) and median (solid line)';
       histWrap.style.display = 'block';
       drawHistogram(meta, meta.pointBands, finalDist);
 
-      var threshold = isBattery ? 3500 : 90;
-      var isLowerBad = !isBattery;
+      var threshold = isInjMolding ? 0.98 : (isBattery ? 3500 : 90);
+      var isLowerBad = !isBattery && !isInjMolding;
       var tailCount = finalDist.filter(function(x){
+        if(isInjMolding) return Math.abs(x - meta.specCenter) > threshold;
         return isLowerBad ? x < threshold : x > threshold;
       }).length;
       var tailPct = (tailCount/finalDist.length*100);
@@ -577,13 +618,15 @@
 
   function setActiveTab(name){
     current = name;
-    [tabBattery, tabAutomotive, tabPharma].forEach(function(t){ t.classList.remove('active'); });
-    ({battery:tabBattery, automotive:tabAutomotive, pharma:tabPharma})[name].classList.add('active');
+    [tabBattery, tabAutomotive, tabPharma, tabInjectionMolding].forEach(function(t){ t.classList.remove('active'); });
+    ({battery:tabBattery, automotive:tabAutomotive, pharma:tabPharma, injection_molding:tabInjectionMolding})[name].classList.add('active');
     render();
+    renderSobolChart();
   }
   tabBattery.addEventListener('click', function(){ setActiveTab('battery'); });
   tabAutomotive.addEventListener('click', function(){ setActiveTab('automotive'); });
   tabPharma.addEventListener('click', function(){ setActiveTab('pharma'); });
+  tabInjectionMolding.addEventListener('click', function(){ setActiveTab('injection_molding'); });
   toggle.addEventListener('click', function(){
     uqOn = !uqOn;
     toggle.classList.toggle('on', uqOn);
@@ -592,7 +635,14 @@
   });
 
   function renderSobolChart(){
-    var params = REAL_DATA.battery.full_sobol_s1;
+    var sobolSourceKey = (current === 'automotive') ? 'battery' : current;
+    var sobolData = REAL_DATA[sobolSourceKey];
+    if(!sobolData || !sobolData.full_sobol_s1){
+      sobolList.innerHTML = '<p class="caption">Full Sobol breakdown not available for this model.</p>';
+      sobolCaption.innerHTML = '';
+      return;
+    }
+    var params = sobolData.full_sobol_s1;
     var maxS1 = Math.max.apply(null, params.map(function(p){return p.S1;}));
     sobolList.innerHTML = '';
     params.forEach(function(p, idx){
@@ -605,9 +655,14 @@
         '<div class="sobol-pct">S1='+p.S1.toFixed(3)+'</div>';
       sobolList.appendChild(row);
     });
-    sobolCaption.innerHTML =
-      '<b>' + params[0].name + '</b> and <b>' + params[1].name + '</b> together account for the overwhelming majority of variance, evaluated at t=300 seconds into the runaway. ' +
-      'A real reproducibility bug in the sensitivity kernel (saltelli.sample() silently ignoring its seed) was found and fixed while building this chart, confirmed via bit-identical results across independent re-runs. This later-time-horizon result (S1='+params[0].S1.toFixed(3)+') is a genuinely different physical question from the project\u2019s earlier-cited S1=0.457 at t=10s \u2014 not a correction to it, since Sobol sensitivity is time-dependent and both values held up under direct re-verification at their own respective configurations.';
+    if(sobolSourceKey === 'battery'){
+      sobolCaption.innerHTML =
+        '<b>' + params[0].name + '</b> and <b>' + params[1].name + '</b> together account for the overwhelming majority of variance, evaluated at t=300 seconds into the runaway. ' +
+        'A real reproducibility bug in the sensitivity kernel (saltelli.sample() silently ignoring its seed) was found and fixed while building this chart, confirmed via bit-identical results across independent re-runs. This later-time-horizon result (S1='+params[0].S1.toFixed(3)+') is a genuinely different physical question from the project\u2019s earlier-cited S1=0.457 at t=10s \u2014 not a correction to it, since Sobol sensitivity is time-dependent and both values held up under direct re-verification at their own respective configurations.';
+    } else if(sobolSourceKey === 'injection_molding'){
+      sobolCaption.innerHTML =
+        '<b>' + params[0].name + '</b> and <b>' + params[1].name + '</b> dominate, matching the exact same relative order as the source paper\u2019s independently-measured real ANOVA ranking (Barrel_Temp 31.93% &gt; Injection_Pressure 26.82% &gt; Coolant_Flow 18.65% &gt; Holding_Pressure 8.25% &gt; Injection_Speed 7.55%) \u2014 confirmed via a permanent regression test, not just a one-time check.';
+    }
   }
 
   chartCanvas.addEventListener('mousemove', function(e){

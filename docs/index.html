@@ -198,18 +198,18 @@
     <p class="chart-caption" id="chartCaption"></p>
 
     <div id="histWrap"><canvas id="hist"></canvas><div class="chart-tooltip" id="histTooltip"></div></div>
-    <div class="legend" id="legend"></div>
+    <div class="legend" id="legend" style="display:none;"></div>
 
-    <div class="readouts">
+    <div class="readouts" id="readoutsGrid">
       <div class="readout">
         <div class="readout-label" id="roPointLabel"></div>
         <div class="readout-value" id="roPoint">—</div>
       </div>
-      <div class="readout">
+      <div class="readout" id="roMedianBox">
         <div class="readout-label">Median (P50)</div>
         <div class="readout-value blue" id="roMedian">—</div>
       </div>
-      <div class="readout">
+      <div class="readout" id="roTailBox">
         <div class="readout-label" id="roTailLabel"></div>
         <div class="readout-value danger" id="roTail">—</div>
       </div>
@@ -228,8 +228,8 @@
   <div class="panel">
     <div class="panel-head">
       <div>
-        <div class="panel-title">What actually drives battery thermal risk</div>
-        <div class="panel-sub">Real Sobol sensitivity, all 15 parameters, N=1024 Saltelli samples — same model underlies both the Battery and Automotive tabs</div>
+        <div class="panel-title" id="sobolPanelTitle">What actually drives the outcome</div>
+        <div class="panel-sub" id="sobolPanelSub">Real Sobol sensitivity breakdown</div>
       </div>
     </div>
     <div class="sobol-list" id="sobolList"></div>
@@ -313,6 +313,12 @@
   var tabInjectionMolding = document.getElementById('tabInjectionMolding');
   var sobolList = document.getElementById('sobolList');
   var sobolCaption = document.getElementById('sobolCaption');
+  var sobolPanelTitle = document.getElementById('sobolPanelTitle');
+  var sobolPanelSub = document.getElementById('sobolPanelSub');
+  var legendEl2 = document.getElementById('legend');
+  var readoutsGrid = document.getElementById('readoutsGrid');
+  var roMedianBox = document.getElementById('roMedianBox');
+  var roTailBox = document.getElementById('roTailBox');
   var pointBanner = document.getElementById('pointBanner');
   var pointBannerLabel = document.getElementById('pointBannerLabel');
   var pointBannerDesc = document.getElementById('pointBannerDesc');
@@ -598,8 +604,14 @@
       if(meta.hasTimeSeries !== false) drawTimeSeries(meta, kernelData, false, axisX);
       if(meta.hasTimeSeries !== false) chartCaption.textContent = 'Deterministic: the TRUE single run at nominal parameters (not the Monte Carlo median)';
       histWrap.style.display = 'none';
+      legendEl2.style.display = 'none';
+      roMedianBox.style.display = 'none';
+      roTailBox.style.display = 'none';
       document.getElementById('roTail').textContent = '\u2014';
     } else {
+      legendEl2.style.display = 'flex';
+      roMedianBox.style.display = 'block';
+      roTailBox.style.display = 'block';
       if(meta.hasTimeSeries !== false) drawTimeSeries(meta, kernelData, true, axisX);
       if(meta.hasTimeSeries !== false) chartCaption.textContent = '5,000-particle real Monte Carlo: P05\u2013P95 band (shaded) and median (solid line)';
       histWrap.style.display = 'block';
@@ -635,7 +647,16 @@
   });
 
   function renderSobolChart(){
+    var SOBOL_TITLES = {
+      battery: ['What actually drives battery thermal risk', 'Real Sobol sensitivity, all 15 parameters, N=1024 Saltelli samples \u2014 same model underlies both the Battery and Automotive tabs'],
+      injection_molding: ['What actually drives part weight variation', 'Real Sobol sensitivity, all 5 significant process parameters, N=1024 Saltelli samples']
+    };
     var sobolSourceKey = (current === 'automotive') ? 'battery' : current;
+    var titlePair = SOBOL_TITLES[sobolSourceKey];
+    if(titlePair){
+      sobolPanelTitle.textContent = titlePair[0];
+      sobolPanelSub.textContent = titlePair[1];
+    }
     var sobolData = REAL_DATA[sobolSourceKey];
     if(!sobolData || !sobolData.full_sobol_s1){
       sobolList.innerHTML = '<p class="caption">Full Sobol breakdown not available for this model.</p>';
